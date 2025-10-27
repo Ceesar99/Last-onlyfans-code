@@ -19,13 +19,13 @@ export default function SubscriptionModal({
     },
     {
       id: "3months",
-      label: "3 MONTHS (30% off)",
-      priceText: creator?.prices?.threeMonths || "$8.58 total",
+      label: "3 MONTHS",
+      priceText: creator?.prices?.threeMonths || "$15 total",
     },
     {
       id: "6months",
-      label: "6 MONTHS (40% off)",
-      priceText: creator?.prices?.sixMonths || "$11.59 total",
+      label: "6 MONTHS",
+      priceText: creator?.prices?.sixMonths || "$30 total",
     },
   ];
 
