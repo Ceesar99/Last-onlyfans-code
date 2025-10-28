@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <!-- Background -->
+  <rect width="800" height="800" fill="#00B5F0" />
+
+  <!-- Left circular 'o' (light cyan) -->
+  <circle cx="260" cy="400" r="220" fill="#DFF6FB" />
+  <circle cx="260" cy="400" r="70" fill="#00B5F0" />
+
+  <!-- Right wing / 'f' shape (white) approximated with a path -->
+  <path d="M340 150
+           C550 150 700 210 700 300
+           C700 360 650 380 600 390
+           C660 400 700 440 700 500
+           C700 620 600 720 420 720
+           C400 720 360 720 320 700
+           L320 700
+           C320 640 320 480 320 400
+           C320 300 340 200 340 150 Z"
+        fill="#FFFFFF" />
+
+  <!-- small inner cut to mimic the wing notch -->
+  <path d="M480 270
+           C540 270 600 250 640 230
+           C600 240 540 250 480 260
+           C460 260 460 270 480 270 Z"
+        fill="#00B5F0" opacity="0.0" />
+</svg>
