@@ -1078,7 +1078,6 @@ export default function AdminLayout() {
     </div>
   );
 }      handleSend();
-    }
   };
 
   return (
