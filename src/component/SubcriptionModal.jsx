@@ -1,11 +1,10 @@
 // SubscriptionModal.jsx
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 export default function SubscriptionModal({
   creator,
   selectedPlan,
   onSelectPlan,
-  onAddCard,
   onClose,
   freeSampleActive = false,
 }) {
@@ -29,6 +28,12 @@ export default function SubscriptionModal({
     },
   ];
 
+  const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [iframeToken, setIframeToken] = useState(null);
+  const [sessionId, setSessionId] = useState(null);
+  const [error, setError] = useState(null);
+
   // Disable page scroll when modal is open
   useEffect(() => {
     if (typeof document !== "undefined" && document?.body) {
@@ -45,19 +50,38 @@ export default function SubscriptionModal({
     return undefined;
   }, []);
 
-  const handleAddCard = () => {
-    if (!selectedPlan) return;
+  const handlePayment = async () => {
+    if (!selectedPlan || !email) return;
+
+    setIsLoading(true);
+    setError(null);
 
     try {
-      if (typeof onAddCard === "function") {
-        onAddCard();
+      const response = await fetch(`${process.env.SUPABASE_URL}/functions/v1/charge`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-internal-secret": process.env.APP_INTERNAL_SECRET, // From env or secure storage
+        },
+        body: JSON.stringify({
+          billing_email: email,
+          plan: selectedPlan,
+        }),
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || "Payment initiation failed");
       }
-    } catch (e) {
-      try {
-        onAddCard(selectedPlan);
-      } catch (e2) {
-        console.warn("SubscriptionModal: onAddCard call failed:", e2);
-      }
+
+      const { iframe_token, session_id } = await response.json();
+      setIframeToken(iframe_token);
+      setSessionId(session_id);
+    } catch (err) {
+      setError(err.message);
+      console.error("Payment error:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -161,21 +185,54 @@ export default function SubscriptionModal({
             })}
           </div>
 
-          {/* Add payment button */}
+          {/* Email Input - Added under plans with same style */}
+          <div className="mt-4">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your billing email"
+              className="w-full py-3 px-4 rounded-full border border-gray-200 text-gray-700 focus:border-[#00AFF0] focus:outline-none transition"
+              aria-label="Billing email"
+            />
+          </div>
+
+          {/* Add payment button - Now handles payment initiation */}
           <div className="mt-6">
             <button
-              onClick={handleAddCard}
-              disabled={!selectedPlan}
+              onClick={handlePayment}
+              disabled={!selectedPlan || !email || isLoading}
               className={`w-full py-3 rounded-full border transition ${
-                !selectedPlan
+                !selectedPlan || !email || isLoading
                   ? "border-gray-200 text-gray-400 bg-gray-100 cursor-not-allowed"
                   : "border-[#00AFF0] text-[#00AFF0] font-semibold hover:bg-[#00AFF0] hover:text-white"
               }`}
-              aria-disabled={!selectedPlan}
+              aria-disabled={!selectedPlan || !email || isLoading}
             >
-              PLEASE ADD A PAYMENT CARD
+              {isLoading ? "Processing..." : "ADD PAYMENT CARD"}
             </button>
           </div>
+
+          {/* Iframe Placeholder - Appears after initiation */}
+          {iframeToken && (
+            <div className="mt-4 text-center">
+              <iframe
+                src={`https://api.maxelpay.com/embed?token=${iframeToken}`}
+                width="100%"
+                height="80"
+                style={{ border: "none" }}
+                title="Maxel Payment Iframe"
+              ></iframe>
+              <p className="text-sm text-gray-500 mt-2">
+                Enter your card details above to complete subscription.
+              </p>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <p className="text-sm text-red-500 mt-2 text-center">{error}</p>
+          )}
 
           {/* Close button */}
           <div className="mt-4 text-right">
