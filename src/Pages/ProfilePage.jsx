@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import ModalPortal from "../component/ModalPortal";
 import SubscriptionModal from "../component/SubcriptionModal";
+import MessageModal from "../component/MessageModal"; // Add this import
 // frontend supabase client (assumes default export)
 import supabase from "../supabaseclient";
 
@@ -48,21 +49,21 @@ const defaultCreator = {
 // Post captions for dummy posts
 // Image URLs for unlocked dummy posts (first 15 posts)
 const UNLOCKED_POST_IMAGES = [
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760742247894-wuga4b-tayler-hills-onlyfans-7su4i-72.jpeg", // Profile image
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760701141796-9roite-Screenshot_20251017-123357.jpg", // Banner image
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760701111671-4eu428-Screenshot_20251017-123512.jpg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760700680072-2a7llr-Screenshot_20251017-122943.jpg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760700668201-t5di54-Screenshot_20251017-123004.jpg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760700654730-rd1q1r-Screenshot_20251017-123038.jpg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760700520296-72yuih-Screenshot_20251017-122523.jpg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760700501860-hqck9r-Screenshot_20251017-122548.jpg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760700484556-w30efh-Screenshot_20251017-122714.jpg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760702951815-0j3vd8-Screenshot_20251017-130712.jpg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760702918793-4ks6tl-Screenshot_20251017-130803.jpg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760722413191-rkpgx9-Screenshot_20251017-182707.jpg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760722436108-036d59-Screenshot_20251017-182631.jpg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760701157281-3gg60s-Screenshot_20251017-123330.jpg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760703032076-85uy0r-Screenshot_20251017-130610.jpg",
+  "https://taylerhillxxxonlyfans.netlify.app/assets/tayler-hills-onlyfans-7su4i-72.jpeg", // Profile image
+  "https://taylerhillxxxonlyfans.netlify.app/assets/Screenshot_20251017-123357.jpg", // Banner image
+  "https://taylerhillxxxonlyfans.netlify.app/assets/Screenshot_20251017-123512.jpg",
+  "https://taylerhillxxxonlyfans.netlify.app/assets/Screenshot_20251017-122943.jpg",
+  "https://taylerhillxxxonlyfans.netlify.app/assets/Screenshot_20251017-123004.jpg",
+  "https://taylerhillxxxonlyfans.netlify.app/assets/Screenshot_20251017-123038.jpg",
+  "https://taylerhillxxxonlyfans.netlify.app/assets/Screenshot_20251017-122523.jpg",
+  "https://taylerhillxxxonlyfans.netlify.app/assets/Screenshot_20251017-122548.jpg",
+  "https://taylerhillxxxonlyfans.netlify.app/assets/Screenshot_20251017-122714.jpg",
+  "https://taylerhillxxxonlyfans.netlify.app/assets/Screenshot_20251017-130712.jpg",
+  "https://taylerhillxxxonlyfans.netlify.app/assets/Screenshot_20251017-130803.jpg",
+  "https://taylerhillxxxonlyfans.netlify.app/assets/Screenshot_20251017-182707.jpg",
+  "https://taylerhillxxxonlyfans.netlify.app/assets/Screenshot_20251017-182631.jpg",
+  "https://taylerhillxxxonlyfans.netlify.app/assets/Screenshot_20251017-123330.jpg",
+  "https://taylerhillxxxonlyfans.netlify.app/assets/Screenshot_20251017-130610.jpg",
 ];
 
 const DUMMY_POST_CAPTIONS = [
@@ -209,6 +210,8 @@ export default function SafeProfileMock() {
   const [showSubModal, setShowSubModal] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("monthly");
+
+  const [showMessageModal, setShowMessageModal] = useState(false); // Add this state for MessageModal
 
   const [freeSample, setFreeSample] = useState({ active: false, unlockedCount: 15, expiresAt: null }); // default unlocked 15
   const countdownRef = useRef(null);
@@ -748,6 +751,9 @@ export default function SafeProfileMock() {
   const openSubModal = (planId) => { setSelectedPlan(planId || "monthly"); setShowSubModal(true); lockScroll(); };
   const closeSubModal = () => { setShowSubModal(false); unlockScroll(); };
 
+  const openMessageModal = () => { setShowMessageModal(true); lockScroll(); }; // Add this function definition
+  const closeMessageModal = () => { setShowMessageModal(false); unlockScroll(); }; // Add this helper function
+
   // viewer helpers unchanged (works with string ids)
   const buildViewerListFromPosts = useMemo(() => {
     return posts.filter((p) => isPostUnlocked(p.id) && p.mediaType).map((p) => ({ id: p.id, mediaType: p.mediaType, src: p.mediaSrc, title: `Post ${p.id}` }));
@@ -1205,6 +1211,12 @@ export default function SafeProfileMock() {
               onSelectPlan={(planId) => setSelectedPlan(planId)}
               onClose={closeSubModal}
               freeSampleActive={freeSample.active}
+            />
+          </ModalPortal>
+
+          <ModalPortal isOpen={showMessageModal} onClose={closeMessageModal} zIndex={1000}> // Add this for MessageModal
+            <MessageModal
+              onClose={closeMessageModal} // Pass onClose if MessageModal accepts it; adjust props as needed
             />
           </ModalPortal>
 
