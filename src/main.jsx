@@ -1,7 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import **import LoadingSplash from "./components/LoadingSplash";** // 🚀 **NEW: Import your splash**
+import LoadingSplash from "./components/LoadingSplash";  // ✅ Clean import
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProfilePage from "./Pages/ProfilePage";
 import MessagesPage from "./Pages/MessagesPage";
@@ -15,12 +15,11 @@ window.addEventListener("error", (event) => {
   console.log("🔥 Hook Error Source:", event.filename, event.lineno);
 });
 
-**// ✅ PERFECT SPOT: Wrap **EVERYTHING INSIDE** root.render**
 const root = createRoot(document.getElementById("root"));
 
 root.render(
   <React.StrictMode>
-    **<LoadingSplash>**
+    <LoadingSplash>  {/* ✅ Splash wraps EVERYTHING */}
       <AuthProvider>
         <BrowserRouter>
           <Routes>
@@ -33,6 +32,6 @@ root.render(
           </Routes>
         </BrowserRouter>
       </AuthProvider>
-    **</LoadingSplash>**
+    </LoadingSplash>
   </React.StrictMode>
 );
