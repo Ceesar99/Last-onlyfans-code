@@ -8,6 +8,7 @@ import { AuthProvider } from "./context/Authcontext";
 import AdminLogin from "./Admin/AdminLogin.jsx";
 import "./index.css";
 import AdminLayout from "./Admin/AdminLayout.jsx";
+import ErrorBoundary from "./components/ErrorBoundary";  // Add this import
 
 // Debug helper to detect invalid hook source
 window.addEventListener("error", (event) => {
@@ -20,18 +21,20 @@ const root = createRoot(rootElement);
 try {
   root.render(
     <React.StrictMode>
-      <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<ProfilePage />} />
-            <Route path="/messages" element={<MessagesPage />} />
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route element={<ProtectedRoute />}>
-              <Route path="/admin" element={<AdminLayout />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
+      <ErrorBoundary>  // Wrap here
+        <AuthProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<ProfilePage />} />
+              <Route path="/messages" element={<MessagesPage />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route element={<ProtectedRoute />}>
+                <Route path="/admin" element={<AdminLayout />} />
+              </Route>
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
+      </ErrorBoundary>
     </React.StrictMode>
   );
 } catch (e) {
