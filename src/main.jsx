@@ -11,24 +11,33 @@ import AdminLayout from "./Admin/AdminLayout.jsx";
 
 // Debug helper to detect invalid hook source
 window.addEventListener("error", (event) => {
-                                console.log("🔥 Hook Error Source:", event.filename, event.lineno);
+  console.log("🔥 Hook Error Source:", event.filename, event.lineno);
 });
 
-const root = createRoot(document.getElementById("root"));
+const rootElement = document.getElementById("root");
+const root = createRoot(rootElement);
 
-root.render(
-                                <React.StrictMode>
-                                                                <AuthProvider>
-                                                                                                <BrowserRouter>
-                                                                                                                                <Routes>
-                                                                                                                                                                <Route path="/" element={<ProfilePage />} />
-                                                                                                                                                                <Route path="/messages" element={<MessagesPage />} />
-                                                                                                                                                                <Route path="/admin/login" element={<AdminLogin />} />
-                                                                                                                                                                <Route element={<ProtectedRoute />}>
-                                                                                                                                                                                                <Route path="/admin" element={<AdminLayout />} />
-                                                                                                                                                                </Route>
-                                                                                                                                </Routes>
-                                                                                                </BrowserRouter>
-                                                                </AuthProvider>
-                                </React.StrictMode>
-);
+try {
+  root.render(
+    <React.StrictMode>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<ProfilePage />} />
+            <Route path="/messages" element={<MessagesPage />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/admin" element={<AdminLayout />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </React.StrictMode>
+  );
+} catch (e) {
+  const errorDiv = document.createElement('div');
+  errorDiv.style.color = 'red';
+  errorDiv.style.padding = '20px';
+  errorDiv.innerHTML = `<h1>Error: ${e.message}</h1><pre>${e.stack}</pre>`;
+  rootElement.appendChild(errorDiv);
+}
