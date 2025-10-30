@@ -1,6 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import **import LoadingSplash from "./components/LoadingSplash";** // 🚀 **NEW: Import your splash**
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProfilePage from "./Pages/ProfilePage";
 import MessagesPage from "./Pages/MessagesPage";
@@ -9,26 +10,29 @@ import AdminLogin from "./Admin/AdminLogin.jsx";
 import "./index.css";
 import AdminLayout from "./Admin/AdminLayout.jsx";
 
-// Debug helper to detect invalid hook source
+// Debug helper (unchanged)
 window.addEventListener("error", (event) => {
-                                console.log("🔥 Hook Error Source:", event.filename, event.lineno);
+  console.log("🔥 Hook Error Source:", event.filename, event.lineno);
 });
 
+**// ✅ PERFECT SPOT: Wrap **EVERYTHING INSIDE** root.render**
 const root = createRoot(document.getElementById("root"));
 
 root.render(
-                                <React.StrictMode>
-                                                                <AuthProvider>
-                                                                                                <BrowserRouter>
-                                                                                                                                <Routes>
-                                                                                                                                                                <Route path="/" element={<ProfilePage />} />
-                                                                                                                                                                <Route path="/messages" element={<MessagesPage />} />
-                                                                                                                                                                <Route path="/admin/login" element={<AdminLogin />} />
-                                                                                                                                                                <Route element={<ProtectedRoute />}>
-                                                                                                                                                                                                <Route path="/admin" element={<AdminLayout />} />
-                                                                                                                                                                </Route>
-                                                                                                                                </Routes>
-                                                                                                </BrowserRouter>
-                                                                </AuthProvider>
-                                </React.StrictMode>
+  <React.StrictMode>
+    **<LoadingSplash>**
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<ProfilePage />} />
+            <Route path="/messages" element={<MessagesPage />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/admin" element={<AdminLayout />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    **</LoadingSplash>**
+  </React.StrictMode>
 );
