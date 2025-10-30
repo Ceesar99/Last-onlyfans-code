@@ -44,12 +44,12 @@ const LoadingSplash = ({ children }) => {
         <svg
           xmlns="http://www.w3.org/2000/svg"
           xmlnsXlink="http://www.w3.org/1999/xlink"
-          width="80"
-          height="80"
+          width="91"
+          height="150"
           viewBox="0 0 91 150"
           style={{
-            width: '200px',
-            height: '330px',
+            width: '280px',
+            height: '460px',
             animation: 'breathe 800ms ease-in-out infinite, fadeIn 1s ease-out forwards',
           }}
         >
@@ -57,8 +57,8 @@ const LoadingSplash = ({ children }) => {
             xlinkHref="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFsAAACWCAYAAACxQPTzAAAE30lEQVR4AezczY5URRjG8QoRFzhqMGNi/Fg7XoCJMoO6cWHU4EIvxEW3hAsgqAsvRBMhGN2a0I0mXoBj4sLEj8QwkcjXAkignpMpODTFUKH6fYaZ/EleTp3q4n27f+eZZgUHbvHLJnAg8csmALaNOiWwwTYKGEeRbLCNAsZRJBtso4BxFMkG2yhgHLX0ZBvf+54bBbbxkYENtlHAOIpkg20UMI4i2WAbBYyjSDbYRgHjKJIN9khgHy1JtvFhgg22UcA4imSDbRQwjiLZYBsFjKNINthGAeOoXUu28TM+NqPANj4KsME2ChhHkWywjQLGUSQbbKOAcRTJBtsoYBxFssF+BIE98EdItvEhgb2fsM9duJFU5TPN/ryUxlX2y3W+dT2pyn3t+sXmlaSqvbZT79p5515osk/+ei29N/t/qJVvt9L7Z/9IH37z252a/XX5ns8qwI9mFwfI50//uyP6gx7IqZ//Gfrreuqnv+/pv9s3YdiCPrl5bfh8R1cPDtfzv18Yrvrt7MevpuNvvqTlnfpy82qarD2Vzmw8l46sHhzQ9eKx2X+p1HyUfD0clc7oqte0/uyNF9N3n6wN/QV++Ktf0gdfbyatlXytS+lepXud01o9IioMu7xZQf9w9Nn09hNXytZwXUz1sLnw2/mtG0O6dV1ffXJ4tYDqRnt6QFqXq9af53QLr6yFr3WZOc8/URsvP62tpD39FOjm4qevp41XntEypMKxz2UwpXycan34xVQ/7NNN11buOyJsbR7Lydd1ffuBrGfI4zndJaWCVelMqfG9fgp0r2Qr/eXMsq9h2CdeO5SUar3h/HXyo66q2teH9lVH8leHkqtSmif5K0X7tdLr2tef0Xp8VnBKqEpnlF6VEq37xSoPRfs6p2tEhWHrzerr48TaofTWys13lDZBFwC9vlhn8nf1ek7nPH8vn944nKbbaZ5so+s11TTvT/LePJ+b5vW4zwCdk1329FOktZJe5mtP70N7Ol+Ata89nY+oUGy9YSX8+3dfGP7C0gfU3k4lPJVQdU5X3Wutq+5VZa2/GCcZfrqNrq+n8Rzdq7SnUh/d66p7le5L6V6vRVQ4dsSbHvcUsmq8t5z18rvseWylfPksMR33PHYMS0xXsGNcq13BrrLEbIId41rtCnaVJWYT7BjXalewqywxm2DHuFa7gl1lidkEO8a11pV/u15VCdok2UGwtbZg11SC9sAOgq21BbumErQHdhBsrS3YNZWgPbCDYGttwa6pBO2BHQRbawt2TSVob9nYQW9zf7QF2/gcwQbbKGAcRbLBNgoYR5FssI0CxlEkG2yjgHEUyQb7rsB+WpFs49MEG2yjgHEUyQbbKGAcRbLBNgoYR5FssI0CxlEkG+xAgV1sTbKN+GCDbRQwjiLZYBsFjKNINthGAeMokg22UcA4imSDbRToHtXegGS3W3WfBLubsL0B2O1W3SfB7iZsb3AbAAD//5pW0sgAAAAGSURBVAMANwWL3xNO51gAAAAASUVORK5CYII="
             x="0"
             y="0"
-            width="200"
-            height="330"
+            width="91"
+            height="150"
           />
         </svg>
       )}
@@ -70,8 +70,8 @@ const LoadingSplash = ({ children }) => {
           height="334"
           viewBox="0 0 294 334"
           style={{
-            width: '250px', // Smaller size for spinner, adjust as needed
-            height: '280px',
+            width: '280px', // Smaller size for spinner, adjust as needed
+            height: '460px',
             animation: 'spin 1s linear infinite',
           }}
         >
