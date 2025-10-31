@@ -59,8 +59,8 @@ const LoadingSplash = ({ children }) => {
             style={{
               width: "100%",
               height: "100%",
-              maxWidth: 360,
-              maxHeight: 590,
+              maxWidth: 380,
+              maxHeight: 600,
               animation: "breathe 1.6s ease-in-out infinite",
               transformOrigin: "50% 50%",
               transformBox: "fill-box",
