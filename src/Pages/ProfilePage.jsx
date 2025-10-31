@@ -526,8 +526,8 @@ export default function SafeProfileMock() {
           handle: row.handle ? (row.handle.startsWith("@") ? row.handle : `@${row.handle}`) : prev.handle,
           bio: row.bio || prev.bio,
           id: row.id || prev.id,
-          created_at: row.created_at || prev.created_at,
-        });
+          created_at: row.created_at || prev.created_at
+        }));
       })
       .subscribe();
 
@@ -904,8 +904,8 @@ export default function SafeProfileMock() {
     <ErrorBoundary>
       <div className="min-h-screen bg-gray-100 flex justify-center p-0"> {/* Removed p-4 for full-screen */}
         <div
-          className="w-full bg-white rounded-md shadow-sm text-[15px] relative profile-card" /* Removed max-w-xl for full-width */
-          style={{ overflowY: "auto" }} /* Removed maxHeight constraint for full-screen */
+          className="w-full bg-white rounded-md shadow-sm text-[15px] relative profile-card" // Removed max-w-xl for full-width
+          style={{ overflowY: "auto" }} // Removed maxHeight constraint for full-screen
         >
           {/* COVER */}
           <div className="relative h-36 bg-gray-200 overflow-hidden">
