@@ -1,8 +1,8 @@
 // ProfilePage.jsx
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import ModalPortal from "../components/ModalPortal";
-import SubscriptionModal from "../components/SubscriptionModal";
+import ModalPortal from "../component/ModalPortal";
+import SubscriptionModal from "../component/SubscriptionModal";
 // frontend supabase client (assumes default export)
 import supabase from "../supabaseclient";
 
