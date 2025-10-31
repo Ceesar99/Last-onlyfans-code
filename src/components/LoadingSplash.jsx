@@ -42,8 +42,8 @@ const LoadingSplash = ({ children }) => {
       {stage === "logo" && (
         <div
           style={{
-            width: 280,
-            height: 460,
+            width: 300,
+            height: 480,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
