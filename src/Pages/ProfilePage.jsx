@@ -1,8 +1,8 @@
 // ProfilePage.jsx
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import ModalPortal from "../component/ModalPortal";
-import SubscriptionModal from "../component/SubscriptionModal";
+import ModalPortal from "../components/ModalPortal";
+import SubscriptionModal from "../components/SubscriptionModal";
 // frontend supabase client (assumes default export)
 import supabase from "../supabaseclient";
 
@@ -527,7 +527,7 @@ export default function SafeProfileMock() {
           bio: row.bio || prev.bio,
           id: row.id || prev.id,
           created_at: row.created_at || prev.created_at,
-        }));
+        });
       })
       .subscribe();
 
@@ -904,8 +904,8 @@ export default function SafeProfileMock() {
     <ErrorBoundary>
       <div className="min-h-screen bg-gray-100 flex justify-center p-0"> {/* Removed p-4 for full-screen */}
         <div
-          className="w-full bg-white rounded-md shadow-sm text-[15px] relative profile-card" // Removed max-w-xl for full-width
-          style={{ overflowY: "auto" }} // Removed maxHeight constraint for full-screen
+          className="w-full bg-white rounded-md shadow-sm text-[15px] relative profile-card" /* Removed max-w-xl for full-width */
+          style={{ overflowY: "auto" }} /* Removed maxHeight constraint for full-screen */
         >
           {/* COVER */}
           <div className="relative h-36 bg-gray-200 overflow-hidden">
