@@ -110,15 +110,28 @@ export default function SubscriptionModal({
           <div className="flex items-center gap-2">
             <h3 className="text-lg font-bold text-gray-900 flex items-center">
               {creator?.name || "Creator Name"}
+            </h3>
+
+            {/* Verified badge: kept your base64 image, adjusted attributes for JSX */}
+            <span className="inline-flex items-center" aria-hidden>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="#1DA1F2"
-                className="w-5 h-5 ml-1"
+                width="18"
+                height="18"
+                viewBox="0 0 33 32"
+                role="img"
+                aria-label="Verified"
               >
-                <path d="M22.5 5.9l-2.7 2.6.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.7-2.6 3.7-.5L12 2l1.6 3.4 3.7.5z" />
+                {/* NOTE: switched to 'href' (JSX compatible) and kept your base64 */}
+                <image
+                  href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACEAAAAgCAYAAACcuBHKAAAKiUlEQVR4AVxXa3BU5Rl+vnN2N3eg3EQsIKCtov1T7Q8VuTpW5SKCo8UhBCFegBGDQkgisBSCgGjBC7USBBEqjhrLCIKRTplxysWp1nEAmbFqooaIuUgCZJPsnt3t87zJquOZnHzffpf38rzX46VSqXTmi..."
+                  x="0"
+                  y="0"
+                  width="18"
+                  height="18"
+                />
               </svg>
-            </h3>
+            </span>
           </div>
 
           <p className="text-sm text-gray-500 mt-1">
@@ -196,41 +209,59 @@ export default function SubscriptionModal({
 
           {/* Email Input */}
           <div className="mt-4">
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Email Address
-            </label>
             <input
-              id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#00AFF0]"
+              placeholder="Enter your billing email"
+              className="w-full py-3 px-4 rounded-full border border-gray-200 text-gray-700 focus:border-[#00AFF0] focus:outline-none transition"
+              aria-label="Billing email"
             />
           </div>
 
-          {/* Error message */}
-          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-
-          {/* Buttons */}
-          <div className="flex justify-between items-center mt-6">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300"
-            >
-              Cancel
-            </button>
+          {/* Payment button */}
+          <div className="mt-6">
             <button
               onClick={handlePayment}
-              disabled={isLoading}
-              className={`px-4 py-2 rounded-lg text-white font-semibold ${
-                isLoading ? "bg-gray-400" : "bg-[#00AFF0] hover:bg-[#0096d1]"
+              disabled={!selectedPlan || !isValidEmail(email) || isLoading}
+              className={`w-full py-3 rounded-full border transition ${
+                !selectedPlan || !isValidEmail(email) || isLoading
+                  ? "border-gray-200 text-gray-400 bg-gray-100 cursor-not-allowed"
+                  : "border-[#00AFF0] text-[#00AFF0] font-semibold hover:bg-[#00AFF0] hover:text-white"
               }`}
             >
-              {isLoading ? "Processing..." : "Subscribe"}
+              {isLoading ? "Processing..." : "PLEASE ADD A PAYMENT CARD"}
+            </button>
+          </div>
+
+          {/* Payment iframe */}
+          {iframeToken && (
+            <div className="mt-4 text-center">
+              <iframe
+                src={`https://api.maxelpay.com/embed?token=${iframeToken}`}
+                width="100%"
+                height="80"
+                style={{ border: "none" }}
+                title="Maxel Payment Iframe"
+              ></iframe>
+              <p className="text-sm text-gray-500 mt-2">
+                Enter your card details above to complete subscription.
+              </p>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <p className="text-sm text-red-500 mt-2 text-center">{error}</p>
+          )}
+
+          {/* Close button */}
+          <div className="mt-4 text-right">
+            <button
+              onClick={onClose}
+              className="text-sm font-semibold text-[#00AFF0]"
+            >
+              CLOSE
             </button>
           </div>
         </div>
