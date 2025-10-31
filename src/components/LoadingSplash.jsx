@@ -42,8 +42,8 @@ const LoadingSplash = ({ children }) => {
       {stage === "logo" && (
         <div
           style={{
-            width: 320,
-            height: 500,
+            width: 480,
+            height: 660,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -59,8 +59,8 @@ const LoadingSplash = ({ children }) => {
             style={{
               width: "100%",
               height: "100%",
-              maxWidth: 400,
-              maxHeight: 600,
+              maxWidth: 460,
+              maxHeight: 690,
               animation: "breathe 1.6s ease-in-out infinite",
               transformOrigin: "50% 50%",
               transformBox: "fill-box",
