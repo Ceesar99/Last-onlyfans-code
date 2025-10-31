@@ -243,5 +243,10 @@ export default function SubscriptionModal({
             >
               CLOSE
             </button>
-          </div>
-        </div>
+          </div> {/* inner container */}
+      </div> {/* modal content */}
+    </div> {/* modal wrapper */}
+  );
+};
+
+export default SubscriptionModal;
