@@ -1101,12 +1101,12 @@ export default function SafeProfileMock() {
                 <div className="text-[13px] font-semibold text-gray-500">SUBSCRIPTION BUNDLES</div>
                 <div className="mt-2 space-y-2">
                   <button onClick={() => openSubscriptionModalWithPlan("3months")} className="w-full flex items-center justify-between rounded-full px-4 py-2 bg-[#00AFF0] text-white" aria-label="3 months plan">
-                    <div className="font-medium">3 MONTHS</div>
-                    <div className="font-semibold">$15 total</div>
+                    <div className="font-medium">3 MONTHS (30% off)</div>
+                    <div className="font-semibold">$8.58 total</div>
                   </button>
                   <button onClick={() => openSubscriptionModalWithPlan("6months")} className="w-full flex items-center justify-between rounded-full px-4 py-2 bg-[#00AFF0] text-white" aria-label="6 months plan">
-                    <div className="font-medium">6 MONTHS</div>
-                    <div className="font-semibold">$30 total</div>
+                    <div className="font-medium">6 MONTHS (40% off)</div>
+                    <div className="font-semibold">$11.59 total</div>
                   </button>
                 </div>
               </div>
