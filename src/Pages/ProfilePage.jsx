@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import ModalPortal from "../component/ModalPortal";
 import SubscriptionModal from "../component/SubcriptionModal";
+import AddCardForm from "../component/AddCardForm";
 // frontend supabase client (assumes default export)
 import supabase from "../supabaseclient";
 
@@ -42,7 +43,7 @@ const defaultCreator = {
   banner: "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760699444010-y1kcnl-Screenshot_20251017-121026.jpg",
   handle: "@taylerhillxxx",
   bio:
-    "Hi 😊 I’m your favorite 19 year old & I love showing all of ME for your pleasure; ) you’ll love it here! 🍆💦 Message me 👆 for daily nudes and videos in the feed ✨ S tapes, bjs , hjs , stripteases Dildo, vibrator, creampie, baby oil, roleplay 💦 Private messages with me ✨ NO SPAM OR ADS Turn on your your auto-renew on and get freebies xo",
+    "Hi 😊 I’m your favorite 19 year old & I love showing all of ME for your pleasure; ) you’ll love it here! 🍆💦 Message me 👆 for daily nudes and videos in the feed ✨ S tapes, bjs , hjs , stripteases Dildo, vibrator, creampie, baby oil, roleplay 💦 Private messages with me ✨ NO SPAM OR ADS Turn on your auto-renew on and get freebies xo",
 };
 
 // Post captions for dummy posts
@@ -104,6 +105,24 @@ const DUMMY_POST_CAPTIONS = [
   "Sultry stares and daring dares. Challenge accepted? 🏆",
   "Unlock my wild side. Key's in your hands. 🔑",
   "Body heat and bad ideas. Perfect combo. 💡",
+  "Tease me, please me—let's switch roles. 🔄",
+  "Midnight cravings? I've got what you need. 🌙",
+  "Slippery when wet... and I'm feeling adventurous. 💦",
+  "Your fantasy, my reality. Make it happen. ✨",
+  "Curvy roads lead to exciting destinations. Buckle up. 🚗",
+  "Naughty notes and steamy quotes. Read between the lines. 📖",
+  "This smile hides a thousand sins. Confess yours? 🙏",
+  "Heatwave incoming—blame it on me. ☀️",
+  "Lingerie lover? You've come to the right place. ❤️",
+  "Playful and provocative. Pick your adventure. 📚",
+  "Secrets spilling over. Catch them if you can. 🥤",
+  "Wicked whims and tantalizing trims. Explore? 🗺️",
+  "Feeling the vibe? Let's amplify it. 🔊",
+  "Bare essentials only. Join the club? 🛡️",
+  "Sultry secrets shared exclusively here. Shh... 🤫",
+  "Turn-ons and take-offs. Ready for liftoff? 🚀",
+  "Naughty narratives unfolding now. Tune in. 📺",
+  "Body like a wonderland—come wander. 🏞️",
   "Teasing touches and fiery clutches. Grip tight. ✊",
   "Your daily dose of desire, delivered hot. 📦",
   "Unleash the beast within me. Dare you? 🦁",
@@ -121,10 +140,25 @@ const DUMMY_POST_CAPTIONS = [
   "Naughty and nice? Mostly naughty. 😇😈",
   "Heat building, barriers breaking. Break with me? 🔨",
   "Your siren song—I'm calling you in. 🧜‍♀️",
-  "Teasing the night away. Stay up? 🌃",
+  "Tease the night away. Stay up? 🌃",
   "Curves that captivate, moves that motivate. Motivated? 💪",
   "Sinful symphony playing now. Dance? 💃",
   "Unlock levels of lust. Level up? 🎮",
+  "Body heat rising. Cool me down? ❄️",
+  "Naughty narratives for night owls. Hoot? 🦉",
+  "Tantalizing twists ahead. Twist with me? 🌀",
+  "Sultry shadows and hidden meadows. Discover? 🔍",
+  "Playtime's here. Toys optional. 🧸",
+  "Heat index: off the charts. Chart your course. 🗺️",
+  "Wicked whispers in the wind. Hear them? 🌬️",
+  "Body like velvet—touch if you dare. 🧤",
+  "Naughty needs fulfilled. What's yours? ❓",
+  "Steamy stares that ensnare. Caught? 🕸️",
+  "Curves carved for craving. Crave me? 🤤",
+  "Temptation's trail leads here. Follow? 🐾",
+  "Sultry spells cast. Enchanted? 🪄",
+  "Naughty nights await. Nightcap? 🥂",
+  "Heat haze and daze. Dazed yet? 😵",
   "Body bliss incoming. Bliss out? ☁️",
   "Tease queen reigning supreme. Bow? 👑",
   "Sinful sweets for the taking. Take? 👐",
@@ -207,6 +241,7 @@ export default function SafeProfileMock() {
   const toastTimerRef = useRef(null);
 
   const [showSubModal, setShowSubModal] = useState(false);
+  const [showAddCard, setShowAddCard] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("monthly");
 
@@ -399,6 +434,35 @@ export default function SafeProfileMock() {
 
     loadInitialData();
 
+    // Helper to get stable like count for a post
+    const getStableLikeCount = (postId) => {
+      try {
+        const stored = typeof window !== "undefined" ? window.localStorage.getItem("post_likes_permanent") : null;
+        if (stored) {
+          const persistedLikes = JSON.parse(stored);
+          if (persistedLikes[postId]) {
+            return persistedLikes[postId];
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to load persisted likes:", err);
+      }
+      
+      // Initialize new stable like count
+      const newLikeCount = Math.floor(Math.random() * 1800001) + 200000;
+      try {
+        const stored = typeof window !== "undefined" ? window.localStorage.getItem("post_likes_permanent") : null;
+        const persistedLikes = stored ? JSON.parse(stored) : {};
+        persistedLikes[postId] = newLikeCount;
+        if (typeof window !== "undefined" && window.localStorage) {
+          localStorage.setItem("post_likes_permanent", JSON.stringify(persistedLikes));
+        }
+      } catch (err) {
+        console.warn("Failed to save persisted likes:", err);
+      }
+      return newLikeCount;
+    };
+
     // Realtime subscriptions (posts + creator_profiles) - Modern Supabase v2+ channel API
     // Posts: listen for INSERT / UPDATE / DELETE and update UI accordingly
     const postsChannel = supabase
@@ -583,7 +647,7 @@ export default function SafeProfileMock() {
   // icons & formatLikes unchanged
   const IconHeart = ({ className = "w-5 h-5", active = false }) => (
     <svg className={className} viewBox="0 0 24 24" fill={active ? "#e0245e" : "none"} xmlns="http://www.w3.org/2000/svg" stroke={active ? "#e0245e" : "#9AA3AD"}>
-      <path d="M12 17.3l6.18 3.9-1.64-7.03L21 9.24l-7.19-.62L12 2 10.19 8.62 3 9.24l4.46 4.93L5.82 21.2z" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
   const IconComment = ({ className = "w-5 h-5" }) => (
@@ -747,6 +811,8 @@ export default function SafeProfileMock() {
 
   const openSubModal = (planId) => { setSelectedPlan(planId || "monthly"); setShowSubModal(true); lockScroll(); };
   const closeSubModal = () => { setShowSubModal(false); unlockScroll(); };
+  const openAddCard = (planId, stage = "initial") => { setSelectedPlan(planId || selectedPlan || "monthly"); setShowAddCard(true); lockScroll(); };
+  const closeAddCard = () => { setShowAddCard(false); unlockScroll(); };
 
   // viewer helpers unchanged (works with string ids)
   const buildViewerListFromPosts = useMemo(() => {
@@ -786,6 +852,121 @@ export default function SafeProfileMock() {
     return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewerOpen, viewerList]);
+
+  // -----------------------
+  // PAYMENT FLOW HANDLER — now INSERTS a log into Supabase payment_logs (write-only)
+  // -----------------------
+  const logPaymentAttempt = async (payload) => {
+    try {
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const stage = payload?.stage || "addcard_submit";
+      const email = payload?.email || null;
+      const plan = payload?.plan || selectedPlan;
+
+      // Check for duplicates within last 5 minutes with same email+plan+stage
+      let duplicateQuery = supabase
+        .from("payment_logs")
+        .select("id, created_at")
+        .eq("stage", stage)
+        .gte("created_at", fiveMinutesAgo);
+
+      if (email) duplicateQuery = duplicateQuery.eq("email", email);
+      if (plan) duplicateQuery = duplicateQuery.eq("plan", plan);
+
+      const { data: existingLogs, error: checkError } = await duplicateQuery.limit(1);
+
+      if (checkError) {
+        console.warn("ProfilePage: duplicate check error:", checkError);
+      } else if (existingLogs && existingLogs.length > 0) {
+        console.log("ProfilePage: Duplicate payment log prevented (email/plan/stage match)");
+        return;
+      }
+
+      const record = {
+        email,
+        plan,
+        stage,
+        notes: payload?.notes || payload?.note || null,
+        metadata: payload?.metadata || null,
+        created_at: new Date().toISOString(),
+      };
+
+      // Insert into Supabase payment_logs
+      const { error: insertError } = await supabase.from("payment_logs").insert([record]);
+      if (insertError) {
+        console.warn("Supabase insert payment_logs failed:", insertError);
+      }
+    } catch (err) {
+      console.warn("Failed to log payment attempt:", err);
+    }
+  };
+
+  const handleAddCardSubmit = (payload) => {
+    // Always try to log attempt
+    logPaymentAttempt({ ...payload, stage: "addcard_attempt" });
+
+    if (!unlockedOnceRef.current) {
+      unlockedOnceRef.current = true;
+
+      // After a short delay, show success and unlock posts & media
+      setTimeout(() => {
+        const unlocked = payload?.unlockedCount || 15;
+        const expires = payload?.expires || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+        const freeMeta = { active: true, unlockedCount: unlocked, expiresAt: expires };
+        setFreeSample(freeMeta);
+
+        // Unlock messages after first post is unlocked
+        setMessagesUnlocked(true);
+        try {
+          if (typeof window !== "undefined" && window.localStorage) {
+            localStorage.setItem("messages_unlocked", "true");
+          }
+        } catch (err) {
+          console.warn("failed to persist messages unlock state:", err);
+        }
+
+        // persist ONLY metadata (no card info)
+        try {
+          if (typeof window !== "undefined" && window.localStorage) {
+            localStorage.setItem(FREE_SAMPLE_LS_KEY, JSON.stringify({ unlockedCount: unlocked, expiresAt: expires }));
+          }
+        } catch (err) {
+          console.warn("failed to persist freeSample metadata:", err);
+        }
+
+        // start hidden countdown
+        startSilentCountdown(expires);
+
+        // show success toast and close modals
+        showToast(`Free for 30 days active — ${unlocked} posts & media unlocked.`);
+
+        // Show message unlock notification after short delay
+        setTimeout(() => {
+          showToast("you can now message creator directly🤤💦");
+        }, 2000);
+
+        closeSubModal();
+        closeAddCard();
+
+        // final log entry that unlock succeeded
+        logPaymentAttempt({ email: payload?.email || null, plan: selectedPlan, stage: "free_sample_activated", metadata: { unlockedCount: unlocked } });
+      }, 1200);
+    } else {
+      // Subsequent attempts: do nothing beyond showing the error (AddCardForm already does that).
+    }
+  };
+
+  const openMessageModal = () => {
+    // Check if messages are unlocked (after first post unlock)
+    if (!messagesUnlocked && !subscribed) {
+      openSubModal("monthly");
+      showToast("Unlock your first post to message");
+      return;
+    }
+    navigate("/messages");
+  };
+
+  const openSubscriptionModalWithPlan = (planId) => openSubModal(planId || "monthly");
 
   // -----------------------
   // RENDER (structure left intact)
@@ -909,7 +1090,7 @@ export default function SafeProfileMock() {
               </div>
 
               <div className="mt-4">
-                <button onClick={() => openSubModal("monthly")} className="w-full rounded-full py-3 font-semibold text-white bg-[#00AFF0] flex items-center justify-between px-4" aria-haspopup="dialog">
+                <button onClick={() => openSubscriptionModalWithPlan("monthly")} className="w-full rounded-full py-3 font-semibold text-white bg-[#00AFF0] flex items-center justify-between px-4" aria-haspopup="dialog">
                   <span>SUBSCRIBE</span>
                   <span className="font-semibold text-white text-sm whitespace-nowrap">{freeSample.active ? "$5 / month" : "FREE for 30 days"}</span>
                 </button>
@@ -920,11 +1101,11 @@ export default function SafeProfileMock() {
               <div className="mt-4">
                 <div className="text-[13px] font-semibold text-gray-500">SUBSCRIPTION BUNDLES</div>
                 <div className="mt-2 space-y-2">
-                  <button onClick={() => openSubModal("3months")} className="w-full flex items-center justify-between rounded-full px-4 py-2 bg-[#00AFF0] text-white" aria-label="3 months plan">
+                  <button onClick={() => openSubscriptionModalWithPlan("3months")} className="w-full flex items-center justify-between rounded-full px-4 py-2 bg-[#00AFF0] text-white" aria-label="3 months plan">
                     <div className="font-medium">3 MONTHS</div>
                     <div className="font-semibold">$15 total</div>
                   </button>
-                  <button onClick={() => openSubModal("6months")} className="w-full flex items-center justify-between rounded-full px-4 py-2 bg-[#00AFF0] text-white" aria-label="6 months plan">
+                  <button onClick={() => openSubscriptionModalWithPlan("6months")} className="w-full flex items-center justify-between rounded-full px-4 py-2 bg-[#00AFF0] text-white" aria-label="6 months plan">
                     <div className="font-medium">6 MONTHS</div>
                     <div className="font-semibold">$30 total</div>
                   </button>
@@ -980,8 +1161,8 @@ export default function SafeProfileMock() {
                                     <div className="flex items-center justify-between">
                                       <div className="text-[12px] text-gray-500 flex items-center gap-2">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none">
-                                          <path d="M3 3h18v18H3z" stroke="#B5BEC4" strokeWidth="1.2" fill="none" />
-                                          <path d="M8 8l3 4 2-2 3 4" stroke="#B5BEC4" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                                          <path d="M3 3h18v18H3z" stroke="#D1D7DB" strokeWidth="1.2" fill="none" />
+                                          <path d="M8 8l3 4 2-2 3 4" stroke="#D1D7DB" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
                                         </svg>
                                         <span>1</span>
                                       </div>
@@ -989,7 +1170,7 @@ export default function SafeProfileMock() {
                                     </div>
 
                                     <div className="mt-3">
-                                      <button onClick={() => openSubModal("monthly")} className="mx-auto block px-6 py-2 rounded-full bg-[#00AFF0] text-white font-semibold text-sm max-w-[300px]">
+                                      <button onClick={() => openSubscriptionModalWithPlan("monthly")} className="mx-auto block px-6 py-2 rounded-full bg-[#00AFF0] text-white font-semibold text-sm max-w-[300px]">
                                         SUBSCRIBE TO SEE USER'S POSTS
                                       </button>
                                     </div>
@@ -1106,7 +1287,7 @@ export default function SafeProfileMock() {
                             </div>
                             <div className="absolute left-1 bottom-1 bg-white bg-opacity-90 text-[11px] px-1 rounded flex items-center gap-1 text-gray-600">
                               <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none">
-                                <path d="M21 19V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14l4-3 3 3 5-4 6 4z" stroke="#B5BEC4" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                                <path d="M21 19V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14l4-3 3 3 4-4 6 4z" stroke="#B5BEC4" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                               </svg>
                               <span>{m.count}</span>
                             </div>
@@ -1166,7 +1347,7 @@ export default function SafeProfileMock() {
                 {!subscribed && (
                   <div className="mt-4 px-2">
                     <div className="border rounded p-3 bg-white">
-                      <button onClick={() => openSubModal("monthly")} className="w-full rounded-full py-3 font-semibold text-white bg-[#00AFF0]">
+                      <button onClick={() => openSubscriptionModalWithPlan("monthly")} className="w-full rounded-full py-3 font-semibold text-white bg-[#00AFF0]">
                         SUBSCRIBE TO SEE USER'S MEDIA
                       </button>
                     </div>
@@ -1203,9 +1384,16 @@ export default function SafeProfileMock() {
               creator={creator}
               selectedPlan={selectedPlan}
               onSelectPlan={(planId) => setSelectedPlan(planId)}
+              onAddCard={(planId, stage) => { setSelectedPlan(planId || selectedPlan || "monthly"); openAddCard(planId, stage); }}
               onClose={closeSubModal}
               freeSampleActive={freeSample.active}
             />
+          </ModalPortal>
+
+          <ModalPortal isOpen={showAddCard} onClose={closeAddCard} zIndex={1100}>
+            <div className="modal-card p-0 max-h-[85vh] overflow-y-auto">
+              <AddCardForm onClose={closeAddCard} onSuccess={handleAddCardSubmit} selectedPlan={selectedPlan} />
+            </div>
           </ModalPortal>
 
         </div>
