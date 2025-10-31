@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/Authcontext";
 import { useNavigate } from "react-router-dom";
-import { LogOut, Upload, Plus, Save } from "lucide-react";
+import { LogOut, Upload, Plus, Save, Menu } from "lucide-react";
 import supabase from "../supabaseclient";
 
 /**
@@ -74,6 +74,8 @@ export default function AdminLayout() {
   const [activeTab, setActiveTab] = useState("profile");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const sidebarTimeoutRef = useRef(null);
 
   // Profile
   const [profileData, setProfileData] = useState({
@@ -130,6 +132,7 @@ export default function AdminLayout() {
       createdObjectUrls.current.forEach((u) => {
         try { URL.revokeObjectURL(u); } catch (e) {}
       });
+      if (sidebarTimeoutRef.current) clearTimeout(sidebarTimeoutRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -137,6 +140,22 @@ export default function AdminLayout() {
   const showMessage = (txt, type = "success", ms = 2500) => {
     setMessage({ text: txt, type });
     setTimeout(() => setMessage({ text: "", type: "" }), ms);
+  };
+
+  // Sidebar auto-close timer
+  useEffect(() => {
+    if (sidebarOpen) {
+      sidebarTimeoutRef.current = setTimeout(() => {
+        setSidebarOpen(false);
+      }, 2000); // 2 seconds
+      return () => clearTimeout(sidebarTimeoutRef.current);
+    }
+  }, [sidebarOpen]);
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setSidebarOpen(false);
+    if (sidebarTimeoutRef.current) clearTimeout(sidebarTimeoutRef.current);
   };
 
   // ---------------- Profile ----------------
@@ -768,27 +787,43 @@ export default function AdminLayout() {
   // ---------------- UI ----------------
   return (
     <div className="min-h-screen bg-gray-900 text-white flex">
+      {/* Overlay for mobile sidebar */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-20 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar Nav */}
-      <div className="w-64 bg-gray-800 p-4 flex flex-col gap-4">
+      <aside className={`fixed inset-y-0 left-0 z-30 w-64 bg-gray-800 p-4 flex flex-col gap-4 transform transition-transform duration-300 md:relative md:translate-x-0 md:z-auto ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:block`}>
         <h1 className="text-xl font-bold">Admin Portal</h1>
         <nav className="flex flex-col gap-2">
-          <button onClick={() => setActiveTab("profile")} className={`px-4 py-2 rounded text-left ${activeTab === "profile" ? "bg-blue-600" : "bg-gray-700 hover:bg-gray-600"}`}>
+          <button onClick={() => handleTabChange("profile")} className={`px-4 py-2 rounded text-left ${activeTab === "profile" ? "bg-blue-600" : "bg-gray-700 hover:bg-gray-600"}`}>
             Profile Manager
           </button>
-          <button onClick={() => setActiveTab("posts")} className={`px-4 py-2 rounded text-left ${activeTab === "posts" ? "bg-blue-600" : "bg-gray-700 hover:bg-gray-600"}`}>
+          <button onClick={() => handleTabChange("posts")} className={`px-4 py-2 rounded text-left ${activeTab === "posts" ? "bg-blue-600" : "bg-gray-700 hover:bg-gray-600"}`}>
             Post Manager
           </button>
-          <button onClick={() => setActiveTab("messages")} className={`px-4 py-2 rounded text-left ${activeTab === "messages" ? "bg-blue-600" : "bg-gray-700 hover:bg-gray-600"}`}>
+          <button onClick={() => handleTabChange("messages")} className={`px-4 py-2 rounded text-left ${activeTab === "messages" ? "bg-blue-600" : "bg-gray-700 hover:bg-gray-600"}`}>
             Messages
           </button>
-          <button onClick={() => setActiveTab("analysis")} className={`px-4 py-2 rounded text-left ${activeTab === "analysis" ? "bg-blue-600" : "bg-gray-700 hover:bg-gray-600"}`}>
+          <button onClick={() => handleTabChange("analysis")} className={`px-4 py-2 rounded text-left ${activeTab === "analysis" ? "bg-blue-600" : "bg-gray-700 hover:bg-gray-600"}`}>
             Analysis
           </button>
         </nav>
         <button onClick={() => { logout(); navigate("/admin/login"); }} className="mt-auto flex items-center gap-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded"><LogOut size={18} /> Logout</button>
-      </div>
+      </aside>
 
       <div className="flex-1 p-6 overflow-y-auto">
+        {/* Hamburger for mobile */}
+        <button 
+          className="md:hidden mb-4 p-2 bg-gray-800 rounded"
+          onClick={() => setSidebarOpen(true)}
+        >
+          <Menu size={24} />
+        </button>
+
         {message.text && (
           <div className={`mb-4 p-3 rounded-lg ${message.type === "success" ? "bg-green-500/20 border border-green-500 text-green-300" : "bg-red-500/20 border border-red-500 text-red-300"}`}>
             {message.text}
