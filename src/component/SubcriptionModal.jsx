@@ -235,6 +235,10 @@ export default function SubscriptionModal({
                 Enter your card details above to complete subscription.
               </p>
             </div>
-          )}
+          </div> {/* close modal main container */}
+      </div>   {/* close modal backdrop */}
+    </div>     {/* close outer wrapper */}
+  );
+}
 
-          {
+export default SubscriptionModal;
