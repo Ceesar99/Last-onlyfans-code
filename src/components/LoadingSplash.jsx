@@ -95,8 +95,8 @@ const LoadingSplash = ({ children }) => {
       {stage === "spinner" && (
         <div
           style={{
-            width: 280,
-            height: 460,
+            width: 180,
+            height: 260,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -111,8 +111,8 @@ const LoadingSplash = ({ children }) => {
             style={{
               width: "100%",
               height: "100%",
-              maxWidth: 320,
-              maxHeight: 360,
+              maxWidth: 200,
+              maxHeight: 220,
               animation: "spin 1.6s linear infinite",
               transformOrigin: "50% 50%",
               transformBox: "fill-box",
