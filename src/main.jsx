@@ -1,9 +1,26 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 
+let SafeApp;
+
+try {
+  // Import one small component at a time
+  SafeApp = require("./components/LoadingSplash").default;
+} catch (err) {
+  SafeApp = () => (
+    <div style={{ color: "red", marginTop: "40px", textAlign: "center" }}>
+      ❌ Error importing LoadingSplash:
+      <pre style={{ whiteSpace: "pre-wrap", textAlign: "left" }}>
+        {err.message}
+      </pre>
+    </div>
+  );
+}
+
 const root = createRoot(document.getElementById("root"));
+
 root.render(
-  <h1 style={{ textAlign: "center", marginTop: "50px", color: "green" }}>
-    ✅ React root is rendering fine.
-  </h1>
+  <React.StrictMode>
+    <SafeApp />
+  </React.StrictMode>
 );
