@@ -1,5 +1,11 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
+import LoadingSplash from "./components/LoadingSplash"; // 👈 first import
 
 const root = createRoot(document.getElementById("root"));
-root.render(<h1 style={{ textAlign: "center", marginTop: "50px" }}>✅ React is working CEESAR</h1>);
+
+root.render(
+  <React.StrictMode>
+    <LoadingSplash />
+  </React.StrictMode>
+);
