@@ -1,6 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ErrorBoundary from "./ErrorBoundary";
 import LoadingSplash from "./components/LoadingSplash";  // ✅ Clean import
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProfilePage from "./Pages/ProfilePage";
