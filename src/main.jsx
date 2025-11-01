@@ -3,7 +3,7 @@ import React from "react";
 document.body.innerHTML = "<h2 style='color:red;text-align:center;margin-top:40px'>Loading React App...</h2>";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import ErrorBoundary from "./ErrorBoundary";
+import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import LoadingSplash from "./components/LoadingSplash";  // ✅ Clean import
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProfilePage from "./Pages/ProfilePage";
