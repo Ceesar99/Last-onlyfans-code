@@ -1,49 +1,38 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { createRoot } from "react-dom/client";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-const root = createRoot(document.getElementById("root"));
+// ✅ Correct relative imports (no /assets/, no require)
+import LoadingSplash from "./components/LoadingSplash";
+import ProtectedRoute from "./components/ProtectedRoute";
+import ProfilePage from "./Pages/ProfilePage";
+import MessagesPage from "./Pages/MessagesPage";
+import { AuthProvider } from "./context/Authcontext";
+import AdminLogin from "./Admin/AdminLogin.jsx";
+import AdminLayout from "./Admin/AdminLayout.jsx";
 
-function SafeImport({ name, path }) {
-  const [status, setStatus] = useState("loading");
-  const [error, setError] = useState(null);
+import "./index.css";
 
-  useEffect(() => {
-    import(path)
-      .then(() => setStatus("ok"))
-      .catch((err) => {
-        console.error(`❌ Error importing ${name}:`, err);
-        setError(err.message);
-        setStatus("error");
-      });
-  }, [name, path]);
-
-  if (status === "loading") return <p>⏳ Checking {name}...</p>;
-  if (status === "ok")
-    return <p style={{ color: "green" }}>✅ {name} imported successfully.</p>;
-  return (
-    <p style={{ color: "red" }}>
-      ❌ Error importing {name}: {error}
-    </p>
-  );
-}
-
-function TestImports() {
-  return (
-    <div style={{ fontFamily: "monospace", padding: "1rem" }}>
-      <h2>🔍 Component Import Check</h2>
-      <SafeImport name="LoadingSplash" path="./components/LoadingSplash.jsx" />
-      <SafeImport name="AuthProvider" path="./context/Authcontext.jsx" />
-      <SafeImport name="ProfilePage" path="./Pages/ProfilePage.jsx" />
-      <SafeImport name="MessagesPage" path="./Pages/MessagesPage.jsx" />
-      <SafeImport name="AdminLogin" path="./Admin/AdminLogin.jsx" />
-      <SafeImport name="AdminLayout" path="./Admin/AdminLayout.jsx" />
-      <SafeImport name="ProtectedRoute" path="./components/ProtectedRoute.jsx" />
-    </div>
-  );
-}
+// ✅ Root element
+const rootElement = document.getElementById("root");
+const root = createRoot(rootElement);
 
 root.render(
   <React.StrictMode>
-    <TestImports />
+    {/* ✅ Everything wrapped in splash */}
+    <LoadingSplash>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<ProfilePage />} />
+            <Route path="/messages" element={<MessagesPage />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/admin" element={<AdminLayout />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </LoadingSplash>
   </React.StrictMode>
 );
