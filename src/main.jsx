@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LoadingSplash from "./components/LoadingSplash";
 import { AuthProvider } from "./context/Authcontext";
-import MessagesPage from "./Pages/MessagesPage";
+import AdminLogin from "./Admin/AdminLogin";
 
 const root = createRoot(document.getElementById("root"));
 
@@ -13,7 +13,7 @@ root.render(
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<MessagesPage />} />
+            <Route path="/" element={<AdminLogin />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>
