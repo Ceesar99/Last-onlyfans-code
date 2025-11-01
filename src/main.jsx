@@ -1,12 +1,13 @@
 import React from "react";
-import ReactDOM from "react-dom/client";
+import { createRoot } from "react-dom/client";
 
-function Main() {
+function Test() {
   return (
-    <div style={{ color: "black", textAlign: "center", marginTop: "50px" }}>
-      🧠 Main component loaded successfully!
+    <div style={{ textAlign: "center", padding: "50px" }}>
+      <h1>Step 1 ✅ React + Root works</h1>
     </div>
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<Main />);
+const root = createRoot(document.getElementById("root"));
+root.render(<Test />);
