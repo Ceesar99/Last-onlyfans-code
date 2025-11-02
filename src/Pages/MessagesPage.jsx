@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Camera, Image as Gallery, Mic, Send, ArrowLeft } from "lucide-react";
-
+import supabase from "../supabaseclient";
 /**
  * Notes:
  * - Expects localStorage.creator_handle (e.g. "@taylerhillxxx") and localStorage.user_email to be set.
