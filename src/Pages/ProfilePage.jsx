@@ -536,7 +536,7 @@ export default function SafeProfileMock() {
           id: row.id || prev.id,
           created_at: row.created_at || prev.created_at
         })
-      })
+      ))
       .subscribe();
 
     } catch (e) {
