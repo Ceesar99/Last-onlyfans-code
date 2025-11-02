@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import ModalPortal from "../component/ModalPortal";
-import SubscriptionModal from "../component/SubcriptionModal";
+
 // frontend supabase client (assumes default export)
 
 const FREE_SAMPLE_LS_KEY = "freeSampleAccess_v1";
