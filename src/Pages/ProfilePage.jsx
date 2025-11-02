@@ -323,6 +323,8 @@ export default function SafeProfileMock() {
 
         if (postsError) {
           console.error("Supabase posts error:", postsError);
+          if (mounted) setPostsLoading(false);
+          return;
         } else if (mounted && Array.isArray(postsData)) {
           // Load persisted like counts
           let persistedLikes = {};
