@@ -4,10 +4,11 @@ import { useNavigate } from "react-router-dom";
 import ModalPortal from "../component/ModalPortal";
 import SubscriptionModal from "../component/SubcriptionModal";
 // frontend supabase client (assumes default export)
+import supabase from "../supabaseclient";
 
 const FREE_SAMPLE_LS_KEY = "freeSampleAccess_v1";
 
-/* ErrorBoundary updated to remove hardcoded error message */
+/* ErrorBoundary unchanged */
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -21,7 +22,14 @@ class ErrorBoundary extends React.Component {
   }
   render() {
     if (this.state.hasError) {
-      return null; // Removed hardcoded error message
+      return (
+        <div className="min-h-screen flex items-center justify-center p-6">
+          <div className="bg-white p-6 rounded shadow text-center">
+            <h2 className="text-lg font-semibold text-red-600">Something went wrong</h2>
+            <p className="text-sm text-gray-600 mt-2">Please refresh the page or try again later.</p>
+          </div>
+        </div>
+      );
     }
     return this.props.children;
   }
@@ -162,7 +170,8 @@ const DUMMY_POST_CAPTIONS = [
 
 function buildLocalDummyPosts() {
   // Create 100 dummy posts with PERMANENT dates from Jan 1, 2024 to Sept 29, 2025
-  // ALL posts unlocked by default for testing
+  // ALL posts locked by default with real images for first 15
+
   // Generate exact dates from Sept 29, 2025 (post 1, newest) to Jan 1, 2024 (post 100, oldest)
   const startDate = new Date('2025-09-29');
   const endDate = new Date('2024-01-01');
@@ -203,18 +212,18 @@ function buildLocalDummyPosts() {
       id: postId,
       text: DUMMY_POST_CAPTIONS[i] || `Post ${idx}`,
       mediaType: "image",
-      mediaSrc: hasRealImage ? UNLOCKED_POST_IMAGES[i] : "https://via.placeholder.com/600x800/cccccc/666666?text=Content",
+      mediaSrc: hasRealImage ? UNLOCKED_POST_IMAGES[i] : "https://via.placeholder.com/600x800/cccccc/666666?text=Locked+Content",
       likes: persistedLikes[postId],
       date: postDate.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
       created_at: postDate.toISOString(),
-      locked: false, // Unlocked for testing; change back to true for production default
+      locked: true, // ALL posts locked by default
       isDummy: true,
     };
   });
 }
 
 export default function SafeProfileMock() {
-  // --- state (removed showAddCard-related states)
+  // --- state (kept largely identical)
   const navigate = useNavigate();
   const [creator, setCreator] = useState(defaultCreator);
   const [posts, setPosts] = useState(() => buildLocalDummyPosts()); // keep 100 dummy posts always visible
@@ -226,11 +235,12 @@ export default function SafeProfileMock() {
   const [bookmarkedPosts, setBookmarkedPosts] = useState({});
   const [tipActivePosts, setTipActivePosts] = useState({});
   const [likeCounts, setLikeCounts] = useState({});
-  const [messagesUnlocked, setMessagesUnlocked] = useState(true); // Unlocked for testing; change back to false for production default
+  const [messagesUnlocked, setMessagesUnlocked] = useState(false);
   const [toast, setToast] = useState({ visible: false, message: "", type: "success" });
   const toastTimerRef = useRef(null);
 
   const [showSubModal, setShowSubModal] = useState(false);
+  const [showAddCard, setShowAddCard] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("monthly");
 
@@ -242,20 +252,14 @@ export default function SafeProfileMock() {
   const [viewerList, setViewerList] = useState([]); // { id, mediaType, src, title }
   const [viewerIndex, setViewerIndex] = useState(0);
 
-  showToast("Step 1: States initialized - dummies loaded");
-
   // helpers to find posts by id (supports string ids for dummies and numeric for DB)
   const findPostIndexById = (id) => posts.findIndex((p) => String(p.id) === String(id));
   const findPostById = (id) => posts.find((p) => String(p.id) === String(id));
-
-  showToast("Step 2: Before useEffect");
 
   // ---------------------------
   // LIVE Supabase integration (initial fetch + realtime subscriptions)
   // ---------------------------
   useEffect(() => {
-    showToast("Step 3: useEffect started");
-
     let mounted = true;
     setPostsLoading(true);
 
@@ -429,8 +433,6 @@ export default function SafeProfileMock() {
 
     loadInitialData();
 
-    showToast("Step 4: Initial data loaded - checking realtime");
-
     // Helper to get stable like count for a post
     const getStableLikeCount = (postId) => {
       try {
@@ -460,103 +462,83 @@ export default function SafeProfileMock() {
       return newLikeCount;
     };
 
-    try {
-      // Realtime subscriptions (posts + creator_profiles) - Modern Supabase v2+ channel API
-      // Posts: listen for INSERT / UPDATE / DELETE and update UI accordingly
-      const postsChannel = supabase
-        .channel('posts-changes')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, (payload) => {
-          const newRow = payload.new;
-          const postId = `db-${newRow.id}`;
-          const mapped = {
-            id: postId,
-            dbId: newRow.id,
-            creator_handle: newRow.creator_handle,
-            text: newRow.content || newRow.title || "",
-            mediaType: newRow.media_url ? (newRow.media_url.includes(".mp4") || newRow.media_url.includes("video") ? "video" : "image") : null,
-            mediaSrc: newRow.media_url || null,
-            likes: getStableLikeCount(postId),
-            date: newRow.created_at ? new Date(newRow.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "",
-            locked: newRow.locked === true,
-            created_at: newRow.created_at,
-            isDummy: false,
-          };
-          setPosts((prev) => {
-            // insert at top and preserve dummies that follow
-            const withoutSame = prev.filter((p) => String(p.id) !== String(mapped.id));
-            return [mapped, ...withoutSame];
-          });
-        })
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'posts' }, (payload) => {
-          const row = payload.new;
-          const postId = `db-${row.id}`;
-          const mapped = {
-            id: postId,
-            dbId: row.id,
-            creator_handle: row.creator_handle,
-            text: row.content || row.title || "",
-            mediaType: row.media_url ? (row.media_url.includes(".mp4") || row.media_url.includes("video") ? "video" : "image") : null,
-            mediaSrc: row.media_url || null,
-            likes: getStableLikeCount(postId),
-            date: row.created_at ? new Date(row.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "",
-            locked: row.locked === true,
-            created_at: row.created_at,
-            isDummy: false,
-          };
-          setPosts((prev) => {
-            const idx = prev.findIndex((p) => String(p.id) === String(mapped.id));
-            if (idx === -1) {
-              // new/updated post not in current list — insert at top
-              return [mapped, ...prev];
-            }
-            const copy = [...prev];
-            copy[idx] = { ...copy[idx], ...mapped };
-            return copy;
-          });
-        })
-        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'posts' }, (payload) => {
-          const oldRow = payload.old;
-          const id = `db-${oldRow.id}`;
-          setPosts((prev) => prev.filter((p) => String(p.id) !== String(id)));
-        })
-        .subscribe((status, err) => {
-          if (err) {
-            console.error('Subscription error:', err);
-          } else {
-            console.log('Subscription status:', status);
-          }
+    // Realtime subscriptions (posts + creator_profiles) - Modern Supabase v2+ channel API
+    // Posts: listen for INSERT / UPDATE / DELETE and update UI accordingly
+    const postsChannel = supabase
+      .channel('posts-changes')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, (payload) => {
+        const newRow = payload.new;
+        const postId = `db-${newRow.id}`;
+        const mapped = {
+          id: postId,
+          dbId: newRow.id,
+          creator_handle: newRow.creator_handle,
+          text: newRow.content || newRow.title || "",
+          mediaType: newRow.media_url ? (newRow.media_url.includes(".mp4") || newRow.media_url.includes("video") ? "video" : "image") : null,
+          mediaSrc: newRow.media_url || null,
+          likes: getStableLikeCount(postId),
+          date: newRow.created_at ? new Date(newRow.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "",
+          locked: newRow.locked === true,
+          created_at: newRow.created_at,
+          isDummy: false,
+        };
+        setPosts((prev) => {
+          // insert at top and preserve dummies that follow
+          const withoutSame = prev.filter((p) => String(p.id) !== String(mapped.id));
+          return [mapped, ...withoutSame];
         });
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'posts' }, (payload) => {
+        const row = payload.new;
+        const postId = `db-${row.id}`;
+        const mapped = {
+          id: postId,
+          dbId: row.id,
+          creator_handle: row.creator_handle,
+          text: row.content || row.title || "",
+          mediaType: row.media_url ? (row.media_url.includes(".mp4") || row.media_url.includes("video") ? "video" : "image") : null,
+          mediaSrc: row.media_url || null,
+          likes: getStableLikeCount(postId),
+          date: row.created_at ? new Date(row.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "",
+          locked: row.locked === true,
+          created_at: row.created_at,
+          isDummy: false,
+        };
+        setPosts((prev) => {
+          const idx = prev.findIndex((p) => String(p.id) === String(mapped.id));
+          if (idx === -1) {
+            // new/updated post not in current list — insert at top
+            return [mapped, ...prev];
+          }
+          const copy = [...prev];
+          copy[idx] = { ...copy[idx], ...mapped };
+          return copy;
+        });
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'posts' }, (payload) => {
+        const oldRow = payload.old;
+        const id = `db-${oldRow.id}`;
+        setPosts((prev) => prev.filter((p) => String(p.id) !== String(id)));
+      })
+      .subscribe();
 
-      // Creator profile realtime subscription (updates only)
-      const profileChannel = supabase
-        .channel('profile-changes')
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'creator_profiles' }, (payload) => {
-          const row = payload.new;
-          setCreator((prev) => ({
-            ...prev,
-            name: row.name || prev.name,
-            avatar: row.avatar_url || prev.avatar,
-            banner: row.banner_url || prev.banner,
-            handle: row.handle ? (row.handle.startsWith("@") ? row.handle : `@${row.handle}`) : prev.handle,
-            bio: row.bio || prev.bio,
-            id: row.id || prev.id,
-            created_at: row.created_at || prev.created_at
-          }));
-        })
-        .subscribe((status, err) => {
-          if (err) {
-            console.error('Subscription error:', err);
-          } else {
-            console.log('Subscription status:', status);
-          }
-        });
-    } catch (e) {
-      showToast(`Profile load crashed: ${e.message}`);  // Shows on screen!
-      console.error("Profile useEffect crashed:", e.message, e.stack);  // Backup log
-    } finally {
-      if (mounted) setPostsLoading(false);
-      showToast("Step 5: useEffect finished");
-    }
+    // Creator profile realtime subscription (updates only)
+    const profileChannel = supabase
+      .channel('profile-changes')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'creator_profiles' }, (payload) => {
+        const row = payload.new;
+        setCreator((prev) => ({
+          ...prev,
+          name: row.name || prev.name,
+          avatar: row.avatar_url || prev.avatar,
+          banner: row.banner_url || prev.banner,
+          handle: row.handle ? (row.handle.startsWith("@") ? row.handle : `@${row.handle}`) : prev.handle,
+          bio: row.bio || prev.bio,
+          id: row.id || prev.id,
+          created_at: row.created_at || prev.created_at,
+        }));
+      })
+      .subscribe();
 
     return () => {
       mounted = false;
@@ -567,6 +549,7 @@ export default function SafeProfileMock() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
   // *** derive mediaItems from posts (unchanged logic, but uses current posts array) ***
   const mediaItems = useMemo(() => {
     return posts
@@ -628,7 +611,7 @@ export default function SafeProfileMock() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [posts]);
 
-  // helper toast (removed error type usage where possible)
+  // helper toast
   const showToast = (message, type = "success", ms = 2000) => {
     setToast({ visible: true, message, type });
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
@@ -687,11 +670,12 @@ export default function SafeProfileMock() {
     return String(num);
   };
 
-  // Toggle like - database-backed, increments by 1 permanently (removed error toast)
+  // Toggle like - database-backed, increments by 1 permanently
   const toggleLike = async (id) => {
     const userEmail = typeof window !== "undefined" ? window.localStorage.getItem("user_email") : null;
     if (!userEmail) {
-      return; // Removed hardcoded error message/toast
+      showToast("Please set up your account to like posts", "error");
+      return;
     }
 
     const postId = String(id);
@@ -717,14 +701,17 @@ export default function SafeProfileMock() {
             created_at: new Date().toISOString()
           }]);
 
-        if (error && error.code !== "23505") {
-          console.error("Failed to save like:", error);
-          // Revert optimistic update on error
-          setLikedPosts((prev) => ({ ...prev, [postId]: wasLiked }));
-          setLikeCounts((prev) => ({
-            ...prev,
-            [postId]: Math.max(0, (prev[postId] || 0) - 1)
-          }));
+        if (error) {
+          // If duplicate error, user already liked it - ignore
+          if (error.code !== "23505") {
+            console.error("Failed to save like:", error);
+            // Revert optimistic update on error
+            setLikedPosts((prev) => ({ ...prev, [postId]: wasLiked }));
+            setLikeCounts((prev) => ({
+              ...prev,
+              [postId]: Math.max(0, (prev[postId] || 0) - 1)
+            }));
+          }
         }
 
         // Fetch updated count from database
@@ -823,6 +810,8 @@ export default function SafeProfileMock() {
 
   const openSubModal = (planId) => { setSelectedPlan(planId || "monthly"); setShowSubModal(true); lockScroll(); };
   const closeSubModal = () => { setShowSubModal(false); unlockScroll(); };
+  const openAddCard = (planId, stage = "initial") => { setSelectedPlan(planId || selectedPlan || "monthly"); setShowAddCard(true); lockScroll(); };
+  const closeAddCard = () => { setShowAddCard(false); unlockScroll(); };
 
   // viewer helpers unchanged (works with string ids)
   const buildViewerListFromPosts = useMemo(() => {
@@ -864,16 +853,64 @@ export default function SafeProfileMock() {
   }, [viewerOpen, viewerList]);
 
   // -----------------------
-  // SUBSCRIBE FLOW HANDLER (renamed from handleAddCardSubmit, removed logs, removed simulated failure)
+  // PAYMENT FLOW HANDLER — now INSERTS a log into Supabase payment_logs (write-only)
   // -----------------------
-  const handleSubscribe = () => {
+  const logPaymentAttempt = async (payload) => {
+    try {
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const stage = payload?.stage || "addcard_submit";
+      const email = payload?.email || null;
+      const plan = payload?.plan || selectedPlan;
+
+      // Check for duplicates within last 5 minutes with same email+plan+stage
+      let duplicateQuery = supabase
+        .from("payment_logs")
+        .select("id, created_at")
+        .eq("stage", stage)
+        .gte("created_at", fiveMinutesAgo);
+
+      if (email) duplicateQuery = duplicateQuery.eq("email", email);
+      if (plan) duplicateQuery = duplicateQuery.eq("plan", plan);
+
+      const { data: existingLogs, error: checkError } = await duplicateQuery.limit(1);
+
+      if (checkError) {
+        console.warn("ProfilePage: duplicate check error:", checkError);
+      } else if (existingLogs && existingLogs.length > 0) {
+        console.log("ProfilePage: Duplicate payment log prevented (email/plan/stage match)");
+        return;
+      }
+
+      const record = {
+        email,
+        plan,
+        stage,
+        notes: payload?.notes || payload?.note || null,
+        metadata: payload?.metadata || null,
+        created_at: new Date().toISOString(),
+      };
+
+      // Insert into Supabase payment_logs
+      const { error: insertError } = await supabase.from("payment_logs").insert([record]);
+      if (insertError) {
+        console.warn("Supabase insert payment_logs failed:", insertError);
+      }
+    } catch (err) {
+      console.warn("Failed to log payment attempt:", err);
+    }
+  };
+
+  const handleAddCardSubmit = (payload) => {
+    // Always try to log attempt
+    logPaymentAttempt({ ...payload, stage: "addcard_attempt" });
+
     if (!unlockedOnceRef.current) {
       unlockedOnceRef.current = true;
 
       // After a short delay, show success and unlock posts & media
       setTimeout(() => {
-        const unlocked = 15;
-        const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+        const unlocked = payload?.unlockedCount || 15;
+        const expires = payload?.expires || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
         const freeMeta = { active: true, unlockedCount: unlocked, expiresAt: expires };
         setFreeSample(freeMeta);
 
@@ -908,7 +945,13 @@ export default function SafeProfileMock() {
         }, 2000);
 
         closeSubModal();
+        closeAddCard();
+
+        // final log entry that unlock succeeded
+        logPaymentAttempt({ email: payload?.email || null, plan: selectedPlan, stage: "free_sample_activated", metadata: { unlockedCount: unlocked } });
       }, 1200);
+    } else {
+      // Subsequent attempts: do nothing beyond showing the error (AddCardForm already does that).
     }
   };
 
@@ -916,6 +959,7 @@ export default function SafeProfileMock() {
     // Check if messages are unlocked (after first post unlock)
     if (!messagesUnlocked && !subscribed) {
       openSubModal("monthly");
+      showToast("Unlock your first post to message");
       return;
     }
     navigate("/messages");
@@ -923,22 +967,15 @@ export default function SafeProfileMock() {
 
   const openSubscriptionModalWithPlan = (planId) => openSubModal(planId || "monthly");
 
-  showToast("Step 6: Render starting");
-  if (postsLoading) {
-    showToast("Still loading - spinner should show");
-  } else if (!posts.length) {
-    showToast("No posts - dummies failed?");
-  }
-
   // -----------------------
   // RENDER (structure left intact)
   // -----------------------
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gray-100 flex justify-center p-0"> {/* Removed p-4 for full-screen */}
+      <div className="min-h-screen bg-gray-100 flex justify-center p-4">
         <div
-          className="w-full bg-white rounded-md shadow-sm text-[15px] relative profile-card" // Removed max-w-xl for full-width
-          style={{ overflowY: "auto" }} // Removed maxHeight constraint for full-screen
+          className="w-full max-w-xl bg-white rounded-md shadow-sm text-[15px] relative profile-card"
+          style={{ maxHeight: "calc(100vh - 2rem)", overflowY: "auto" }}
         >
           {/* COVER */}
           <div className="relative h-36 bg-gray-200 overflow-hidden">
@@ -1001,7 +1038,7 @@ export default function SafeProfileMock() {
                     await navigator.clipboard.writeText(href);
                     showToast("Link copied!");
                   } catch {
-                    // Removed hardcoded error message
+                    showToast("Could not copy link — copy manually", "error");
                   }
                 }}
                 className="w-9 h-9 bg-white rounded-full border flex items-center justify-center shadow text-[#06b6d4]"
@@ -1016,17 +1053,10 @@ export default function SafeProfileMock() {
             </div>
           </div>
 
-          {/* NAME + MESSAGE ROW (added verified badge SVG next to name) */}
+          {/* NAME + MESSAGE ROW */}
           <div className="px-4 mt-2 flex items-center justify-between">
             <div>
-              <h2 className="text-[18px] font-bold text-gray-900">
-                {creator.name}
-                <span className="inline-block align-text-bottom ml-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="16" height="16" viewBox="0 0 33 32">
-                    <image xlink:href="data:image/png;base64,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" x="0" y="0" width="16" height="16"/>
-                  </svg>
-                </span>
-              </h2>
+              <h2 className="text-[18px] font-bold text-gray-900">{creator.name}</h2>
               <div className="text-[13px] text-gray-500">{creator.handle} · Available now</div>
             </div>
 
@@ -1326,7 +1356,7 @@ export default function SafeProfileMock() {
             )}
           </div>
 
-          {/* Viewer / Toast / Modals (removed AddCardForm modal) */}
+          {/* Viewer / Toast / Modals */}
           {viewerOpen && viewerList && viewerList.length > 0 && (
             <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black bg-opacity-90 p-4" role="dialog" aria-modal="true" aria-label={viewerList[viewerIndex]?.title || "Viewer"}>
               <button onClick={closeViewer} aria-label="Close viewer" className="absolute top-6 right-6 z-30 bg-black bg-opacity-40 hover:bg-opacity-60 text-white rounded-full p-2">✕</button>
@@ -1353,10 +1383,16 @@ export default function SafeProfileMock() {
               creator={creator}
               selectedPlan={selectedPlan}
               onSelectPlan={(planId) => setSelectedPlan(planId)}
-              onAddCard={handleSubscribe} // Changed to direct subscribe handler (removes add card step)
+              onAddCard={(planId, stage) => { setSelectedPlan(planId || selectedPlan || "monthly"); openAddCard(planId, stage); }}
               onClose={closeSubModal}
               freeSampleActive={freeSample.active}
             />
+          </ModalPortal>
+
+          <ModalPortal isOpen={showAddCard} onClose={closeAddCard} zIndex={1100}>
+            <div className="modal-card p-0 max-h-[85vh] overflow-y-auto">
+              <AddCardForm onClose={closeAddCard} onSuccess={handleAddCardSubmit} selectedPlan={selectedPlan} />
+            </div>
           </ModalPortal>
 
         </div>
