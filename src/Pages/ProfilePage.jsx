@@ -522,23 +522,28 @@ export default function SafeProfileMock() {
       .subscribe();
 
     // Creator profile realtime subscription (updates only)
-    const profileChannel = supabase
-      .channel('profile-changes')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'creator_profiles' }, (payload) => {
-        const row = payload.new;
-        setCreator((prev) => ({
-          ...prev,
-          name: row.name || prev.name,
-          avatar: row.avatar_url || prev.avatar,
-          banner: row.banner_url || prev.banner,
-          handle: row.handle ? (row.handle.startsWith("@") ? row.handle : `@${row.handle}`) : prev.handle,
-          bio: row.bio || prev.bio,
-          id: row.id || prev.id,
-          created_at: row.created_at || prev.created_at
-        }));
-      })
-      .subscribe();
-
+const profileChannel = supabase
+  .channel('profile-changes')
+  .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'creator_profiles' }, (payload) => {
+    const row = payload.new;
+    setCreator((prev) => ({
+      ...prev,
+      name: row.name || prev.name,
+      avatar: row.avatar_url || prev.avatar,
+      banner: row.banner_url || prev.banner,
+      handle: row.handle ? (row.handle.startsWith("@") ? row.handle : `@${row.handle}`) : prev.handle,
+      bio: row.bio || prev.bio,
+      id: row.id || prev.id,
+      created_at: row.created_at || prev.created_at
+    }));
+  })
+  .subscribe((status, err) => {
+    if (err) {
+      console.error('Subscription error:', err);
+    } else {
+      console.log('Subscription status:', status);
+    }
+  });
     } catch (e) {
       showToast(`Profile load crashed: ${e.message}`);  // Shows on screen!
       console.error("Profile useEffect crashed:", e.message, e.stack);  // Backup log
