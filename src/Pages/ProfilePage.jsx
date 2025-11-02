@@ -12,17 +12,23 @@ const FREE_SAMPLE_LS_KEY = "freeSampleAccess_v1";
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, error: null };
   }
-  static getDerivedStateFromError() {
-    return { hasError: true };
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error: error };
   }
   componentDidCatch(error, info) {
     console.error("SafeProfileMock caught error:", error, info);
   }
   render() {
     if (this.state.hasError) {
-      return null; // Removed hardcoded error message
+      return (
+        <div style={{ padding: '20px', color: 'red' }}>
+          <h1>An error occurred in the profile page:</h1>
+          <p>{this.state.error.message}</p>
+          <pre>{this.state.error.stack}</pre> {/* Optional: shows stack trace */}
+        </div>
+      );
     }
     return this.props.children;
   }
