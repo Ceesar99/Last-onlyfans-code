@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/Authcontext";
 import { useNavigate } from "react-router-dom";
 import { LogOut, Upload, Plus, Save, Menu } from "lucide-react";
-import supabase from "../supabaseclient";
+
 
 /**
  * AdminLayout - Fully serverless with direct Supabase integration
