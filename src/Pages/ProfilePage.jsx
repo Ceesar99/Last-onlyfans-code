@@ -1,5 +1,6 @@
-// ProfilePage.jsx - STEP 2: Basic Structure
-import React, { useState } from "react";
+// ProfilePage.jsx - STEP 3: Add Supabase Safely
+import React, { useState, useEffect } from "react";
+import supabase from "../supabaseclient";
 
 const defaultCreator = {
   name: "Tayler Hills",
@@ -10,30 +11,114 @@ const defaultCreator = {
 };
 
 const dummyPosts = [
-  {
-    id: "dummy-1",
-    text: "Test post 1",
-    date: "Nov 1",
-    likes: 1500,
-  },
-  {
-    id: "dummy-2", 
-    text: "Test post 2",
-    date: "Nov 2",
-    likes: 2000,
-  }
+  { id: "dummy-1", text: "Test post 1", date: "Nov 1", likes: 1500, isDummy: true },
+  { id: "dummy-2", text: "Test post 2", date: "Nov 2", likes: 2000, isDummy: true },
+  { id: "dummy-3", text: "Test post 3", date: "Nov 3", likes: 2500, isDummy: true },
 ];
 
 export default function ProfilePage() {
-  const [creator] = useState(defaultCreator);
-  const [posts] = useState(dummyPosts);
+  const [creator, setCreator] = useState(defaultCreator);
+  const [posts, setPosts] = useState(dummyPosts);
   const [activeTab, setActiveTab] = useState("posts");
   const [bioExpanded, setBioExpanded] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [supabaseStatus, setSupabaseStatus] = useState("Loading...");
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadData = async () => {
+      try {
+        setSupabaseStatus("Attempting to connect to Supabase...");
+        
+        // Test 1: Try to fetch creator profile
+        try {
+          const { data: profileData, error: profileError } = await supabase
+            .from("creator_profiles")
+            .select("id, handle, name, bio, avatar_url, banner_url")
+            .eq("handle", "taylerhillxxx")
+            .maybeSingle();
+
+          if (profileError) {
+            setSupabaseStatus("Profile fetch error: " + profileError.message);
+            console.error("Profile error:", profileError);
+          } else if (profileData && mounted) {
+            setSupabaseStatus("Profile loaded successfully ✅");
+            setCreator((prev) => ({
+              ...prev,
+              name: profileData.name || prev.name,
+              avatar: profileData.avatar_url || prev.avatar,
+              banner: profileData.banner_url || prev.banner,
+              handle: profileData.handle ? `@${profileData.handle}` : prev.handle,
+              bio: profileData.bio || prev.bio,
+            }));
+          } else {
+            setSupabaseStatus("No profile data found (using defaults)");
+          }
+        } catch (profileErr) {
+          setSupabaseStatus("Profile fetch failed: " + profileErr.message);
+          console.error("Profile catch:", profileErr);
+        }
+
+        // Test 2: Try to fetch posts
+        try {
+          const { data: postsData, error: postsError } = await supabase
+            .from("posts")
+            .select("id, creator_handle, title, content, media_url, locked, created_at")
+            .eq("creator_handle", "taylerhillxxx")
+            .order("created_at", { ascending: false })
+            .limit(10);
+
+          if (postsError) {
+            setSupabaseStatus("Posts fetch error: " + postsError.message);
+            console.error("Posts error:", postsError);
+          } else if (mounted && Array.isArray(postsData) && postsData.length > 0) {
+            setSupabaseStatus("Posts loaded: " + postsData.length + " posts ✅");
+            
+            const mappedPosts = postsData.map((post) => ({
+              id: `db-${post.id}`,
+              text: post.content || post.title || "",
+              date: post.created_at ? new Date(post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "",
+              likes: Math.floor(Math.random() * 5000),
+              locked: post.locked === true,
+              isDummy: false,
+            }));
+
+            setPosts((prev) => [...mappedPosts, ...prev]);
+          } else {
+            setSupabaseStatus("No posts found (using dummy data)");
+          }
+        } catch (postsErr) {
+          setSupabaseStatus("Posts fetch failed: " + postsErr.message);
+          console.error("Posts catch:", postsErr);
+        }
+
+      } catch (err) {
+        setSupabaseStatus("General error: " + err.message);
+        console.error("General error:", err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    loadData();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100 flex justify-center p-4">
       <div className="w-full max-w-xl bg-white rounded-md shadow-sm text-[15px]" style={{ maxHeight: "calc(100vh - 2rem)", overflowY: "auto" }}>
         
+        {/* STATUS BANNER (for debugging) */}
+        <div className="bg-blue-100 border-b border-blue-300 p-3 text-xs">
+          <div className="font-semibold">Supabase Status:</div>
+          <div className="text-blue-700">{supabaseStatus}</div>
+          <div className="mt-1">Posts shown: {posts.length} ({posts.filter(p => !p.isDummy).length} from DB, {posts.filter(p => p.isDummy).length} dummy)</div>
+        </div>
+
         {/* COVER */}
         <div className="relative h-36 bg-gray-200 overflow-hidden">
           <img src={creator.banner} alt="banner" className="w-full h-full object-cover" />
@@ -126,7 +211,11 @@ export default function ProfilePage() {
                     <div className="flex-1">
                       <div>
                         <div className="font-semibold text-[14px] text-gray-900">{creator.name}</div>
-                        <div className="text-[12px] text-gray-500">{creator.handle} · {p.date}</div>
+                        <div className="text-[12px] text-gray-500">
+                          {creator.handle} · {p.date}
+                          {p.isDummy && <span className="ml-2 text-orange-500">(Dummy)</span>}
+                          {!p.isDummy && <span className="ml-2 text-green-500">(DB)</span>}
+                        </div>
                       </div>
                       <p className="mt-2 text-[14px] text-gray-800">{p.text}</p>
                       <div className="mt-3 flex items-center gap-4 text-gray-500 text-[13px]">
