@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import ModalPortal from "../component/ModalPortal";
 import SubscriptionModal from "../component/SubcriptionModal";
 // frontend supabase client (assumes default export)
-
+import supabase from "../supabaseclient";
 
 const FREE_SAMPLE_LS_KEY = "freeSampleAccess_v1";
 
@@ -257,7 +257,9 @@ export default function SafeProfileMock() {
   // LIVE Supabase integration (initial fetch + realtime subscriptions)
   // ---------------------------
   useEffect(() => {
-    let mounted = true;
+  let mounted = true;
+  try {
+    // --- Your original code starts here ---
     setPostsLoading(true);
 
     if (typeof window !== "undefined" && window.localStorage) {
@@ -537,15 +539,23 @@ export default function SafeProfileMock() {
       })
       .subscribe();
 
-    return () => {
-      mounted = false;
-      // unsubscribe channels
-      supabase.removeChannel(postsChannel);
-      supabase.removeChannel(profileChannel);
-      clearSilentCountdown();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    // --- Your original code ends here ---
+  } catch (e) {
+    showToast(`Profile load crashed: ${e.message}`);  // Shows on screen!
+    console.error("Profile useEffect crashed:", e.message, e.stack);  // Backup log
+  } finally {
+    if (mounted) setPostsLoading(false);
+  }
+
+  return () => {
+    mounted = false;
+    // unsubscribe channels
+    supabase.removeChannel(postsChannel);
+    supabase.removeChannel(profileChannel);
+    clearSilentCountdown();
+  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
 
   // *** derive mediaItems from posts (unchanged logic, but uses current posts array) ***
   const mediaItems = useMemo(() => {
