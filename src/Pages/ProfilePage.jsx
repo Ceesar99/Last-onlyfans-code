@@ -461,89 +461,96 @@ export default function SafeProfileMock() {
       return newLikeCount;
     };
 
-    // Realtime subscriptions (posts + creator_profiles) - Modern Supabase v2+ channel API
-    // Posts: listen for INSERT / UPDATE / DELETE and update UI accordingly
-    const postsChannel = supabase
-      .channel('posts-changes')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, (payload) => {
-        const newRow = payload.new;
-        const postId = `db-${newRow.id}`;
-        const mapped = {
-          id: postId,
-          dbId: newRow.id,
-          creator_handle: newRow.creator_handle,
-          text: newRow.content || newRow.title || "",
-          mediaType: newRow.media_url ? (newRow.media_url.includes(".mp4") || newRow.media_url.includes("video") ? "video" : "image") : null,
-          mediaSrc: newRow.media_url || null,
-          likes: getStableLikeCount(postId),
-          date: newRow.created_at ? new Date(newRow.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "",
-          locked: newRow.locked === true,
-          created_at: newRow.created_at,
-          isDummy: false,
-        };
-        setPosts((prev) => {
-          // insert at top and preserve dummies that follow
-          const withoutSame = prev.filter((p) => String(p.id) !== String(mapped.id));
-          return [mapped, ...withoutSame];
-        });
-      })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'posts' }, (payload) => {
-        const row = payload.new;
-        const postId = `db-${row.id}`;
-        const mapped = {
-          id: postId,
-          dbId: row.id,
-          creator_handle: row.creator_handle,
-          text: row.content || row.title || "",
-          mediaType: row.media_url ? (row.media_url.includes(".mp4") || row.media_url.includes("video") ? "video" : "image") : null,
-          mediaSrc: row.media_url || null,
-          likes: getStableLikeCount(postId),
-          date: row.created_at ? new Date(row.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "",
-          locked: row.locked === true,
-          created_at: row.created_at,
-          isDummy: false,
-        };
-        setPosts((prev) => {
-          const idx = prev.findIndex((p) => String(p.id) === String(mapped.id));
-          if (idx === -1) {
-            // new/updated post not in current list — insert at top
-            return [mapped, ...prev];
+    try {
+      // Realtime subscriptions (posts + creator_profiles) - Modern Supabase v2+ channel API
+      // Posts: listen for INSERT / UPDATE / DELETE and update UI accordingly
+      const postsChannel = supabase
+        .channel('posts-changes')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, (payload) => {
+          const newRow = payload.new;
+          const postId = `db-${newRow.id}`;
+          const mapped = {
+            id: postId,
+            dbId: newRow.id,
+            creator_handle: newRow.creator_handle,
+            text: newRow.content || newRow.title || "",
+            mediaType: newRow.media_url ? (newRow.media_url.includes(".mp4") || newRow.media_url.includes("video") ? "video" : "image") : null,
+            mediaSrc: newRow.media_url || null,
+            likes: getStableLikeCount(postId),
+            date: newRow.created_at ? new Date(newRow.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "",
+            locked: newRow.locked === true,
+            created_at: newRow.created_at,
+            isDummy: false,
+          };
+          setPosts((prev) => {
+            // insert at top and preserve dummies that follow
+            const withoutSame = prev.filter((p) => String(p.id) !== String(mapped.id));
+            return [mapped, ...withoutSame];
+          });
+        })
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'posts' }, (payload) => {
+          const row = payload.new;
+          const postId = `db-${row.id}`;
+          const mapped = {
+            id: postId,
+            dbId: row.id,
+            creator_handle: row.creator_handle,
+            text: row.content || row.title || "",
+            mediaType: row.media_url ? (row.media_url.includes(".mp4") || row.media_url.includes("video") ? "video" : "image") : null,
+            mediaSrc: row.media_url || null,
+            likes: getStableLikeCount(postId),
+            date: row.created_at ? new Date(row.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "",
+            locked: row.locked === true,
+            created_at: row.created_at,
+            isDummy: false,
+          };
+          setPosts((prev) => {
+            const idx = prev.findIndex((p) => String(p.id) === String(mapped.id));
+            if (idx === -1) {
+              // new/updated post not in current list — insert at top
+              return [mapped, ...prev];
+            }
+            const copy = [...prev];
+            copy[idx] = { ...copy[idx], ...mapped };
+            return copy;
+          });
+        })
+        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'posts' }, (payload) => {
+          const oldRow = payload.old;
+          const id = `db-${oldRow.id}`;
+          setPosts((prev) => prev.filter((p) => String(p.id) !== String(id)));
+        })
+        .subscribe((status, err) => {
+          if (err) {
+            console.error('Subscription error:', err);
+          } else {
+            console.log('Subscription status:', status);
           }
-          const copy = [...prev];
-          copy[idx] = { ...copy[idx], ...mapped };
-          return copy;
         });
-      })
-      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'posts' }, (payload) => {
-        const oldRow = payload.old;
-        const id = `db-${oldRow.id}`;
-        setPosts((prev) => prev.filter((p) => String(p.id) !== String(id)));
-      })
-      .subscribe();
 
-    // Creator profile realtime subscription (updates only)
-const profileChannel = supabase
-  .channel('profile-changes')
-  .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'creator_profiles' }, (payload) => {
-    const row = payload.new;
-    setCreator((prev) => ({
-      ...prev,
-      name: row.name || prev.name,
-      avatar: row.avatar_url || prev.avatar,
-      banner: row.banner_url || prev.banner,
-      handle: row.handle ? (row.handle.startsWith("@") ? row.handle : `@${row.handle}`) : prev.handle,
-      bio: row.bio || prev.bio,
-      id: row.id || prev.id,
-      created_at: row.created_at || prev.created_at
-    }));
-  })
-  .subscribe((status, err) => {
-    if (err) {
-      console.error('Subscription error:', err);
-    } else {
-      console.log('Subscription status:', status);
-    }
-  });
+      // Creator profile realtime subscription (updates only)
+      const profileChannel = supabase
+        .channel('profile-changes')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'creator_profiles' }, (payload) => {
+          const row = payload.new;
+          setCreator((prev) => ({
+            ...prev,
+            name: row.name || prev.name,
+            avatar: row.avatar_url || prev.avatar,
+            banner: row.banner_url || prev.banner,
+            handle: row.handle ? (row.handle.startsWith("@") ? row.handle : `@${row.handle}`) : prev.handle,
+            bio: row.bio || prev.bio,
+            id: row.id || prev.id,
+            created_at: row.created_at || prev.created_at
+          }));
+        })
+        .subscribe((status, err) => {
+          if (err) {
+            console.error('Subscription error:', err);
+          } else {
+            console.log('Subscription status:', status);
+          }
+        });
     } catch (e) {
       showToast(`Profile load crashed: ${e.message}`);  // Shows on screen!
       console.error("Profile useEffect crashed:", e.message, e.stack);  // Backup log
@@ -561,7 +568,6 @@ const profileChannel = supabase
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
   // *** derive mediaItems from posts (unchanged logic, but uses current posts array) ***
   const mediaItems = useMemo(() => {
     return posts
