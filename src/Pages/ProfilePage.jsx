@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 // TRY IMPORTING ONE AT A TIME - COMMENT OUT THE OTHERS
 import ModalPortal from "../component/ModalPortal";
-// import SubscriptionModal from "../component/SubcriptionModal";
+import SubscriptionModal from "../component/SubcriptionModal";
 // import AddCardForm from "../component/AddCardForm";
 
 const defaultCreator = {
