@@ -1,5 +1,4 @@
 // ProfilePage.jsx - FINAL WORKING VERSION
-import React, { useEffect, useRef, useState, useMemo } from "react";
 
 const FREE_SAMPLE_LS_KEY = "freeSampleAccess_v1";
 
