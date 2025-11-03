@@ -1,226 +1,160 @@
-// ProfilePage.jsx - FINAL WORKING VERSION
-
-const FREE_SAMPLE_LS_KEY = "freeSampleAccess_v1";
-
-class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false };
-  }
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-  componentDidCatch(error, info) {
-    console.error("ErrorBoundary caught:", error, info);
-  }
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="min-h-screen flex items-center justify-center p-6">
-          <div className="bg-white p-6 rounded shadow text-center">
-            <h2 className="text-lg font-semibold text-red-600">Something went wrong</h2>
-            <p className="text-sm text-gray-600 mt-2">Please refresh the page</p>
-          </div>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
-
-const defaultCreator = {
-  name: "Tayler Hills",
-  avatar: "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760699188347-6c2tnk-images%20(9).jpeg",
-  banner: "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760699444010-y1kcnl-Screenshot_20251017-121026.jpg",
-  handle: "@taylerhillxxx",
-  bio: "Hi 😊 I'm your favorite 19 year old & I love showing all of ME for your pleasure; ) you'll love it here! 🍆💦 Message me 👆 for daily nudes and videos in the feed ✨",
-};
-
-const UNLOCKED_POST_IMAGES = [
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760742247894-wuga4b-tayler-hills-onlyfans-7su4i-72.jpeg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760701141796-9roite-Screenshot_20251017-123357.jpg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760701111671-4eu428-Screenshot_20251017-123512.jpg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760700680072-2a7llr-Screenshot_20251017-122943.jpg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760700668201-t5di54-Screenshot_20251017-123004.jpg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760700654730-rd1q1r-Screenshot_20251017-123038.jpg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760700520296-72yuih-Screenshot_20251017-122523.jpg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760700501860-hqck9r-Screenshot_20251017-122548.jpg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760700484556-w30efh-Screenshot_20251017-122714.jpg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760702951815-0j3vd8-Screenshot_20251017-130712.jpg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760702918793-4ks6tl-Screenshot_20251017-130803.jpg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760722413191-rkpgx9-Screenshot_20251017-182707.jpg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760722436108-036d59-Screenshot_20251017-182631.jpg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760701157281-3gg60s-Screenshot_20251017-123330.jpg",
-  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760703032076-85uy0r-Screenshot_20251017-130610.jpg",
-];
-
-const DUMMY_POST_CAPTIONS = [
-  "Come closer, I've got secrets that'll make you blush... and beg for more. 😏",
-  "This dress is tight, but my thoughts about you are even tighter. Want a peek? 🔥",
-  "Sipping on something sweet, but nothing compares to the taste of temptation. 🍷",
-  "Curves ahead—handle with care, or don't... I like it rough. 😉",
-  "Whisper your fantasies in my ear, and I'll make them reality. 💋",
-  "Feeling naughty today. What's your wildest desire? 🌶️",
-  "This lingerie is just a tease. Unlock the full show? 🗝️",
-  "Bite your lip, because what I'm about to show will drive you wild. 😈",
-  "Poolside vibes, but my mind's in the bedroom. Dive in with me? 🏊‍♀️",
-  "Soft skin, hard intentions. Ready to play? 🎲",
-];
-
-function buildLocalDummyPosts() {
-  const startDate = new Date('2025-09-29');
-  let persistedLikes = {};
-  try {
-    const stored = typeof window !== "undefined" ? window.localStorage.getItem("post_likes_permanent") : null;
-    if (stored) persistedLikes = JSON.parse(stored);
-  } catch (err) {}
-
-  return Array.from({ length: 100 }).map((_, i) => {
-    const idx = i + 1;
-    const hasRealImage = idx <= 15;
-    const postDate = new Date(startDate);
-    postDate.setDate(postDate.getDate() - i * 3);
-
-    const postId = `dummy-${idx}`;
-    if (!persistedLikes[postId]) {
-      persistedLikes[postId] = Math.floor(Math.random() * 1800001) + 200000;
-    }
-
-    return {
-      id: postId,
-      text: DUMMY_POST_CAPTIONS[i % 10] || `Post ${idx}`,
-      mediaType: "image",
-      mediaSrc: hasRealImage ? UNLOCKED_POST_IMAGES[i] : "https://via.placeholder.com/600x800/cccccc/666666?text=Locked",
-      likes: persistedLikes[postId],
-      date: postDate.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-      created_at: postDate.toISOString(),
-      locked: true,
-      isDummy: true,
-    };
-  });
-}
+// ProfilePage.jsx - NUCLEAR OPTION (NO IMPORTS)
+import React, { useState } from "react";
 
 export default function ProfilePage() {
-  const navigate = useNavigate();
-  const [creator, setCreator] = useState(defaultCreator);
-  const [posts, setPosts] = useState(() => buildLocalDummyPosts());
   const [activeTab, setActiveTab] = useState("posts");
   const [bioExpanded, setBioExpanded] = useState(false);
-  const [starred, setStarred] = useState(false);
-  const [likedPosts, setLikedPosts] = useState({});
-  const [bookmarkedPosts, setBookmarkedPosts] = useState({});
-  const [tipActivePosts, setTipActivePosts] = useState({});
-  const [likeCounts, setLikeCounts] = useState({});
-  const [messagesUnlocked, setMessagesUnlocked] = useState(false);
-  const [toast, setToast] = useState({ visible: false, message: "", type: "success" });
-  const toastTimerRef = useRef(null);
-  const [showSubModal, setShowSubModal] = useState(false);
-  const [showAddCard, setShowAddCard] = useState(false);
-  const [subscribed, setSubscribed] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState("monthly");
-  const [freeSample, setFreeSample] = useState({ active: false, unlockedCount: 15, expiresAt: null });
-  const countdownRef = useRef(null);
-  const unlockedOnceRef = useRef(false);
-  const [viewerOpen, setViewerOpen] = useState(false);
-  const [viewerList, setViewerList] = useState([]);
-  const [viewerIndex, setViewerIndex] = useState(0);
 
-  const findPostById = (id) => posts.find((p) => String(p.id) === String(id));
-
-  // Load Supabase data (optional - doesn't break if it fails)
-  useEffect(() => {
-    let mounted = true;
-
-    const loadData = async () => {
-      try {
-        // Try loading profile
-        const { data: profileData } = await supabase
-          .from("creator_profiles")
-          .select("name, bio, avatar_url, banner_url, handle")
-          .eq("handle", "taylerhillxxx")
-          .maybeSingle();
-
-        if (profileData && mounted) {
-          setCreator((prev) => ({
-            ...prev,
-            name: profileData.name || prev.name,
-            avatar: profileData.avatar_url || prev.avatar,
-            banner: profileData.banner_url || prev.banner,
-            handle: profileData.handle ? `@${profileData.handle}` : prev.handle,
-            bio: profileData.bio || prev.bio,
-          }));
-        }
-
-        // Try loading posts
-        const { data: postsData } = await supabase
-          .from("posts")
-          .select("id, content, title, media_url, locked, created_at")
-          .eq("creator_handle", "taylerhillxxx")
-          .order("created_at", { ascending: false })
-          .limit(50);
-
-        if (postsData && Array.isArray(postsData) && postsData.length > 0 && mounted) {
-          const mapped = postsData.map((post) => ({
-            id: `db-${post.id}`,
-            text: post.content || post.title || "",
-            mediaType: post.media_url ? "image" : null,
-            mediaSrc: post.media_url || null,
-            likes: Math.floor(Math.random() * 500000),
-            date: new Date(post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-            created_at: post.created_at,
-            locked: post.locked === true,
-            isDummy: false,
-          }));
-          
-          setPosts((prev) => [...mapped, ...prev]);
-        }
-      } catch (err) {
-        console.error("Supabase error (non-critical):", err);
-        // Don't break - dummy posts will still show
-      }
-    };
-
-    loadData();
-
-    return () => { mounted = false; };
-  }, []);
-
-  const mediaItems = useMemo(() => {
-    return posts.filter((p) => p.mediaSrc).map((p) => ({
-      id: p.id,
-      type: p.mediaType || "image",
-      src: p.mediaSrc,
-      count: 1,
-    }));
-  }, [posts]);
-
-  useEffect(() => {
-    const map = {};
-    posts.forEach((p) => { map[p.id] = p.likes; });
-    setLikeCounts(map);
-
-    try {
-      if (typeof window !== "undefined" && window.localStorage) {
-        const raw = localStorage.getItem(FREE_SAMPLE_LS_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed?.expiresAt) {
-            setFreeSample((prev) => ({ ...prev, active: true, unlockedCount: parsed.unlockedCount || 15, expiresAt: parsed.expiresAt }));
-          }
-        }
-        const messagesState = localStorage.getItem("messages_unlocked");
-        if (messagesState === "true") setMessagesUnlocked(true);
-      }
-    } catch (e) {}
-  }, [posts]);
-
-  const showToast = (message, type = "success", ms = 2000) => {
-    setToast({ visible: true, message, type });
-    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = setTimeout(() => setToast({ visible: false, message: "", type }), ms);
+  const creator = {
+    name: "Tayler Hills",
+    avatar: "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760699188347-6c2tnk-images%20(9).jpeg",
+    banner: "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760699444010-y1kcnl-Screenshot_20251017-121026.jpg",
+    handle: "@taylerhillxxx",
+    bio: "Hi 😊 I'm your favorite 19 year old & I love showing all of ME for your pleasure; ) you'll love it here! 🍆💦",
   };
 
-  const IconHeart = ({ className = "w-5 h-5", active = false }) => (
+  const posts = [
+    { id: 1, text: "Come closer, I've got secrets that'll make you blush 😏", date: "Sep 29", likes: 850000 },
+    { id: 2, text: "This dress is tight, but my thoughts about you are even tighter 🔥", date: "Sep 28", likes: 920000 },
+    { id: 3, text: "Curves ahead—handle with care, or don't... I like it rough 😉", date: "Sep 27", likes: 780000 },
+    { id: 4, text: "Whisper your fantasies in my ear, and I'll make them reality 💋", date: "Sep 26", likes: 890000 },
+    { id: 5, text: "Feeling naughty today. What's your wildest desire? 🌶️", date: "Sep 25", likes: 950000 },
+  ];
+
+  return (
+    <div style={{ minHeight: "100vh", backgroundColor: "#f3f4f6", display: "flex", justifyContent: "center", padding: "16px" }}>
+      <div style={{ width: "100%", maxWidth: "672px", backgroundColor: "white", borderRadius: "6px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", fontSize: "15px", maxHeight: "calc(100vh - 32px)", overflowY: "auto" }}>
+        
+        {/* BANNER */}
+        <div style={{ position: "relative", height: "144px", backgroundColor: "#e5e7eb", overflow: "hidden" }}>
+          <img src={creator.banner} alt="banner" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <div style={{ position: "absolute", left: "12px", top: "12px", display: "flex", gap: "16px", color: "white", fontSize: "12px", fontWeight: "600" }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <div style={{ fontWeight: "bold" }}>3.1K</div>
+              <div style={{ fontSize: "10px", opacity: "0.8" }}>Posts</div>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <div style={{ fontWeight: "bold" }}>2.9k</div>
+              <div style={{ fontSize: "10px", opacity: "0.8" }}>Media</div>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <div style={{ fontWeight: "bold" }}>5.57M</div>
+              <div style={{ fontSize: "10px", opacity: "0.8" }}>Likes</div>
+            </div>
+          </div>
+        </div>
+
+        {/* AVATAR */}
+        <div style={{ padding: "0 16px", marginTop: "-40px", display: "flex", alignItems: "flex-start" }}>
+          <div style={{ position: "relative" }}>
+            <div style={{ width: "80px", height: "80px", borderRadius: "50%", overflow: "hidden", boxShadow: "0 4px 6px rgba(0,0,0,0.1)" }}>
+              <img src={creator.avatar} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </div>
+            <div style={{ position: "absolute", right: "0", bottom: "0", width: "16px", height: "16px", backgroundColor: "#10b981", borderRadius: "50%" }} />
+          </div>
+        </div>
+
+        {/* NAME & MESSAGE */}
+        <div style={{ padding: "8px 16px 0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <h2 style={{ fontSize: "18px", fontWeight: "bold", color: "#111827", margin: 0 }}>{creator.name}</h2>
+            <div style={{ fontSize: "13px", color: "#6b7280" }}>{creator.handle} · Available now</div>
+          </div>
+          <button style={{ backgroundColor: "#00AFF0", color: "white", fontSize: "14px", fontWeight: "600", borderRadius: "20px", padding: "8px 24px", border: "none", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", cursor: "pointer" }}>
+            Message
+          </button>
+        </div>
+
+        {/* BIO */}
+        <div style={{ padding: "12px 16px", borderTop: "1px solid #e5e7eb", marginTop: "12px" }}>
+          <div style={{ fontSize: "14px", lineHeight: "1.5", color: "#1f2937", overflow: "hidden", textOverflow: "ellipsis", display: bioExpanded ? "block" : "-webkit-box", WebkitLineClamp: bioExpanded ? "unset" : "2", WebkitBoxOrient: "vertical" }}>
+            <p style={{ margin: 0 }}>{creator.bio}</p>
+          </div>
+          <button onClick={() => setBioExpanded(!bioExpanded)} style={{ fontSize: "13px", color: "#3b82f6", textDecoration: "underline", marginTop: "8px", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+            {bioExpanded ? "Collapse" : "More info"}
+          </button>
+        </div>
+
+        {/* SUBSCRIPTION */}
+        <div style={{ padding: "0 16px", marginTop: "16px" }}>
+          <div style={{ backgroundColor: "white", padding: "16px", borderRadius: "6px", border: "1px solid #e5e7eb" }}>
+            <div style={{ fontSize: "11px", fontWeight: "600", color: "#6b7280" }}>SUBSCRIPTION</div>
+            <div style={{ marginTop: "4px", fontSize: "14px", fontWeight: "500", color: "#1f2937" }}>Limited offer - Free trial for 30 days!</div>
+            
+            <div style={{ marginTop: "12px", backgroundColor: "#f3f4f6", borderRadius: "6px", padding: "12px", display: "flex", alignItems: "flex-start", gap: "12px" }}>
+              <div style={{ width: "32px", height: "32px", borderRadius: "50%", overflow: "hidden" }}>
+                <img src={creator.avatar} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              </div>
+              <div style={{ fontSize: "14px", color: "#374151" }}>I'm Always Hornyyyyyy 🤤💦</div>
+            </div>
+
+            <div style={{ marginTop: "16px" }}>
+              <button style={{ width: "100%", borderRadius: "20px", padding: "12px 16px", fontWeight: "600", color: "white", backgroundColor: "#00AFF0", border: "none", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer" }}>
+                <span>SUBSCRIBE</span>
+                <span style={{ fontSize: "14px", whiteSpace: "nowrap" }}>FREE for 30 days</span>
+              </button>
+            </div>
+
+            <div style={{ fontSize: "11px", color: "#6b7280", marginTop: "8px" }}>Regular price $5 / month</div>
+          </div>
+        </div>
+
+        {/* TABS */}
+        <div style={{ marginTop: "16px", borderTop: "1px solid #e5e7eb" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", backgroundColor: "white", fontSize: "14px", fontWeight: "500" }}>
+            <button onClick={() => setActiveTab("posts")} style={{ padding: "12px 0", borderBottom: activeTab === "posts" ? "2px solid black" : "none", color: activeTab === "posts" ? "black" : "#6b7280", background: "none", border: "none", cursor: "pointer" }}>
+              {posts.length} POSTS
+            </button>
+            <button onClick={() => setActiveTab("media")} style={{ padding: "12px 0", borderBottom: activeTab === "media" ? "2px solid black" : "none", color: activeTab === "media" ? "black" : "#6b7280", background: "none", border: "none", cursor: "pointer" }}>
+              0 MEDIA
+            </button>
+          </div>
+        </div>
+
+        {/* POSTS */}
+        <div style={{ backgroundColor: "white", padding: "16px" }}>
+          {activeTab === "posts" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+              {posts.map((p) => (
+                <article key={p.id} style={{ borderBottom: "1px solid #e5e7eb", paddingBottom: "16px" }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
+                    <div style={{ width: "40px", height: "40px", borderRadius: "50%", overflow: "hidden" }}>
+                      <img src={creator.avatar} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    </div>
+                    <div style={{ flex: "1" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <div>
+                          <div style={{ fontWeight: "600", fontSize: "14px", color: "#111827" }}>{creator.name}</div>
+                          <div style={{ fontSize: "12px", color: "#6b7280" }}>{creator.handle} · {p.date}</div>
+                        </div>
+                        <div style={{ color: "#9ca3af" }}>•••</div>
+                      </div>
+                      <p style={{ marginTop: "8px", fontSize: "14px", color: "#1f2937" }}>{p.text}</p>
+                      <div style={{ marginTop: "12px", display: "flex", alignItems: "center", gap: "16px", color: "#6b7280", fontSize: "13px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <span>❤️</span>
+                          <span>{(p.likes / 1000).toFixed(0)}k</span>
+                        </div>
+                        <div>Comment</div>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+
+          {activeTab === "media" && (
+            <div style={{ textAlign: "center", color: "#6b7280", padding: "32px 0" }}>
+              No media yet
+            </div>
+          )}
+        </div>
+
+      </div>
+    </div>
+  );
+                         }nst IconHeart = ({ className = "w-5 h-5", active = false }) => (
     <svg className={className} viewBox="0 0 24 24" fill={active ? "#e0245e" : "none"} xmlns="http://www.w3.org/2000/svg" stroke={active ? "#e0245e" : "#9AA3AD"}>
       <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" strokeWidth="1.2"/>
     </svg>
