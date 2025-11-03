@@ -1,7 +1,6 @@
 // ProfilePage.jsx - FINAL WORKING VERSION
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import ModalPortal from "../component/ModalPortal";
 
 const FREE_SAMPLE_LS_KEY = "freeSampleAccess_v1";
 
