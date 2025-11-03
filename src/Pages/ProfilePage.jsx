@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import ModalPortal from "../component/ModalPortal";
+import SubscriptionModal from "../component/SubcriptionModal";
 
 const defaultCreator = {
   name: "Tayler Hills",
@@ -56,123 +59,10 @@ function buildPosts() {
   });
 }
 
-// Simple Modal Component (built-in, no imports)
-function Modal({ isOpen, onClose, children }) {
-  if (!isOpen) return null;
-
-  return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
-      onClick={onClose}
-    >
-      <div 
-        className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {children}
-      </div>
-    </div>
-  );
-}
-
-// Simple Card Form Component
-function CardForm({ onClose, onSuccess }) {
-  const [email, setEmail] = useState("");
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiry, setExpiry] = useState("");
-  const [cvv, setCvv] = useState("");
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Simulate successful payment
-    setTimeout(() => {
-      onSuccess({ email });
-      onClose();
-    }, 1000);
-  };
-
-  return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-bold">Add Payment Method</h3>
-        <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl">×</button>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-          <input 
-            type="email" 
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-            placeholder="your@email.com"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Card Number</label>
-          <input 
-            type="text" 
-            value={cardNumber}
-            onChange={(e) => setCardNumber(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-            placeholder="1234 5678 9012 3456"
-            maxLength="19"
-            required
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Expiry</label>
-            <input 
-              type="text" 
-              value={expiry}
-              onChange={(e) => setExpiry(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              placeholder="MM/YY"
-              maxLength="5"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">CVV</label>
-            <input 
-              type="text" 
-              value={cvv}
-              onChange={(e) => setCvv(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              placeholder="123"
-              maxLength="3"
-              required
-            />
-          </div>
-        </div>
-
-        <button 
-          type="submit"
-          className="w-full bg-[#00AFF0] text-white font-semibold py-3 rounded-full hover:bg-[#009AD9] transition"
-        >
-          Start Free Trial
-        </button>
-
-        <p className="text-xs text-gray-500 text-center">
-          You won't be charged for 30 days. Cancel anytime.
-        </p>
-      </form>
-    </div>
-  );
-}
-
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("posts");
   const [bioExpanded, setBioExpanded] = useState(false);
   const [freeSampleActive, setFreeSampleActive] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
   const [posts] = useState(buildPosts);
   const creator = defaultCreator;
 
@@ -183,13 +73,6 @@ export default function ProfilePage() {
     if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
     if (num >= 1000) return Math.floor(num / 1000) + "k";
     return String(num);
-  };
-
-  const handleSubscribeSuccess = (data) => {
-    setFreeSampleActive(true);
-    setToastMessage("🎉 Free trial activated! 15 posts unlocked.");
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
   };
 
   return (
@@ -261,7 +144,7 @@ export default function ProfilePage() {
 
             <div className="mt-4">
               <button 
-                onClick={() => setShowModal(true)} 
+                onClick={() => setFreeSampleActive(true)} 
                 className="w-full rounded-full py-3 font-semibold text-white bg-[#00AFF0] flex items-center justify-between px-4"
               >
                 <span>SUBSCRIBE</span>
@@ -320,7 +203,7 @@ export default function ProfilePage() {
                               <path d="M7 10V7a5 5 0 0110 0v3" stroke="#D1D7DB" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                             <button 
-                              onClick={() => setShowModal(true)}
+                              onClick={() => setFreeSampleActive(true)}
                               className="mt-3 px-6 py-2 rounded-full bg-[#00AFF0] text-white font-semibold text-sm"
                             >
                               SUBSCRIBE TO SEE POSTS
@@ -361,21 +244,6 @@ export default function ProfilePage() {
         </div>
 
       </div>
-
-      {/* Modal */}
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
-        <CardForm 
-          onClose={() => setShowModal(false)} 
-          onSuccess={handleSubscribeSuccess}
-        />
-      </Modal>
-
-      {/* Toast */}
-      {showToast && (
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-black text-white px-6 py-3 rounded-lg shadow-lg z-50">
-          {toastMessage}
-        </div>
-      )}
     </div>
   );
 }
