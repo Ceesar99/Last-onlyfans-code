@@ -1,7 +1,6 @@
 // ProfilePage.jsx
 import React, { useEffect, useRef, useState, useMemo } from "react";
 // frontend supabase client (assumes default export)
-import supabase from "../supabaseclient";
 
 const FREE_SAMPLE_LS_KEY = "freeSampleAccess_v1";
 
