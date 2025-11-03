@@ -1,166 +1,222 @@
 import React, { useState } from "react";
 
+const defaultCreator = {
+  name: "Tayler Hills",
+  avatar: "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760699188347-6c2tnk-images%20(9).jpeg",
+  banner: "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760699444010-y1kcnl-Screenshot_20251017-121026.jpg",
+  handle: "@taylerhillxxx",
+  bio: "Hi 😊 I'm your favorite 19 year old & I love showing all of ME for your pleasure; ) you'll love it here! 🍆💦 Message me 👆 for daily nudes and videos in the feed ✨",
+};
+
+const UNLOCKED_POST_IMAGES = [
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760742247894-wuga4b-tayler-hills-onlyfans-7su4i-72.jpeg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760701141796-9roite-Screenshot_20251017-123357.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760701111671-4eu428-Screenshot_20251017-123512.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760700680072-2a7llr-Screenshot_20251017-122943.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760700668201-t5di54-Screenshot_20251017-123004.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760700654730-rd1q1r-Screenshot_20251017-123038.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760700520296-72yuih-Screenshot_20251017-122523.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760700501860-hqck9r-Screenshot_20251017-122548.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760700484556-w30efh-Screenshot_20251017-122714.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760702951815-0j3vd8-Screenshot_20251017-130712.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760702918793-4ks6tl-Screenshot_20251017-130803.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760722413191-rkpgx9-Screenshot_20251017-182707.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760722436108-036d59-Screenshot_20251017-182631.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760701157281-3gg60s-Screenshot_20251017-123330.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760703032076-85uy0r-Screenshot_20251017-130610.jpg",
+];
+
+const CAPTIONS = [
+  "Come closer, I've got secrets that'll make you blush... and beg for more. 😏",
+  "This dress is tight, but my thoughts about you are even tighter. Want a peek? 🔥",
+  "Sipping on something sweet, but nothing compares to the taste of temptation. 🍷",
+  "Curves ahead—handle with care, or don't... I like it rough. 😉",
+  "Whisper your fantasies in my ear, and I'll make them reality on here. 💋",
+  "Feeling naughty today. What's your wildest desire? Let's explore. 🌶️",
+  "This lingerie is just a tease. Unlock the full show? 🗝️",
+  "Bite your lip, because what I'm about to show will drive you wild. 😈",
+  "Poolside vibes, but my mind's in the bedroom. Dive in with me? 🏊‍♀️",
+  "Soft skin, hard intentions. Ready to play? 🎲",
+];
+
+function buildPosts() {
+  const startDate = new Date('2025-09-29');
+  return Array.from({ length: 100 }).map((_, i) => {
+    const postDate = new Date(startDate);
+    postDate.setDate(postDate.getDate() - i * 3);
+    
+    return {
+      id: `post-${i + 1}`,
+      text: CAPTIONS[i % 10],
+      date: postDate.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      likes: Math.floor(Math.random() * 1500000) + 200000,
+      image: i < 15 ? UNLOCKED_POST_IMAGES[i] : null,
+      locked: i >= 15,
+    };
+  });
+}
+
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("posts");
   const [bioExpanded, setBioExpanded] = useState(false);
+  const [freeSampleActive, setFreeSampleActive] = useState(false);
+  const [posts] = useState(buildPosts);
+  const creator = defaultCreator;
 
-  const creator = {
-    name: "Tayler Hills",
-    avatar: "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760699188347-6c2tnk-images%20(9).jpeg",
-    banner: "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760699444010-y1kcnl-Screenshot_20251017-121026.jpg",
-    handle: "@taylerhillxxx",
-    bio: "Hi 😊 I'm your favorite 19 year old & I love showing all of ME for your pleasure; ) you'll love it here! 🍆💦",
-  };
+  const unlockedPosts = posts.filter(p => !p.locked || freeSampleActive);
+  const mediaItems = unlockedPosts.filter(p => p.image);
 
-  const posts = [
-    { id: 1, text: "Come closer, I've got secrets that'll make you blush 😏", date: "Sep 29", likes: 850000 },
-    { id: 2, text: "This dress is tight, but my thoughts about you are even tighter 🔥", date: "Sep 28", likes: 920000 },
-    { id: 3, text: "Curves ahead—handle with care, or don't... I like it rough 😉", date: "Sep 27", likes: 780000 },
-    { id: 4, text: "Whisper your fantasies in my ear, and I'll make them reality 💋", date: "Sep 26", likes: 890000 },
-    { id: 5, text: "Feeling naughty today. What's your wildest desire? 🌶️", date: "Sep 25", likes: 950000 },
-  ];
-
-  const styles = {
-    container: { minHeight: "100vh", backgroundColor: "#f3f4f6", display: "flex", justifyContent: "center", padding: "16px" },
-    card: { width: "100%", maxWidth: "672px", backgroundColor: "white", borderRadius: "6px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", fontSize: "15px", maxHeight: "calc(100vh - 32px)", overflowY: "auto" },
-    banner: { position: "relative", height: "144px", backgroundColor: "#e5e7eb", overflow: "hidden" },
-    bannerImg: { width: "100%", height: "100%", objectFit: "cover" },
-    stats: { position: "absolute", left: "12px", top: "12px", display: "flex", gap: "16px", color: "white", fontSize: "12px", fontWeight: "600" },
-    avatarContainer: { padding: "0 16px", marginTop: "-40px", display: "flex", alignItems: "flex-start" },
-    avatar: { width: "80px", height: "80px", borderRadius: "50%", overflow: "hidden", boxShadow: "0 4px 6px rgba(0,0,0,0.1)" },
-    avatarImg: { width: "100%", height: "100%", objectFit: "cover" },
-    greenDot: { position: "absolute", right: "0", bottom: "0", width: "16px", height: "16px", backgroundColor: "#10b981", borderRadius: "50%" },
-    nameSection: { padding: "8px 16px 0", display: "flex", alignItems: "center", justifyContent: "space-between" },
-    name: { fontSize: "18px", fontWeight: "bold", color: "#111827", margin: 0 },
-    handle: { fontSize: "13px", color: "#6b7280" },
-    messageBtn: { backgroundColor: "#00AFF0", color: "white", fontSize: "14px", fontWeight: "600", borderRadius: "20px", padding: "8px 24px", border: "none", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", cursor: "pointer" },
-    bioSection: { padding: "12px 16px", borderTop: "1px solid #e5e7eb", marginTop: "12px" },
-    bioText: { fontSize: "14px", lineHeight: "1.5", color: "#1f2937", overflow: "hidden", textOverflow: "ellipsis" },
-    bioBtn: { fontSize: "13px", color: "#3b82f6", textDecoration: "underline", marginTop: "8px", background: "none", border: "none", cursor: "pointer", padding: 0 },
-    subSection: { padding: "0 16px", marginTop: "16px" },
-    subCard: { backgroundColor: "white", padding: "16px", borderRadius: "6px", border: "1px solid #e5e7eb" },
-    subTitle: { fontSize: "11px", fontWeight: "600", color: "#6b7280" },
-    subOffer: { marginTop: "4px", fontSize: "14px", fontWeight: "500", color: "#1f2937" },
-    subMessage: { marginTop: "12px", backgroundColor: "#f3f4f6", borderRadius: "6px", padding: "12px", display: "flex", alignItems: "flex-start", gap: "12px" },
-    subBtn: { width: "100%", borderRadius: "20px", padding: "12px 16px", fontWeight: "600", color: "white", backgroundColor: "#00AFF0", border: "none", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", marginTop: "16px" },
-    tabs: { marginTop: "16px", borderTop: "1px solid #e5e7eb" },
-    tabGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", backgroundColor: "white", fontSize: "14px", fontWeight: "500" },
-    tabBtn: { padding: "12px 0", background: "none", border: "none", cursor: "pointer" },
-    postsContainer: { backgroundColor: "white", padding: "16px" },
-    postsList: { display: "flex", flexDirection: "column", gap: "24px" },
-    post: { borderBottom: "1px solid #e5e7eb", paddingBottom: "16px" },
-    postContent: { display: "flex", alignItems: "flex-start", gap: "12px" },
-    postAvatar: { width: "40px", height: "40px", borderRadius: "50%", overflow: "hidden" },
-    postHeader: { display: "flex", alignItems: "center", justifyContent: "space-between" },
-    postName: { fontWeight: "600", fontSize: "14px", color: "#111827" },
-    postHandle: { fontSize: "12px", color: "#6b7280" },
-    postText: { marginTop: "8px", fontSize: "14px", color: "#1f2937" },
-    postActions: { marginTop: "12px", display: "flex", alignItems: "center", gap: "16px", color: "#6b7280", fontSize: "13px" },
-    noMedia: { textAlign: "center", color: "#6b7280", padding: "32px 0" },
+  const formatLikes = (num) => {
+    if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+    if (num >= 1000) return Math.floor(num / 1000) + "k";
+    return String(num);
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
+    <div className="min-h-screen bg-gray-100 flex justify-center p-4">
+      <div className="w-full max-w-xl bg-white rounded-md shadow-sm text-[15px]" style={{ maxHeight: "calc(100vh - 2rem)", overflowY: "auto" }}>
         
-        <div style={styles.banner}>
-          <img src={creator.banner} alt="banner" style={styles.bannerImg} />
-          <div style={styles.stats}>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-              <div style={{ fontWeight: "bold" }}>3.1K</div>
-              <div style={{ fontSize: "10px", opacity: "0.8" }}>Posts</div>
+        {/* BANNER */}
+        <div className="relative h-36 bg-gray-200 overflow-hidden">
+          <img src={creator.banner} alt="banner" className="w-full h-full object-cover" />
+          <div className="absolute left-3 top-3 flex gap-4 text-white text-xs font-semibold">
+            <div className="flex flex-col items-center">
+              <div className="font-bold">3.1K</div>
+              <div className="text-[10px] opacity-80">Posts</div>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-              <div style={{ fontWeight: "bold" }}>2.9k</div>
-              <div style={{ fontSize: "10px", opacity: "0.8" }}>Media</div>
+            <div className="flex flex-col items-center">
+              <div className="font-bold">2.9k</div>
+              <div className="text-[10px] opacity-80">Media</div>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-              <div style={{ fontWeight: "bold" }}>5.57M</div>
-              <div style={{ fontSize: "10px", opacity: "0.8" }}>Likes</div>
+            <div className="flex flex-col items-center">
+              <div className="font-bold">5.57M</div>
+              <div className="text-[10px] opacity-80">Likes</div>
             </div>
           </div>
         </div>
 
-        <div style={styles.avatarContainer}>
-          <div style={{ position: "relative" }}>
-            <div style={styles.avatar}>
-              <img src={creator.avatar} alt="avatar" style={styles.avatarImg} />
+        {/* AVATAR */}
+        <div className="px-4 -mt-10 flex items-start">
+          <div className="relative">
+            <div className="w-20 h-20 rounded-full overflow-hidden shadow-md">
+              <img src={creator.avatar} alt="avatar" className="w-full h-full object-cover" />
             </div>
-            <div style={styles.greenDot} />
+            <div className="absolute right-0 bottom-0 w-4 h-4 bg-green-500 rounded-full" />
           </div>
         </div>
 
-        <div style={styles.nameSection}>
+        {/* NAME & MESSAGE */}
+        <div className="px-4 mt-2 flex items-center justify-between">
           <div>
-            <h2 style={styles.name}>{creator.name}</h2>
-            <div style={styles.handle}>{creator.handle} · Available now</div>
+            <h2 className="text-[18px] font-bold text-gray-900">{creator.name}</h2>
+            <div className="text-[13px] text-gray-500">{creator.handle} · Available now</div>
           </div>
-          <button style={styles.messageBtn}>Message</button>
+          <button className="bg-[#00AFF0] text-white text-sm font-semibold rounded-full px-6 py-2 shadow">
+            Message
+          </button>
         </div>
 
-        <div style={styles.bioSection}>
-          <div style={{ ...styles.bioText, display: bioExpanded ? "block" : "-webkit-box", WebkitLineClamp: bioExpanded ? "unset" : "2", WebkitBoxOrient: "vertical" }}>
-            <p style={{ margin: 0 }}>{creator.bio}</p>
+        {/* BIO */}
+        <div className="px-4 border-t mt-3 pt-3">
+          <div className={`text-[14px] leading-snug text-gray-800 ${bioExpanded ? "" : "line-clamp-2"}`}>
+            <p>{creator.bio}</p>
           </div>
-          <button onClick={() => setBioExpanded(!bioExpanded)} style={styles.bioBtn}>
+          <button onClick={() => setBioExpanded(!bioExpanded)} className="text-[13px] text-blue-500 underline mt-2">
             {bioExpanded ? "Collapse" : "More info"}
           </button>
         </div>
 
-        <div style={styles.subSection}>
-          <div style={styles.subCard}>
-            <div style={styles.subTitle}>SUBSCRIPTION</div>
-            <div style={styles.subOffer}>Limited offer - Free trial for 30 days!</div>
+        {/* SUBSCRIPTION */}
+        <div className="px-4 mt-4">
+          <div className="bg-white p-4 rounded border">
+            <div className="text-[11px] font-semibold text-gray-500">SUBSCRIPTION</div>
+            <div className="mt-1 text-[14px] font-medium text-gray-800">Limited offer - Free trial for 30 days!</div>
             
-            <div style={styles.subMessage}>
-              <div style={{ width: "32px", height: "32px", borderRadius: "50%", overflow: "hidden" }}>
-                <img src={creator.avatar} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <div className="mt-3 bg-gray-100 rounded p-3 flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full overflow-hidden">
+                <img src={creator.avatar} alt="avatar bubble" className="w-full h-full object-cover" />
               </div>
-              <div style={{ fontSize: "14px", color: "#374151" }}>I'm Always Hornyyyyyy 🤤💦</div>
+              <div className="text-[14px] text-gray-700">I'm Always Hornyyyyyy 🤤💦</div>
             </div>
 
-            <button style={styles.subBtn}>
-              <span>SUBSCRIBE</span>
-              <span style={{ fontSize: "14px", whiteSpace: "nowrap" }}>FREE for 30 days</span>
-            </button>
+            <div className="mt-4">
+              <button 
+                onClick={() => setFreeSampleActive(true)} 
+                className="w-full rounded-full py-3 font-semibold text-white bg-[#00AFF0] flex items-center justify-between px-4"
+              >
+                <span>SUBSCRIBE</span>
+                <span className="text-sm whitespace-nowrap">{freeSampleActive ? "$5 / month" : "FREE for 30 days"}</span>
+              </button>
+            </div>
 
-            <div style={{ fontSize: "11px", color: "#6b7280", marginTop: "8px" }}>Regular price $5 / month</div>
+            <div className="text-[11px] text-gray-500 mt-2">Regular price $5 / month</div>
           </div>
         </div>
 
-        <div style={styles.tabs}>
-          <div style={styles.tabGrid}>
-            <button onClick={() => setActiveTab("posts")} style={{ ...styles.tabBtn, borderBottom: activeTab === "posts" ? "2px solid black" : "none", color: activeTab === "posts" ? "black" : "#6b7280" }}>
+        {/* TABS */}
+        <div className="mt-4 border-t">
+          <div className="grid grid-cols-2 bg-white text-[14px] font-medium">
+            <button 
+              onClick={() => setActiveTab("posts")} 
+              className={`py-3 ${activeTab === "posts" ? "border-b-2 border-black" : "text-gray-500"}`}
+            >
               {posts.length} POSTS
             </button>
-            <button onClick={() => setActiveTab("media")} style={{ ...styles.tabBtn, borderBottom: activeTab === "media" ? "2px solid black" : "none", color: activeTab === "media" ? "black" : "#6b7280" }}>
-              0 MEDIA
+            <button 
+              onClick={() => setActiveTab("media")} 
+              className={`py-3 ${activeTab === "media" ? "border-b-2 border-black" : "text-gray-500"}`}
+            >
+              {mediaItems.length} MEDIA
             </button>
           </div>
         </div>
 
-        <div style={styles.postsContainer}>
+        {/* CONTENT */}
+        <div className="bg-white p-4">
           {activeTab === "posts" && (
-            <div style={styles.postsList}>
+            <div className="space-y-6">
               {posts.map((p) => (
-                <article key={p.id} style={styles.post}>
-                  <div style={styles.postContent}>
-                    <div style={styles.postAvatar}>
-                      <img src={creator.avatar} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <article key={p.id} className="border-b pb-4 last:border-none">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full overflow-hidden">
+                      <img src={creator.avatar} alt="avatar" className="w-full h-full object-cover" />
                     </div>
-                    <div style={{ flex: "1" }}>
-                      <div style={styles.postHeader}>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
                         <div>
-                          <div style={styles.postName}>{creator.name}</div>
-                          <div style={styles.postHandle}>{creator.handle} · {p.date}</div>
+                          <div className="font-semibold text-[14px] text-gray-900">{creator.name}</div>
+                          <div className="text-[12px] text-gray-500">{creator.handle} · {p.date}</div>
                         </div>
-                        <div style={{ color: "#9ca3af" }}>•••</div>
+                        <div className="text-gray-400">•••</div>
                       </div>
-                      <p style={styles.postText}>{p.text}</p>
-                      <div style={styles.postActions}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+
+                      <p className="mt-2 text-[14px] text-gray-800">{p.text}</p>
+
+                      {p.locked ? (
+                        <div className="mt-3 bg-[#F8FAFB] border rounded-lg p-4">
+                          <div className="flex flex-col items-center">
+                            <svg className="w-14 h-14" viewBox="0 0 24 24" fill="none">
+                              <rect x="3" y="10" width="18" height="11" rx="2" stroke="#D1D7DB" strokeWidth="1.6" />
+                              <path d="M7 10V7a5 5 0 0110 0v3" stroke="#D1D7DB" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            <button 
+                              onClick={() => setFreeSampleActive(true)}
+                              className="mt-3 px-6 py-2 rounded-full bg-[#00AFF0] text-white font-semibold text-sm"
+                            >
+                              SUBSCRIBE TO SEE POSTS
+                            </button>
+                          </div>
+                        </div>
+                      ) : p.image ? (
+                        <div className="mt-3 rounded-md overflow-hidden h-44">
+                          <img src={p.image} alt="post" className="w-full h-full object-cover" />
+                        </div>
+                      ) : null}
+
+                      <div className="mt-3 flex items-center gap-4 text-gray-500 text-[13px]">
+                        <div className="flex items-center gap-2">
                           <span>❤️</span>
-                          <span>{(p.likes / 1000).toFixed(0)}k</span>
+                          <span>{formatLikes(p.likes)}</span>
                         </div>
                         <div>Comment</div>
                       </div>
@@ -172,7 +228,15 @@ export default function ProfilePage() {
           )}
 
           {activeTab === "media" && (
-            <div style={styles.noMedia}>No media yet</div>
+            <div>
+              <div className="grid grid-cols-3 gap-1">
+                {mediaItems.map((m) => (
+                  <div key={m.id} className="relative aspect-square">
+                    <img src={m.image} alt="media" className="w-full h-full object-cover" />
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </div>
 
