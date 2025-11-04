@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import ModalPortal from "../component/ModalPortal";
 import SubscriptionModal from "../component/SubcriptionModal";
+import MessageModal from "../component/MessageModal";
 // frontend supabase client (assumes default export)
 import supabase from "../supabaseclient";
 
@@ -217,10 +218,25 @@ export default function SafeProfileMock() {
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerList, setViewerList] = useState([]); // { id, mediaType, src, title }
   const [viewerIndex, setViewerIndex] = useState(0);
+  const [showMessageModal, setShowMessageModal] = useState(false);
 
   // helpers to find posts by id (supports string ids for dummies and numeric for DB)
   const findPostIndexById = (id) => posts.findIndex((p) => String(p.id) === String(id));
   const findPostById = (id) => posts.find((p) => String(p.id) === String(id));
+
+  const openMessageModal = () => {
+    if (!subscribed && !messagesUnlocked) {
+      showToast("Subscribe to unlock messaging", "error");
+      return;
+    }
+    setShowMessageModal(true);
+    lockScroll();
+  };
+
+  const closeMessageModal = () => {
+    setShowMessageModal(false);
+    unlockScroll();
+  };
 
   // ---------------------------
   // LIVE Supabase integration (initial fetch + realtime subscriptions)
@@ -1206,6 +1222,10 @@ export default function SafeProfileMock() {
               onClose={closeSubModal}
               freeSampleActive={freeSample.active}
             />
+          </ModalPortal>
+
+          <ModalPortal isOpen={showMessageModal} onClose={closeMessageModal} zIndex={1000}>
+            <MessageModal creator={creator} onClose={closeMessageModal} />
           </ModalPortal>
 
         </div>
