@@ -1137,7 +1137,7 @@ export default function SafeProfileMock() {
       </div>
     </ErrorBoundary>
   );
-}}
+}
 
 /* fallback data kept similar to your original */
 const defaultCreator = {
