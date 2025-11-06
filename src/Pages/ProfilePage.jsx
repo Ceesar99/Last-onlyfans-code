@@ -1,4 +1,4 @@
-// ProfilePage.jsx - CORRECTED VERSION
+// ProfilePage.jsx - UPDATED WITH LOCKED POST PLACEHOLDER
 
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
@@ -35,6 +35,1109 @@ class ErrorBoundary extends React.Component {
     return this.props.children;
   }
 }
+
+/* fallback data kept similar to your original */
+const defaultCreator = {
+  name: "Tayler Hills",
+  avatar: "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760699188347-6c2tnk-images%20(9).jpeg",
+  banner: "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760699444010-y1kcnl-Screenshot_20251017-121026.jpg",
+  handle: "@taylerhillxxx",
+  bio:
+    "Hi 😊 I'm your favorite 19 year old & I love showing all of ME for your pleasure; ) you'll love it here! 🍆💦 Message me 👆 for daily nudes and videos in the feed ✨ S tapes, bjs , hjs , stripteases Dildo, vibrator, creampie, baby oil, roleplay 💦 Private messages with me ✨ NO SPAM OR ADS Turn on your your auto-renew on and get freebies xo",
+};
+
+// Post captions and images arrays (keeping them as before)
+const UNLOCKED_POST_IMAGES = [
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760742247894-wuga4b-tayler-hills-onlyfans-7su4i-72.jpeg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760701141796-9roite-Screenshot_20251017-123357.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760701111671-4eu428-Screenshot_20251017-123512.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760700680072-2a7llr-Screenshot_20251017-122943.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760700668201-t5di54-Screenshot_20251017-123004.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760700654730-rd1q1r-Screenshot_20251017-123038.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760700520296-72yuih-Screenshot_20251017-122523.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760700501860-hqck9r-Screenshot_20251017-122548.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760700484556-w30efh-Screenshot_20251017-122714.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760702951815-0j3vd8-Screenshot_20251017-130712.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760702918793-4ks6tl-Screenshot_20251017-130803.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760722413191-rkpgx9-Screenshot_20251017-182707.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760722436108-036d59-Screenshot_20251017-182631.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760701157281-3gg60s-Screenshot_20251017-123330.jpg",
+  "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760703032076-85uy0r-Screenshot_20251017-130610.jpg",
+];
+
+const DUMMY_POST_CAPTIONS = [
+  "Come closer, I've got secrets that'll make you blush... and beg for more. 😏",
+  "This dress is tight, but my mind about you are even tighter. Want a peek? 🔥",
+  "Sipping on something sweet, but nothing compares to the taste of temptation. Care to join? 🍷",
+  "Curves ahead—handle with care, or don't... I like it rough. 😉",
+  "Whisper your fantasies in my ear, and I'll make them reality on here. 💋",
+  "Feeling naughty today. What's your wildest desire? Let's explore. 🌶️",
+  "This lingerie is just a tease. Unlock the full show? 🗝️",
+  "Bite your lip, because what I'm about to show will drive you wild. 😈",
+  "Poolside vibes, but my mind's in the bedroom. Dive in with me? 🏊‍♀️",
+  "Soft skin, hard intentions. Ready to play? 🎲",
+  "I've been bad... punish me with your attention. 👋",
+  "Lips like candy, body like sin. Taste test? 🍬",
+  "Unwrapping myself just for you. What's under the bow? 🎀",
+  "Heat rising, clothes falling. Join the fun? 🔥",
+  "Your favorite guilty pleasure, served hot and steamy. 🍲",
+  "Teasing you is my favorite hobby. What's yours? 😜",
+  "In the mood for mischief. Care to be my partner in crime? 🕵️‍♀️",
+  "This view is exclusive—subscribers only. Lucky you. 👀",
+  "Whipped cream dreams and naughty schemes. Hungry? 🍨",
+  "Bend over backwards for you? Only if you ask nicely. 😘",
+  "Silky sheets and sultry nights. Let's make memories. 🛏️",
+  "My body's a canvas—paint your desires on me. 🎨",
+  "Feeling frisky? Let's turn up the heat together. 🌡️",
+  "Secrets shared in the dark... light them up with me? 🕯️",
+  "This outfit's coming off soon. Stay tuned. ⏳",
+  "Naughty by nature, sexy by choice. Pick your poison. ☠️",
+  "Lust at first sight? Prove it in my DMs. 💌",
+  "Playing with fire? I'm the flame you can't resist. 🔥",
+  "Sweet on the outside, sinful within. Dig in? 🍎",
+  "Heartbeat racing, inhibitions fading. Race with me? 🏎️",
+  "This pose is just the beginning. What's next? 🤔",
+  "Temptation calling—will you answer? 📞",
+  "Barely covered, fully aroused. Your move. ♟️",
+  "Whispers of wickedness in every curve. Listen closely. 👂",
+  "Indulge in me like your favorite vice. 🍫",
+  "Sultry stares and daring dares. Challenge accepted? 🏆",
+  "Unlock my wild side. Key's in your hands. 🔑",
+  "Body heat and bad ideas. Perfect combo. 💡",
+  "Teasing touches and fiery clutches. Grip tight. ✊",
+  "Your daily dose of desire, delivered hot. 📦",
+  "Unleash the beast within me. Dare you? 🦁",
+  "Silk and sin—my favorite blend. Mix with me? 🥃",
+  "Provocative poses for passionate souls. Pose with me? 📸",
+  "Heat seeker? You've found the source. 🌋",
+  "Naughty notions and erotic emotions. Feel them? ❤️",
+  "This curves are calling your name. Answer? 🗣️",
+  "Tempting treats await. Indulge freely. 🍰",
+  "Wild side walking. Walk with me? 🚶‍♀️",
+  "Steamy sessions starting soon. RSVP? 📅",
+  "Body art in motion. Admire the masterpiece. 🖼️",
+  "Lucky number? Let's make it yours. 🍀",
+  "Sultry surprises inside. Open carefully. 🎁",
+  "Naughty and nice? Mostly naughty. 😇😈",
+  "Heat building, barriers breaking. Break with me? 🔨",
+  "Your siren song—I'm calling you in. 🧜‍♀️",
+  "Teasing the night away. Stay up? 🌃",
+  "Curves that captivate, moves that motivate. Motivated? 💪",
+  "Sinful symphony playing now. Dance? 💃",
+  "Unlock levels of lust. Level up? 🎮",
+  "Body bliss incoming. Bliss out? ☁️",
+  "Tease queen reigning supreme. Bow? 👑",
+  "Sinful sweets for the taking. Take? 👐",
+  "Wild waves crashing. Ride them? 🌊",
+  "Naughty notions in notion. Note them? 📝",
+  "Sultry secrets sealed. Unseal? ✉️",
+  "Heat hearted and hard to resist. Resist? 💔",
+  "Final tease: all in or all out? Decide. 🃏"
+];
+
+function buildLocalDummyPosts() {
+  const startDate = new Date('2025-09-29');
+  const endDate = new Date('2024-01-01');
+  const totalDays = Math.floor((startDate - endDate) / (1000 * 60 * 60 * 24));
+
+  const dates = Array.from({ length: 100 }).map((_, i) => {
+    const daysBack = Math.floor((i / 99) * totalDays);
+    const date = new Date(startDate);
+    date.setDate(date.getDate() - daysBack);
+    return date;
+  });
+
+  let persistedLikes = {};
+  try {
+    const stored = typeof window !== "undefined" ? window.localStorage.getItem("post_likes_permanent") : null;
+    if (stored) {
+      persistedLikes = JSON.parse(stored);
+    }
+  } catch (err) {
+    console.warn("Failed to load persisted likes:", err);
+  }
+
+  return Array.from({ length: 100 }).map((_, i) => {
+    const idx = i + 1;
+    const hasRealImage = idx <= 15;
+    const postDate = dates[i];
+
+    const postId = `dummy-${idx}`;
+    if (!persistedLikes[postId]) {
+      persistedLikes[postId] = Math.floor(Math.random() * 1800001) + 200000;
+    }
+
+    return {
+      id: postId,
+      text: DUMMY_POST_CAPTIONS[i] || `Post ${idx}`,
+      mediaType: "image",
+      mediaSrc: hasRealImage ? UNLOCKED_POST_IMAGES[i] : "https://via.placeholder.com/600x800/cccccc/666666/666666?text=Locked+Content",
+      likes: persistedLikes[postId],
+      date: postDate.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
+      created_at: postDate.toISOString(),
+      locked: idx > 15,
+      isDummy: true,
+    };
+  });
+}
+
+function getStableLikeCount(postId) {
+  try {
+    const stored = typeof window !== "undefined" ? window.localStorage.getItem("post_likes_permanent") : null;
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed[postId]) return parsed[postId];
+    }
+  } catch (err) {}
+  const newCount = Math.floor(Math.random() * 1800001) + 200000;
+  try {
+    if (typeof window !== "undefined" && window.localStorage) {
+      const stored = window.localStorage.getItem("post_likes_permanent");
+      const parsed = stored ? JSON.parse(stored) : {};
+      parsed[postId] = newCount;
+      window.localStorage.setItem("post_likes_permanent", JSON.stringify(parsed));
+    }
+  } catch (err) {}
+  return newCount;
+}
+
+export default function SafeProfileMock() {
+  const navigate = useNavigate();
+  const [creator, setCreator] = useState(defaultCreator);
+  const [posts, setPosts] = useState(() => buildLocalDummyPosts());
+  const [postsLoading, setPostsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("posts");
+  const [bioExpanded, setBioExpanded] = useState(false);
+  const [starred, setStarred] = useState(false);
+  const [likedPosts, setLikedPosts] = useState({});
+  const [bookmarkedPosts, setBookmarkedPosts] = useState({});
+  const [tipActivePosts, setTipActivePosts] = useState({});
+  const [likeCounts, setLikeCounts] = useState({});
+  const [messagesUnlocked, setMessagesUnlocked] = useState(true);
+  const toastTimerRef = useRef(null);
+
+  const [showSubModal, setShowSubModal] = useState(false);
+  const [subscribed, setSubscribed] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState("monthly");
+
+  const [freeSample, setFreeSample] = useState({ active: false, unlockedCount: 15, expiresAt: null });
+  const countdownRef = useRef(null);
+  const unlockedOnceRef = useRef(false);
+
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerList, setViewerList] = useState([]);
+  const [viewerIndex, setViewerIndex] = useState(0);
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [tipAnimatingPosts, setTipAnimatingPosts] = useState({});
+
+  const findPostIndexById = (id) => posts.findIndex((p) => String(p.id) === String(id));
+  const findPostById = (id) => posts.find((p) => String(p.id) === String(id));
+
+  // FIX 3: Navigate to /messages instead of opening modal
+  const openMessageModal = () => {
+    navigate("/messages");
+  };
+
+  const closeMessageModal = () => {
+    setShowMessageModal(false);
+    unlockScroll();
+  };
+
+  useEffect(() => {
+    let mounted = true;
+    setPostsLoading(true);
+
+    if (typeof window !== "undefined" && window.localStorage) {
+      localStorage.setItem("creator_handle", "@taylerhillxxx");
+      localStorage.setItem("user_email", "subscriber@example.com");
+    }
+
+    const parseHandleFromUrl = () => {
+      try {
+        const path = typeof window !== "undefined" ? window.location.pathname : "";
+        const parts = path.split("/").filter(Boolean);
+        const idx = parts.indexOf("profile");
+        if (idx !== -1 && parts.length > idx + 1) return parts[idx + 1];
+        if (parts.length === 1) return parts[0];
+        const ux = parts.indexOf("u");
+        if (ux !== -1 && parts.length > ux + 1) return parts[ux + 1];
+        return null;
+      } catch (e) {
+        return null;
+      }
+    };
+
+    const urlHandle = parseHandleFromUrl();
+    const storedHandle = typeof window !== "undefined" ? window.localStorage.getItem("creator_handle") : null;
+    const handle = (urlHandle && urlHandle.replace(/^@/, "")) || (storedHandle && storedHandle.replace(/^@/, "")) || null;
+
+    const loadInitialData = async () => {
+      try {
+        if (handle) {
+          const { data: profileData, error: profileError } = await supabase
+            .from("creator_profiles")
+            .select("id, handle, name, bio, avatar_url, banner_url, created_at")
+            .eq("handle", handle)
+            .maybeSingle();
+
+          if (profileError) {
+            console.error("Supabase profile error:", profileError);
+          } else if (profileData && mounted) {
+            setCreator((prev) => ({
+              ...prev,
+              name: profileData.name || prev.name,
+              avatar: profileData.avatar_url || prev.avatar,
+              banner: profileData.banner_url || prev.banner,
+              handle: profileData.handle ? (profileData.handle.startsWith("@") ? profileData.handle : `@${profileData.handle}`) : prev.handle,
+              bio: profileData.bio || prev.bio,
+              id: profileData.id || prev.id,
+              created_at: profileData.created_at || prev.created_at,
+            }));
+          }
+        }
+
+        let postsQuery = supabase.from("posts").select("id, creator_handle, title, content, media_url, locked, created_at");
+        if (handle) postsQuery = postsQuery.eq("creator_handle", handle);
+        postsQuery = postsQuery.order("created_at", { ascending: false }).limit(500);
+
+        const { data: postsData, error: postsError } = await postsQuery;
+
+        if (postsError) {
+          console.error("Supabase posts error:", postsError);
+        } else if (mounted && Array.isArray(postsData)) {
+          let persistedLikes = {};
+          try {
+            const stored = typeof window !== "undefined" ? window.localStorage.getItem("post_likes_permanent") : null;
+            if (stored) {
+              persistedLikes = JSON.parse(stored);
+            }
+          } catch (err) {
+            console.warn("Failed to load persisted likes:", err);
+          }
+
+          const mappedDB = postsData.map((post) => {
+            const postId = `db-${post.id}`;
+            if (!persistedLikes[postId]) {
+              persistedLikes[postId] = Math.floor(Math.random() * 1800001) + 200000;
+            }
+            
+            return {
+              id: postId,
+              dbId: post.id,
+              creator_handle: post.creator_handle,
+              text: post.content || post.title || "",
+              mediaType: post.media_url ? (post.media_url.includes(".mp4") || post.media_url.includes("video") ? "video" : "image") : null,
+              mediaSrc: post.media_url || null,
+              likes: persistedLikes[postId],
+              date: post.created_at ? new Date(post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "",
+              locked: post.locked === true,
+              created_at: post.created_at,
+              isDummy: false,
+            };
+          });
+
+          try {
+            if (typeof window !== "undefined" && window.localStorage) {
+              localStorage.setItem("post_likes_permanent", JSON.stringify(persistedLikes));
+            }
+          } catch (err) {
+            console.warn("Failed to save persisted likes:", err);
+          }
+
+          setPosts((prev) => {
+            const dummyPosts = prev.filter((p) => p.isDummy);
+            const merged = [...mappedDB, ...dummyPosts];
+            return merged;
+          });
+
+          const userEmail = typeof window !== "undefined" ? window.localStorage.getItem("user_email") : null;
+          if (userEmail) {
+            try {
+              const { data: userLikes, error: likesError } = await supabase
+                .from("post_likes")
+                .select("post_id")
+                .eq("user_email", userEmail);
+
+              if (!likesError && userLikes && mounted) {
+                const likedMap = {};
+                userLikes.forEach((like) => {
+                  likedMap[like.post_id] = true;
+                });
+                setLikedPosts(likedMap);
+              }
+            } catch (err) {
+              console.error("Failed to load user likes:", err);
+            }
+
+            try {
+              const allPostIds = mappedDB.map(p => p.id);
+              if (allPostIds.length > 0) {
+                const countsMap = {};
+                for (const postId of allPostIds) {
+                  const { count, error } = await supabase
+                    .from("post_likes")
+                    .select("*", { count: "exact", head: true })
+                    .eq("post_id", postId);
+
+                  if (!error && count !== null) {
+                    countsMap[postId] = count;
+                  }
+                }
+
+                if (mounted && Object.keys(countsMap).length > 0) {
+                  setLikeCounts((prev) => ({ ...prev, ...countsMap }));
+                }
+              }
+            } catch (err) {
+              console.error("Failed to load like counts:", err);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Unexpected fetch error:", err);
+      } finally {
+        if (mounted) setPostsLoading(false);
+      }
+    };
+
+    loadInitialData();
+
+    const postsChannel = supabase
+      .channel('posts-changes')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, (payload) => {
+        const newRow = payload.new;
+        const postId = `db-${newRow.id}`;
+        const mapped = {
+          id: postId,
+          dbId: newRow.id,
+          creator_handle: newRow.creator_handle,
+          text: newRow.content || newRow.title || "",
+          mediaType: newRow.media_url ? (newRow.media_url.includes(".mp4") || newRow.media_url.includes("video") ? "video" : "image") : null,
+          mediaSrc: newRow.media_url || null,
+          likes: getStableLikeCount(postId),
+          date: newRow.created_at ? new Date(newRow.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "",
+          locked: newRow.locked === true,
+          created_at: newRow.created_at,
+          isDummy: false,
+        };
+        setPosts((prev) => {
+          const withoutSame = prev.filter((p) => String(p.id) !== String(mapped.id));
+          return [mapped, ...withoutSame];
+        });
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'posts' }, (payload) => {
+        const row = payload.new;
+        const postId = `db-${row.id}`;
+        const mapped = {
+          id: postId,
+          dbId: row.id,
+          creator_handle: row.creator_handle,
+          text: row.content || row.title || "",
+          mediaType: row.media_url ? (row.media_url.includes(".mp4") || row.media_url.includes("video") ? "video" : "image") : null,
+          mediaSrc: row.media_url || null,
+          likes: getStableLikeCount(postId),
+          date: row.created_at ? new Date(row.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "",
+          locked: row.locked === true,
+          created_at: row.created_at,
+          isDummy: false,
+        };
+        setPosts((prev) => {
+          const idx = prev.findIndex((p) => String(p.id) === String(mapped.id));
+          if (idx === -1) {
+            return [mapped, ...prev];
+          }
+          const copy = [...prev];
+          copy[idx] = { ...copy[idx], ...mapped };
+          return copy;
+        });
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'posts' }, (payload) => {
+        const oldRow = payload.old;
+        const id = `db-${oldRow.id}`;
+        setPosts((prev) => prev.filter((p) => String(p.id) !== String(id)));
+      })
+      .subscribe();
+
+    const profileChannel = supabase
+      .channel('profile-changes')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'creator_profiles' }, (payload) => {
+        const row = payload.new;
+        setCreator((prev) => ({
+          ...prev,
+          name: row.name || prev.name,
+          avatar: row.avatar_url || prev.avatar,
+          banner: row.banner_url || prev.banner,
+          handle: row.handle ? (row.handle.startsWith("@") ? row.handle : `@${row.handle}`) : prev.handle,
+          bio: row.bio || prev.bio,
+          id: row.id || prev.id,
+          created_at: row.created_at || prev.created_at,
+        }));
+      })
+      .subscribe();
+
+    return () => {
+      mounted = false;
+      supabase.removeChannel(postsChannel);
+      supabase.removeChannel(profileChannel);
+      clearSilentCountdown();
+    };
+  }, [navigate]);
+
+  const mediaItems = useMemo(() => {
+    return posts
+      .filter((p) => p.mediaSrc)
+      .map((p) => ({
+        id: p.id,
+        type: p.mediaType || "image",
+        src: p.mediaSrc,
+        duration: p.mediaType === "video" ? `${Math.floor(Math.random() * 3)}:${String(Math.floor(Math.random() * 60)).padStart(2, "0")}` : undefined,
+        count: 1,
+      }));
+  }, [posts]);
+
+  useEffect(() => {
+    const map = {};
+    posts.forEach((p) => {
+      map[p.id] = p.likes;
+    });
+    setLikeCounts(map);
+
+    try {
+      if (typeof window !== "undefined" && window.localStorage) {
+        const raw = localStorage.getItem(FREE_SAMPLE_LS_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.expiresAt) {
+            startSilentCountdown(parsed.expiresAt);
+            setFreeSample((prev) => ({ ...prev, active: true, unlockedCount: parsed.unlockedCount || prev.unlockedCount, expiresAt: parsed.expiresAt }));
+          }
+        }
+
+        const likedState = localStorage.getItem("post_likes_state");
+        if (likedState) {
+          setLikedPosts(JSON.parse(likedState));
+        }
+
+        const likeCounts = localStorage.getItem("post_likes_permanent");
+        if (likeCounts) {
+          setLikeCounts((prev) => ({ ...prev, ...JSON.parse(likeCounts) }));
+        }
+
+        localStorage.setItem("messages_unlocked", "true");
+        setMessagesUnlocked(true);
+      }
+    } catch (e) {
+      console.warn("failed to read persisted state", e);
+    }
+
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    };
+  }, [posts]);
+
+  const startSilentCountdown = (expiresAtIso) => {
+    clearSilentCountdown();
+    countdownRef.current = setInterval(() => {
+      try {
+        const exp = new Date(expiresAtIso).getTime();
+        if (Date.now() >= exp) {
+          if (typeof window !== "undefined" && window.localStorage) {
+            localStorage.removeItem(FREE_SAMPLE_LS_KEY);
+          }
+          setFreeSample({ active: false, unlockedCount: 0, expiresAt: null });
+          clearSilentCountdown();
+        }
+      } catch (err) {
+        console.warn("silent countdown error:", err);
+      }
+    }, 60 * 1000);
+  };
+  const clearSilentCountdown = () => {
+    if (countdownRef.current) {
+      clearInterval(countdownRef.current);
+      countdownRef.current = null;
+    }
+  };
+
+  const toggleLike = async (id) => {
+    if (!subscribed) {
+      return;
+    }
+
+    const userEmail = typeof window !== "undefined" ? window.localStorage.getItem("user_email") : null;
+    if (!userEmail) {
+      return;
+    }
+
+    const postId = String(id);
+    const wasLiked = !!likedPosts[postId];
+
+    setLikedPosts((prev) => ({ ...prev, [postId]: !wasLiked }));
+    
+    if (!wasLiked) {
+      setLikeCounts((prev) => ({
+        ...prev,
+        [postId]: (prev[postId] || 0) + 1
+      }));
+
+      try {
+        const { error } = await supabase
+          .from("post_likes")
+          .insert([{
+            post_id: postId,
+            user_email: userEmail,
+            created_at: new Date().toISOString()
+          }]);
+
+        if (error) {
+          if (error.code !== "23505") {
+            console.error("Failed to save like:", error);
+            setLikedPosts((prev) => ({ ...prev, [postId]: wasLiked }));
+            setLikeCounts((prev) => ({
+              ...prev,
+              [postId]: Math.max(0, (prev[postId] || 0) - 1)
+            }));
+          }
+        }
+
+        const { count } = await supabase
+          .from("post_likes")
+          .select("*", { count: "exact", head: true })
+          .eq("post_id", postId);
+
+        if (count !== null) {
+          setLikeCounts((prev) => ({ ...prev, [postId]: count }));
+        }
+      } catch (err) {
+        console.error("toggleLike error:", err);
+        setLikedPosts((prev) => ({ ...prev, [postId]: wasLiked }));
+        setLikeCounts((prev) => ({
+          ...prev,
+          [postId]: Math.max(0, (prev[postId] || 0) - 1)
+        }));
+      }
+    } else {
+      setLikeCounts((prev) => ({
+        ...prev,
+        [postId]: Math.max(0, (prev[postId] || 0) - 1)
+      }));
+
+      try {
+        const { error } = await supabase
+          .from("post_likes")
+          .delete()
+          .eq("post_id", postId)
+          .eq("user_email", userEmail);
+
+        if (error) {
+          console.error("Failed to remove like:", error);
+          setLikedPosts((prev) => ({ ...prev, [postId]: wasLiked }));
+          setLikeCounts((prev) => ({
+            ...prev,
+            [postId]: (prev[postId] || 0) + 1
+          }));
+        }
+
+        const { count } = await supabase
+          .from("post_likes")
+          .select("*", { count: "exact", head: true })
+          .eq("post_id", postId);
+
+        if (count !== null) {
+          setLikeCounts((prev) => ({ ...prev, [postId]: count }));
+        }
+      } catch (err) {
+        console.error("toggleLike error:", err);
+        setLikedPosts((prev) => ({ ...prev, [postId]: wasLiked }));
+        setLikeCounts((prev) => ({
+          ...prev,
+          [postId]: (prev[postId] || 0) + 1
+        }));
+      }
+    }
+  };
+
+  const toggleBookmark = (id) => setBookmarkedPosts((prev) => ({ ...prev, [id]: !prev[id] }));
+  const toggleTip = (id) => {
+    setTipAnimatingPosts((prev) => ({ ...prev, [id]: true }));
+    setTimeout(() => setTipAnimatingPosts((prev) => ({ ...prev, [id]: false })), 500);
+  };
+
+  const isPostUnlocked = (postId) => {
+    const p = findPostById(postId);
+    if (!p) return false;
+    if (!p.locked) return true;
+    if (subscribed) return true;
+    if (freeSample.active && freeSample.unlockedCount > 0) {
+      if (p.isDummy) {
+        const match = String(p.id).match(/^dummy-(\d+)$/);
+        if (match) {
+          const idx = Number(match[1]);
+          return idx <= (freeSample.unlockedCount || 0);
+        }
+      }
+      return !p.locked;
+    }
+    return false;
+  };
+  const isMediaUnlocked = (mediaId) => {
+    return isPostUnlocked(mediaId);
+  };
+
+  const lockScroll = () => { try { document.body.style.overflow = "hidden"; } catch (e) {} };
+  const unlockScroll = () => { try { document.body.style.overflow = "auto"; } catch (e) {} };
+
+  const openSubModal = (planId) => { setSelectedPlan(planId || "monthly"); setShowSubModal(true); lockScroll(); };
+  const closeSubModal = () => { setShowSubModal(false); unlockScroll(); };
+
+  const buildViewerListFromPosts = useMemo(() => {
+    return posts.filter((p) => isPostUnlocked(p.id) && p.mediaType).map((p) => ({ id: p.id, mediaType: p.mediaType, src: p.mediaSrc, title: `Post ${p.id}` }));
+  }, [posts, freeSample, subscribed]);
+
+  const buildViewerListFromMedia = useMemo(() => {
+    return mediaItems
+      .filter((m) => isMediaUnlocked(m.id))
+      .map((m) => ({ id: m.id, mediaType: m.type, src: m.src, title: `Media ${m.id}` }));
+  }, [mediaItems, freeSample, subscribed]);
+
+  const openViewer = ({ list, index = 0 }) => {
+    if (!Array.isArray(list) || list.length === 0) return;
+    setViewerList(list);
+    setViewerIndex(Math.max(0, Math.min(index, list.length - 1)));
+    setViewerOpen(true);
+    lockScroll();
+  };
+  const closeViewer = () => {
+    setViewerOpen(false);
+    setTimeout(() => unlockScroll(), 60);
+  };
+  const viewerNext = () => setViewerIndex((i) => (i + 1 < viewerList.length ? i + 1 : i));
+  const viewerPrev = () => setViewerIndex((i) => (i - 1 >= 0 ? i - 1 : i));
+
+  useEffect(() => {
+    if (!viewerOpen) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") closeViewer();
+      else if (e.key === "ArrowRight") viewerNext();
+      else if (e.key === "ArrowLeft") viewerPrev();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [viewerOpen, viewerList]);
+
+  // RENDER
+  return (
+    <ErrorBoundary>
+      {/* FIX 1: Removed borders and padding from outer container */}
+      <div className="min-h-screen bg-gray-100">
+        <div
+          className="w-full min-h-screen bg-white text-[15px] relative overflow-y-auto"
+          style={{ zoom: "100%" }}
+        >
+          {/* COVER */}
+          <div className="relative h-36 bg-gray-200 overflow-hidden">
+            <img src={creator.banner || "https://share.google/UeoTXYJKD7Fx6ZTLQ"} alt="banner" className="w-full h-full object-cover" />
+            <div className="absolute left-3 top-3 flex gap-4 text-white text-xs font-semibold">
+              <div className="flex flex-col items-center">
+                <div className="font-bold leading-tight">3.1K</div>
+                <div className="text-[10px] opacity-80 leading-tight">Posts</div>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="font-bold leading-tight">2.9k</div>
+                <div className="text-[10px] opacity-80 leading-tight">Media</div>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="font-bold leading-tight">5.57M</div>
+                <div className="text-[10px] opacity-80 leading-tight">Likes</div>
+              </div>
+            </div>
+          </div>
+
+          {/* PROFILE ROW */}
+          <div className="px-4 -mt-10 flex items-start">
+            <div className="relative">
+              <div className="w-20 h-20 rounded-full overflow-hidden shadow-md">
+                <img src={creator.avatar || "https://share.google/pKUGamvuSpMSo70j1"} alt="avatar" className="w-full h-full object-cover" />
+              </div>
+              <div className="absolute right-0 bottom-0 w-4 h-4 bg-green-500 rounded-full active-dot" />
+            </div>
+          </div>
+
+          {/* ACTIONS ABOVE NAME ROW */}
+          <div className="px-4 -mt-2 flex justify-end">
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setStarred(!starred);
+                }}
+                className="w-9 h-9 bg-white rounded-full border flex items-center justify-center shadow text-[#06b6d4]"
+                aria-label="star profile"
+              >
+                <svg className="w-4 h-4 text-[#06b6d4]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 17.3l6.18 3.9-1.64-7.03L21 9.24l-7.19-.62L12 2 10.19 8.62 3 9.24l4.46 4.93L5.82 21.2z" stroke="#06b6d4" strokeWidth="0.8" fill={starred ? "#06b6d4" : "none"} />
+                </svg>
+              </button>
+
+              <button
+                onClick={async () => {
+                  const href = typeof window !== "undefined" && window.location ? window.location.href : "https://example.com/profile";
+                  if (navigator.share) {
+                    try {
+                      await navigator.share({ title: document.title || "Profile", url: href });
+                      return;
+                    } catch (err) {
+                      /* ignore */
+                    }
+                  }
+                  try {
+                    await navigator.clipboard.writeText(href);
+                  } catch {
+                    console.error("Could not copy link");
+                  }
+                }}
+                className="w-9 h-9 bg-white rounded-full border flex items-center justify-center shadow text-[#06b6d4]"
+                aria-label="share profile"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 12v7a1 1 0 001 1h14a1 1 0 001-1v-7" stroke="#06b6d4" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M16 6l-4-4-4 4" stroke="#06b6d4" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M12 2v14" stroke="#06b6d4" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* NAME + MESSAGE ROW */}
+          <div className="px-4 mt-1 flex items-center justify-between gap-3">
+            <div className="flex flex-col flex-1 min-w-0">
+              <div className="flex items-center gap-1">
+                <h2 className="text-[18px] font-bold text-gray-900 truncate">{creator.name}</h2>
+                <VerifiedBadge />
+              </div>
+              <div className="text-[13px] text-gray-500 truncate">{creator.handle} · Available now</div>
+            </div>
+
+            <button 
+              onClick={openMessageModal} 
+              className="bg-[#00AFF0] text-white text-sm font-semibold rounded-full px-6 py-2 shadow flex-shrink-0" 
+              aria-label="message creator"
+            >
+              Message
+            </button>
+          </div>
+
+          {/* BIO */}
+          <div className="px-4 border-t mt-3 pt-3">
+            <div className={`text-[14px] leading-snug text-gray-800 space-y-1 ${bioExpanded ? "" : "line-clamp-2"}`}>
+              <p>{creator.bio}</p>
+            </div>
+            <button onClick={() => setBioExpanded(!bioExpanded)} className="text-[13px] text-blue-500 underline mt-2 inline-block" aria-expanded={bioExpanded}>
+              {bioExpanded ? "Collapse" : "More info"}
+            </button>
+          </div>
+
+          {/* SUBSCRIPTION SECTION */}
+          <div className="px-4 mt-4">
+            <div className="bg-white p-4 rounded border">
+              <div className="text-[11px] font-semibold text-gray-500">SUBSCRIPTION</div>
+              <div className="mt-1 text-[14px] font-medium text-gray-800">Limited offer - Free trial for 30 days!</div>
+
+              <div className="mt-3 bg-gray-100 rounded p-3 flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                  <img src={creator.avatar} alt="avatar bubble" className="w-full h-full object-cover" />
+                </div>
+                <div className="text-[14px] text-gray-700 flex-1">I'm Always Hornyyyyyy 🤤💦💦</div>
+              </div>
+
+              <div className="mt-4">
+                <button onClick={() => openSubModal("monthly")} className="w-full rounded-full py-3 font-semibold text-white bg-[#00AFF0] flex items-center justify-between px-4" aria-haspopup="dialog">
+                  <span>SUBSCRIBE</span>
+                  <span className="font-semibold text-white text-sm whitespace-nowrap">{freeSample.active ? "$5 / month" : "FREE for 30 days"}</span>
+                </button>
+              </div>
+
+              <div className="text-[11px] text-gray-500 mt-2">Regular price $5 / month</div>
+
+              <div className="mt-4">
+                <div className="text-[13px] font-semibold text-gray-500">SUBSCRIPTION BUNDLES</div>
+                <div className="mt-2 space-y-2">
+                  <button onClick={() => openSubModal("3months")} className="w-full flex items-center justify-between rounded-full px-4 py-2 bg-[#00AFF0] text-white" aria-label="3 months plan">
+                    <div className="font-medium">3 MONTHS</div>
+                    <div className="font-semibold">$15 total</div>
+                  </button>
+                  <button onClick={() => openSubModal("6months")} className="w-full flex items-center justify-between rounded-full px-4 py-2 bg-[#00AFF0] text-white" aria-label="6 months plan">
+                    <div className="font-medium">6 MONTHS</div>
+                    <div className="font-semibold">$30 total</div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* TABS */}
+          <div className="mt-4 border-t">
+            <div className="grid grid-cols-2 bg-white text-[14px] font-medium">
+              <button onClick={() => setActiveTab("posts")} className={`py-3 ${activeTab === "posts" ? "border-b-2 border-black" : "text-gray-500"}`} aria-pressed={activeTab === "posts"}>
+                {(2918 + posts.length).toLocaleString()} POSTS
+              </button>
+              <button onClick={() => setActiveTab("media")} className={`py-3 ${activeTab === "media" ? "border-b-2 border-black" : "text-gray-500"}`} aria-pressed={activeTab === "media"}>
+                {(1939 + mediaItems.length).toLocaleString()} MEDIA
+              </button>
+            </div>
+          </div>
+
+          {/* TAB CONTENT */}
+          <div className="bg-white p-4">
+            {activeTab === "posts" && (
+              <div className="space-y-6">
+                {posts.map((p) => (
+                  <article key={p.id} className="border-b pb-4 last:border-none">
+                    <header className="flex items-start gap-3 mb-2">
+                      <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                        <img src={creator.avatar} alt="avatar" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1">
+                              <h2 className="font-semibold text-[14px] text-gray-900 truncate">{creator.name}</h2>
+                              <VerifiedBadge />
+                            </div>
+                            <div className="text-[12px] text-gray-500 truncate">{creator.handle} · {p.date}</div>
+                          </div>
+                          <div className="text-gray-400 ml-2">•••</div>
+                        </div>
+
+                        <p className="mt-2 text-[14px] text-gray-800">{p.text}</p>
+
+                        <div className="mt-3">
+                          {p.mediaType && !isPostUnlocked(p.id) ? (
+                            <div className="bg-[#F8FAFB] rounded-lg p-4">
+                              <div className="flex flex-col items-center">
+                                <LockedPlaceholder />
+
+                                <div className="text-[12px] text-gray-400 mt-2">{p.mediaType === "video" ? "1 video" : "1 image"}</div>
+                              </div>
+
+                              <button onClick={() => openSubModal("monthly")} className="mx-auto block px-6 py-2 rounded-full bg-[#00AFF0] text-white font-semibold text-sm max-w-[300px] whitespace-nowrap mt-4">
+                                SUBSCRIBE TO SEE USER'S POSTS
+                              </button>
+                            </div>
+                          ) : p.mediaType && isPostUnlocked(p.id) ? (
+                            <div className="rounded-md overflow-hidden bg-gray-100 h-44 flex items-center justify-center relative">
+                              {p.mediaType === "video" ? (
+                                <div
+                                  role="button"
+                                  tabIndex={0}
+                                  onClick={() =>
+                                    openViewer({
+                                      list: buildViewerListFromPosts,
+                                      index: buildViewerListFromPosts.findIndex((x) => x.id === p.id),
+                                    })
+                                  }
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter" || e.key === " ") {
+                                      openViewer({
+                                        list: buildViewerListFromPosts,
+                                        index: buildViewerListFromPosts.findIndex((x) => x.id === p.id),
+                                      });
+                                    }
+                                  }}
+                                  className="w-full h-full cursor-pointer flex items-center justify-center"
+                                  aria-label={`Open video post ${p.id}`}
+                                >
+                                  <img src={p.mediaSrc} alt={`post ${p.id} poster`} className="w-full h-full object-cover" loading="lazy" />
+                                  <div className="absolute">
+                                    <div className="bg-black bg-opacity-40 rounded-full p-2">
+                                      <svg viewBox="0 0 24 24" className="w-6 h-6 text-white" fill="none" stroke="white" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7z" /></svg>
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : (
+                                <img
+                                  src={p.mediaSrc}
+                                  alt={`post media ${p.id}`}
+                                  className="w-full h-full object-cover cursor-pointer"
+                                  loading="lazy"
+                                  onClick={() =>
+                                    openViewer({
+                                      list: buildViewerListFromPosts,
+                                      index: buildViewerListFromPosts.findIndex((x) => x.id === p.id),
+                                    })
+                                  }
+                                />
+                              )}
+                            </div>
+                          ) : null}
+                        </div>
+
+                        <div className="mt-3 flex items-center gap-4 text-gray-500 text-[13px]">
+                          <button className="flex items-center gap-2" onClick={() => toggleLike(p.id)} aria-label={`like post ${p.id}`}>
+                            <IconHeart active={!!likedPosts[p.id]} likes={likeCounts[p.id] ?? p.likes} />
+                          </button>
+
+                          <div className="flex items-center gap-2" role="button" aria-label={`comment on post ${p.id}`}>
+                            <IconComment />
+                            <span>Comment</span>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <button className="flex items-center gap-2" onClick={() => toggleTip(p.id)} aria-label={`tip post ${p.id}`}>
+                              <IconTip active={!!tipAnimatingPosts[p.id]} />
+                              <span>Send Tip</span>
+                            </button>
+                          </div>
+
+                          <div className="ml-auto">
+                            <button onClick={() => toggleBookmark(p.id)} aria-label={`bookmark post ${p.id}`}>
+                              <IconBookmark active={!!bookmarkedPosts[p.id]} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </header>
+                  </article>
+                ))}
+              </div>
+            )}
+
+            {activeTab === "media" && (
+              <div>
+                <div className="grid grid-cols-3 gap-1">
+                  {mediaItems.map((m) => {
+                    const locked = !(subscribed || (freeSample.active && (() => {
+                      const post = findPostById(m.id);
+                      if (!post) return false;
+                      if (!post.locked) return true;
+                      if (post.isDummy) {
+                        const match = String(post.id).match(/^dummy-(\d+)$/);
+                        if (match) {
+                          const idx = Number(match[1]);
+                          return idx <= (freeSample.unlockedCount || 0);
+                        }
+                      }
+                      return !post.locked;
+                    })()));
+                    return (
+                      <div key={m.id} className="relative bg-white aspect-square border border-transparent">
+                        {locked ? (
+                          <>
+                            <div className="absolute inset-0 bg-[#FBFCFD] flex items-center justify-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <rect x="3" y="10" width="18" height="11" rx="2" stroke="#D1D7DB" strokeWidth="1.6" />
+                                <path d="M7 10V7a5 5 0 0110 0v3" stroke="#D1D7DB" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                            </div>
+                            <div className="absolute left-1 bottom-1 bg-white bg-opacity-90 text-[11px] px-1 rounded flex items-center gap-1 text-gray-600">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none">
+                                <path d="M3 3h18v18H3z" stroke="#B5BEC4" strokeWidth="1.2" fill="none" />
+                                <path d="M8 8l3 4 2-2 3 4" stroke="#B5BEC4" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                              </svg>
+                              <span>{m.count}</span>
+                            </div>
+
+                            {m.type === "video" && (
+                              <div className="absolute right-1 bottom-1 bg-white bg-opacity-90 text-[11px] px-1 rounded text-gray-600">▶ {m.duration}</div>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            {m.type === "image" ? (
+                              <img
+                                src={m.src}
+                                alt={`media ${m.id}`}
+                                className="w-full h-full object-cover cursor-pointer"
+                                loading="lazy"
+                                onClick={() =>
+                                  openViewer({
+                                    list: buildViewerListFromMedia,
+                                    index: buildViewerListFromMedia.findIndex((x) => x.id === m.id),
+                                  })
+                                }
+                              />
+                            ) : (
+                              <div
+                                className="w-full h-full bg-black flex items-center justify-center text-white text-xs cursor-pointer"
+                                onClick={() =>
+                                  openViewer({
+                                    list: buildViewerListFromMedia,
+                                    index: buildViewerListFromMedia.findIndex((x) => x.id === m.id),
+                                  })
+                                }
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" || e.key === " ") {
+                                    openViewer({
+                                      list: buildViewerListFromMedia,
+                                      index: buildViewerListFromMedia.findIndex((x) => x.id === m.id),
+                                    });
+                                  }
+                                }}
+                              >
+                                VIDEO
+                              </div>
+                            )}
+                            {m.type === "video" && (
+                              <div className="absolute right-1 bottom-1 bg-black bg-opacity-60 text-white text-[11px] px-1 rounded">▶ {m.duration}</div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {!subscribed && (
+                  <div className="mt-4 px-2">
+                    <div className="border rounded p-3 bg-white">
+                      <button onClick={() => openSubModal("monthly")} className="mx-auto block px-6 py-2 rounded-full bg-[#00AFF0] text-white font-semibold text-sm max-w-[300px] whitespace-nowrap">
+                        SUBSCRIBE TO SEE USER'S MEDIA
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Viewer */}
+          {viewerOpen && viewerList && viewerList.length > 0 && (
+            <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black bg-opacity-90 p-4" role="dialog" aria-modal="true" aria-label={viewerList[viewerIndex]?.title || "Viewer"}>
+              <button onClick={closeViewer} aria-label="Close viewer" className="absolute top-6 right-6 z-30 bg-black bg-opacity-40 hover:bg-opacity-60 text-white rounded-full p-2">✕</button>
+
+              <button onClick={viewerPrev} disabled={viewerIndex === 0} aria-label="Previous" className={`absolute left-4 z-20 text-white p-2 rounded-full ${viewerIndex === 0 ? "opacity-40 pointer-events-none" : "hover:bg-black hover:bg-opacity-30"}`}>◀</button>
+              <button onClick={viewerNext} disabled={viewerIndex === viewerList.length - 1} aria-label="Next" className={`absolute right-4 z-20 text-white p-2 rounded-full ${viewerIndex === viewerList.length - 1 ? "opacity-40 pointer-events-none" : "hover:bg-black hover:bg-opacity-30"}`}>▶</button>
+
+              <div className="max-w-[95%] max-h-[95%] w-full h-full flex items-center justify-center overflow-auto">
+                {viewerList[viewerIndex].mediaType === "image" ? (
+                  <img src={viewerList[viewerIndex].src} alt={viewerList[viewerIndex].title} className="max-w-full max-h-full object-contain" loading="eager" />
+                ) : (
+                  <video src={viewerList[viewerIndex].src} className="max-w-full max-h-full" controls autoPlay playsInline />
+                )}
+              </div>
+            </div>
+          )}
+
+          <ModalPortal isOpen={showSubModal} onClose={closeSubModal} zIndex={1000}>
+            <SubscriptionModal
+              creator={creator}
+              selectedPlan={selectedPlan}
+              onSelectPlan={(planId) => setSelectedPlan(planId)}
+              onClose={closeSubModal}
+              freeSampleActive={freeSample.active}
+            />
+          </ModalPortal>
+
+          <ModalPortal isOpen={showMessageModal} onClose={closeMessageModal} zIndex={1000}>
+            <MessageModal creator={creator} onClose={closeMessageModal} />
+          </ModalPortal>
+
+        </div>
+      </div>
+    </ErrorBoundary>
+  );
+}}
 
 /* fallback data kept similar to your original */
 const defaultCreator = {
