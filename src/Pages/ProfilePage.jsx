@@ -788,9 +788,9 @@ export default function SafeProfileMock() {
       {/* FIX 1: Removed borders and padding from outer container */}
       <div className="min-h-screen bg-gray-100">
         <div
-          className="w-full max-w-[375px] mx-auto bg-white text-[15px] relative"
-          style={{ zoom: "80%" }}
-        >
+  className="w-full min-h-screen bg-white text-[15px] relative overflow-y-auto"
+  style={{ zoom: "100%" }}
+>
           {/* COVER */}
           <div className="relative h-36 bg-gray-200 overflow-hidden">
             <img src={creator.banner || "https://share.google/UeoTXYJKD7Fx6ZTLQ"} alt="banner" className="w-full h-full object-cover" />
