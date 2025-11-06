@@ -1,4 +1,5 @@
-// ProfilePage.jsx - PART 1 OF 3
+// ProfilePage.jsx - CORRECTED VERSION
+
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import ModalPortal from "../component/ModalPortal";
@@ -45,7 +46,7 @@ const defaultCreator = {
     "Hi 😊 I'm your favorite 19 year old & I love showing all of ME for your pleasure; ) you'll love it here! 🍆💦 Message me 👆 for daily nudes and videos in the feed ✨ S tapes, bjs , hjs , stripteases Dildo, vibrator, creampie, baby oil, roleplay 💦 Private messages with me ✨ NO SPAM OR ADS Turn on your your auto-renew on and get freebies xo",
 };
 
-// Post captions for dummy posts
+// Post captions and images arrays (keeping them as before)
 const UNLOCKED_POST_IMAGES = [
   "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760742247894-wuga4b-tayler-hills-onlyfans-7su4i-72.jpeg",
   "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760701141796-9roite-Screenshot_20251017-123357.jpg",
@@ -135,7 +136,6 @@ const DUMMY_POST_CAPTIONS = [
 ];
 
 function buildLocalDummyPosts() {
-  // CHANGE: First 15 posts are UNLOCKED, rest are locked
   const startDate = new Date('2025-09-29');
   const endDate = new Date('2024-01-01');
   const totalDays = Math.floor((startDate - endDate) / (1000 * 60 * 60 * 24));
@@ -175,7 +175,7 @@ function buildLocalDummyPosts() {
       likes: persistedLikes[postId],
       date: postDate.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
       created_at: postDate.toISOString(),
-      locked: idx > 15, // CHANGE: First 15 unlocked, rest locked
+      locked: idx > 15,
       isDummy: true,
     };
   });
@@ -213,14 +213,14 @@ export default function SafeProfileMock() {
   const [bookmarkedPosts, setBookmarkedPosts] = useState({});
   const [tipActivePosts, setTipActivePosts] = useState({});
   const [likeCounts, setLikeCounts] = useState({});
-  const [messagesUnlocked, setMessagesUnlocked] = useState(true); // CHANGE: Default to true (unlocked)
+  const [messagesUnlocked, setMessagesUnlocked] = useState(true);
   const toastTimerRef = useRef(null);
 
   const [showSubModal, setShowSubModal] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("monthly");
 
-  const [freeSample, setFreeSample] = useState({ active: false, unlockedCount: 15, expiresAt: null }); // CHANGE: 15 unlocked by default
+  const [freeSample, setFreeSample] = useState({ active: false, unlockedCount: 15, expiresAt: null });
   const countdownRef = useRef(null);
   const unlockedOnceRef = useRef(false);
 
@@ -233,18 +233,16 @@ export default function SafeProfileMock() {
   const findPostIndexById = (id) => posts.findIndex((p) => String(p.id) === String(id));
   const findPostById = (id) => posts.find((p) => String(p.id) === String(id));
 
+  // FIX 3: Navigate to /messages instead of opening modal
   const openMessageModal = () => {
-    setShowMessageModal(true); // CHANGE: Open message modal directly
-    lockScroll();
+    navigate("/messages");
   };
 
   const closeMessageModal = () => {
     setShowMessageModal(false);
     unlockScroll();
   };
-  // ---------------------------
-  // LIVE Supabase integration (initial fetch + realtime subscriptions)
-  // ---------------------------
+
   useEffect(() => {
     let mounted = true;
     setPostsLoading(true);
@@ -483,7 +481,7 @@ export default function SafeProfileMock() {
       supabase.removeChannel(profileChannel);
       clearSilentCountdown();
     };
-  }, []);
+  }, [navigate]);
 
   const mediaItems = useMemo(() => {
     return posts
@@ -525,7 +523,6 @@ export default function SafeProfileMock() {
           setLikeCounts((prev) => ({ ...prev, ...JSON.parse(likeCounts) }));
         }
 
-        // CHANGE: Messages are unlocked by default, so we set to true
         localStorage.setItem("messages_unlocked", "true");
         setMessagesUnlocked(true);
       }
@@ -562,14 +559,25 @@ export default function SafeProfileMock() {
     }
   };
 
-  // CHANGE: Fixed verified badge SVG to show fully
+  // FIX 2: Fixed verified badge SVG to display properly
   const VerifiedBadge = () => (
-    <svg className="w-5 h-5 ml-1 flex-shrink-0" viewBox="0 0 33 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <image xlinkHref="data:image/png;base64,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" x="0" y="0" width="33" height="32"/>
+    <svg 
+      className="w-5 h-5 ml-1 flex-shrink-0" 
+      viewBox="0 0 33 32" 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg"
+      xmlnsXlink="http://www.w3.org/1999/xlink"
+    >
+      <image 
+        xlinkHref="data:image/png;base64,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" 
+        x="0" 
+        y="0" 
+        width="33" 
+        height="32"
+      />
     </svg>
   );
 
-  // Icon components unchanged
   const IconHeart = ({ className = "w-5 h-5", active = false, likes = 0 }) => (
     <div className="flex flex-col items-center">
       <svg className={className} viewBox="0 0 24 24" fill={active ? "#e0245e" : "none"} xmlns="http://www.w3.org/2000/svg" stroke={active ? "#e0245e" : "#9AA3AD"}>
@@ -599,7 +607,6 @@ export default function SafeProfileMock() {
     return String(num);
   };
 
-  // CHANGE: NEW lock icon SVG - marking where it starts and ends
   // ========== LOCK SVG STARTS HERE ==========
   const LockIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="w-14 h-14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -775,16 +782,14 @@ export default function SafeProfileMock() {
     return () => window.removeEventListener("keydown", onKey);
   }, [viewerOpen, viewerList]);
 
-  // -----------------------
   // RENDER
-  // -----------------------
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gray-100 flex justify-center p-0">
-        {/* CHANGE: Removed modal-like borders and max-height constraint */}
+      {/* FIX 1: Removed borders and padding from outer container */}
+      <div className="min-h-screen bg-gray-100">
         <div
-          className="w-full max-w-[375px] bg-white text-[15px] relative"
-          style={{ overflowY: "auto", zoom: "80%" }}
+          className="w-full max-w-[375px] mx-auto bg-white text-[15px] relative"
+          style={{ zoom: "80%" }}
         >
           {/* COVER */}
           <div className="relative h-36 bg-gray-200 overflow-hidden">
@@ -805,7 +810,7 @@ export default function SafeProfileMock() {
             </div>
           </div>
 
-          {/* CHANGE: Reduced spacing between avatar and name */}
+          {/* PROFILE ROW */}
           <div className="px-4 -mt-10 flex items-start">
             <div className="relative">
               <div className="w-20 h-20 rounded-full overflow-hidden shadow-md">
@@ -859,17 +864,21 @@ export default function SafeProfileMock() {
             </div>
           </div>
 
-          {/* CHANGE: Name and username alignment fixed, reduced spacing */}
-          <div className="px-4 mt-1 flex items-center justify-between">
+          {/* NAME + MESSAGE ROW */}
+          <div className="px-4 mt-1 flex items-center justify-between gap-3">
             <div className="flex flex-col flex-1 min-w-0">
               <div className="flex items-center gap-1">
-                <h2 className="text-[18px] font-bold text-gray-900">{creator.name}</h2>
+                <h2 className="text-[18px] font-bold text-gray-900 truncate">{creator.name}</h2>
                 <VerifiedBadge />
               </div>
-              <div className="text-[13px] text-gray-500">{creator.handle} · Available now</div>
+              <div className="text-[13px] text-gray-500 truncate">{creator.handle} · Available now</div>
             </div>
 
-            <button onClick={openMessageModal} className="bg-[#00AFF0] text-white text-sm font-semibold rounded-full px-6 py-2 shadow min-w-[120px]" aria-label="message creator">
+            <button 
+              onClick={openMessageModal} 
+              className="bg-[#00AFF0] text-white text-sm font-semibold rounded-full px-6 py-2 shadow flex-shrink-0" 
+              aria-label="message creator"
+            >
               Message
             </button>
           </div>
@@ -894,7 +903,7 @@ export default function SafeProfileMock() {
                 <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
                   <img src={creator.avatar} alt="avatar bubble" className="w-full h-full object-cover" />
                 </div>
-                <div className="text-[14px] text-gray-700">I'm Always Hornyyyyyy 🤤💦</div>
+                <div className="text-[14px] text-gray-700 flex-1">I'm Always Hornyyyyyy 🤤💦</div>
               </div>
 
               <div className="mt-4">
@@ -933,7 +942,7 @@ export default function SafeProfileMock() {
               </button>
             </div>
           </div>
-			
+
           {/* TAB CONTENT */}
           <div className="bg-white p-4">
             {activeTab === "posts" && (
@@ -959,7 +968,6 @@ export default function SafeProfileMock() {
                           {p.mediaType && !isPostUnlocked(p.id) ? (
                             <div className="bg-[#F8FAFB] border rounded-lg p-4">
                               <div className="flex flex-col items-center">
-                                {/* CHANGE: Using the new LockIcon component */}
                                 <LockIcon />
 
                                 <div className="w-full mt-3 max-w-[420px]">
@@ -1085,7 +1093,6 @@ export default function SafeProfileMock() {
                         {locked ? (
                           <>
                             <div className="absolute inset-0 bg-[#FBFCFD] flex items-center justify-center">
-                              {/* CHANGE: Using the new LockIcon component in media grid */}
                               <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                 <rect x="3" y="10" width="18" height="11" rx="2" stroke="#D1D7DB" strokeWidth="1.6" />
                                 <path d="M7 10V7a5 5 0 0110 0v3" stroke="#D1D7DB" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -1180,8 +1187,6 @@ export default function SafeProfileMock() {
               </div>
             </div>
           )}
-
-          {/* CHANGE: All toast notifications removed */}
 
           <ModalPortal isOpen={showSubModal} onClose={closeSubModal} zIndex={1000}>
             <SubscriptionModal
