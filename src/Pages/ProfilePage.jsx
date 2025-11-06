@@ -577,7 +577,6 @@ export default function SafeProfileMock() {
     />
   </svg>
 );
-);
   const IconHeart = ({ className = "w-5 h-5", active = false, likes = 0 }) => (
     <div className="flex flex-col items-center">
       <svg className={className} viewBox="0 0 24 24" fill={active ? "#e0245e" : "none"} xmlns="http://www.w3.org/2000/svg" stroke={active ? "#e0245e" : "#9AA3AD"}>
