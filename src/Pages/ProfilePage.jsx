@@ -1,5 +1,4 @@
-// ProfilePage.jsx - CORRECTED VERSION
-
+// ProfilePage.jsx - Complete updated version
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import ModalPortal from "../component/ModalPortal";
@@ -9,7 +8,7 @@ import supabase from "../supabaseclient";
 
 const FREE_SAMPLE_LS_KEY = "freeSampleAccess_v1";
 
-/* ErrorBoundary unchanged */
+/* ErrorBoundary unchanged but JSX-safe */
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -39,8 +38,10 @@ class ErrorBoundary extends React.Component {
 /* fallback data kept similar to your original */
 const defaultCreator = {
   name: "Tayler Hills",
-  avatar: "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760699188347-6c2tnk-images%20(9).jpeg",
-  banner: "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760699444010-y1kcnl-Screenshot_20251017-121026.jpg",
+  avatar:
+    "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760699188347-6c2tnk-images%20(9).jpeg",
+  banner:
+    "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760699444010-y1kcnl-Screenshot_20251017-121026.jpg",
   handle: "@taylerhillxxx",
   bio:
     "Hi 😊 I'm your favorite 19 year old & I love showing all of ME for your pleasure; ) you'll love it here! 🍆💦 Message me 👆 for daily nudes and videos in the feed ✨ S tapes, bjs , hjs , stripteases Dildo, vibrator, creampie, baby oil, roleplay 💦 Private messages with me ✨ NO SPAM OR ADS Turn on your your auto-renew on and get freebies xo",
@@ -132,12 +133,12 @@ const DUMMY_POST_CAPTIONS = [
   "Naughty notions in notion. Note them? 📝",
   "Sultry secrets sealed. Unseal? ✉️",
   "Heat hearted and hard to resist. Resist? 💔",
-  "Final tease: all in or all out? Decide. 🃏"
+  "Final tease: all in or all out? Decide. 🃏",
 ];
 
 function buildLocalDummyPosts() {
-  const startDate = new Date('2025-09-29');
-  const endDate = new Date('2024-01-01');
+  const startDate = new Date("2025-09-29");
+  const endDate = new Date("2024-01-01");
   const totalDays = Math.floor((startDate - endDate) / (1000 * 60 * 60 * 24));
 
   const dates = Array.from({ length: 100 }).map((_, i) => {
@@ -161,7 +162,6 @@ function buildLocalDummyPosts() {
     const idx = i + 1;
     const hasRealImage = idx <= 15;
     const postDate = dates[i];
-
     const postId = `dummy-${idx}`;
     if (!persistedLikes[postId]) {
       persistedLikes[postId] = Math.floor(Math.random() * 1800001) + 200000;
@@ -320,7 +320,7 @@ export default function SafeProfileMock() {
             if (!persistedLikes[postId]) {
               persistedLikes[postId] = Math.floor(Math.random() * 1800001) + 200000;
             }
-            
+
             return {
               id: postId,
               dbId: post.id,
@@ -370,7 +370,7 @@ export default function SafeProfileMock() {
             }
 
             try {
-              const allPostIds = mappedDB.map(p => p.id);
+              const allPostIds = mappedDB.map((p) => p.id);
               if (allPostIds.length > 0) {
                 const countsMap = {};
                 for (const postId of allPostIds) {
@@ -403,8 +403,8 @@ export default function SafeProfileMock() {
     loadInitialData();
 
     const postsChannel = supabase
-      .channel('posts-changes')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, (payload) => {
+      .channel("posts-changes")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "posts" }, (payload) => {
         const newRow = payload.new;
         const postId = `db-${newRow.id}`;
         const mapped = {
@@ -425,7 +425,7 @@ export default function SafeProfileMock() {
           return [mapped, ...withoutSame];
         });
       })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'posts' }, (payload) => {
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "posts" }, (payload) => {
         const row = payload.new;
         const postId = `db-${row.id}`;
         const mapped = {
@@ -451,7 +451,7 @@ export default function SafeProfileMock() {
           return copy;
         });
       })
-      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'posts' }, (payload) => {
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "posts" }, (payload) => {
         const oldRow = payload.old;
         const id = `db-${oldRow.id}`;
         setPosts((prev) => prev.filter((p) => String(p.id) !== String(id)));
@@ -459,8 +459,8 @@ export default function SafeProfileMock() {
       .subscribe();
 
     const profileChannel = supabase
-      .channel('profile-changes')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'creator_profiles' }, (payload) => {
+      .channel("profile-changes")
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "creator_profiles" }, (payload) => {
         const row = payload.new;
         setCreator((prev) => ({
           ...prev,
@@ -559,28 +559,18 @@ export default function SafeProfileMock() {
     }
   };
 
-  // FIX 2: Fixed verified badge SVG to display properly
+  // Simple verified badge (SVG check) to avoid heavy base64 inlined
   const VerifiedBadge = () => (
-  <svg
-    className="w-4 h-4 ml-1 inline-block align-middle flex-shrink-0"
-    viewBox="0 0 33 32"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    style={{ display: "inline-block" }}
-  >
-    <image
-      href="data:image/png;base64,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"
-      x="0"
-      y="0"
-      width="33"
-      height="32"
-    />
-  </svg>
-);
+    <svg className="w-4 h-4 ml-1 inline-block align-middle flex-shrink-0" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <circle cx="10" cy="10" r="9" stroke="#60A5FA" strokeWidth="1.2" fill="white" />
+      <path d="M6.5 10.2l1.6 1.6L13.5 6.4" stroke="#2563eb" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+    </svg>
+  );
+
   const IconHeart = ({ className = "w-5 h-5", active = false, likes = 0 }) => (
     <div className="flex flex-col items-center">
       <svg className={className} viewBox="0 0 24 24" fill={active ? "#e0245e" : "none"} xmlns="http://www.w3.org/2000/svg" stroke={active ? "#e0245e" : "#9AA3AD"}>
-        <path d="M12 17.3l6.18 3.9-1.64-7.03L21 9.24l-7.19-.62L12 2 10.19 8.62 3 9.24l4.46 4.93L5.82 21.2z" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M12 17.3l6.18 3.9-1.64-7.03L21 9.24l-7.19-.62L12 2 10.19 8.62 3 9.24l4.46 4.93L5.82 21.2z" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
       <span className="text-xs text-gray-500">{formatLikes(likes)}</span>
     </div>
@@ -591,13 +581,16 @@ export default function SafeProfileMock() {
     </svg>
   );
   const IconTip = ({ className = "w-5 h-5", active = false }) => (
-    <svg className={`${className} ${active ? 'animate-flash-blue' : ''}`} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" stroke="#9AA3AD">
-      <circle cx="12" cy="12" r="9" strokeWidth="1.2"/><text x="12" y="15.2" textAnchor="middle" fontSize="10" fill="#9AA3AD" fontWeight="600">$</text>
+    <svg className={`${className} ${active ? "animate-flash-blue" : ""}`} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" stroke="#9AA3AD">
+      <circle cx="12" cy="12" r="9" strokeWidth="1.2" />
+      <text x="12" y="15.2" textAnchor="middle" fontSize="10" fill="#9AA3AD" fontWeight="600">
+        $
+      </text>
     </svg>
   );
   const IconBookmark = ({ className = "w-5 h-5", active = false }) => (
     <svg className={className} viewBox="0 0 24 24" fill={active ? "#2563eb" : "none"} xmlns="http://www.w3.org/2000/svg" aria-hidden="true" stroke={active ? "#2563eb" : "#9AA3AD"}>
-      <path d="M6 2h12v19l-6-4-6 4V2z" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M6 2h12v19l-6-4-6 4V2z" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
   const formatLikes = (num) => {
@@ -606,14 +599,92 @@ export default function SafeProfileMock() {
     return String(num);
   };
 
-  // ========== LOCK SVG STARTS HERE ==========
-  const LockIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="w-14 h-14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="10" width="18" height="11" rx="2" stroke="#D1D7DB" strokeWidth="1.6" />
-      <path d="M7 10V7a5 5 0 0110 0v3" stroke="#D1D7DB" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+  // ========== LOCK SVG (JSX-safe) ==========
+  // Paste your base64 into the xlinkHref string below where indicated.
+  const LockIcon = ({ className = "w-14 h-14" }) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      xmlnsXlink="http://www.w3.org/1999/xlink"
+      viewBox="0 0 300.4623334845764 300.39195055475284"
+      className={className}
+      aria-hidden="true"
+      role="img"
+    >
+      <g id="a42ec411-e998-40eb-93c0-90b13543115b">
+        <rect
+          x={-150.2311667422882}
+          y={-150.19597527737642}
+          rx={0}
+          ry={0}
+          width={300.4623334845764}
+          height={300.39195055475284}
+          transform="matrix(1 0 0 1 150.231167 150.195975)"
+          style={{
+            stroke: "rgb(193,193,193)",
+            strokeWidth: 0,
+            strokeDasharray: "none",
+            strokeLinecap: "butt",
+            strokeDashoffset: 0,
+            strokeLinejoin: "miter",
+            strokeMiterlimit: 4,
+            fill: "rgb(255,255,255)",
+            fillRule: "nonzero",
+            opacity: 1,
+          }}
+        />
+      </g>
+
+      <g id="d637926b-37ca-4830-9bdb-41d835e3bd78">
+        <g>
+          <g>
+            <image
+              // !!! Replace the following comment with your base64 string (no additional quotes)
+              // Example after replace: xlinkHref={'data:image/png;base64,iVBORw0K...'}
+              xlinkHref={'data:image/png;base64,/* PASTE YOUR BASE64 HERE */'}
+              x={-360}
+              y={-375.5}
+              width={720}
+              height={751}
+              transform="matrix(0.42805 0 0 0.428806 154.098 151.424057)"
+              style={{
+                stroke: "rgb(193,193,193)",
+                strokeWidth: 0,
+                strokeDasharray: "none",
+                strokeLinecap: "butt",
+                strokeDashoffset: 0,
+                strokeLinejoin: "miter",
+                strokeMiterlimit: 4,
+                fill: "rgb(0,0,0)",
+                fillRule: "nonzero",
+                opacity: 1,
+              }}
+            />
+          </g>
+        </g>
+
+        <rect
+          x={-360}
+          y={-375.5}
+          width={720}
+          height={751}
+          transform="matrix(0.42805 0 0 0.428806 154.098 151.424057)"
+          style={{
+            stroke: "rgb(193,193,193)",
+            strokeWidth: 0,
+            strokeDasharray: "none",
+            strokeLinecap: "butt",
+            strokeDashoffset: 0,
+            strokeLinejoin: "miter",
+            strokeMiterlimit: 4,
+            fill: "none",
+            fillRule: "nonzero",
+            opacity: 1,
+          }}
+        />
+      </g>
     </svg>
   );
-  // ========== LOCK SVG ENDS HERE ==========
+  // ========== LOCK SVG END ==========
 
   const toggleLike = async (id) => {
     if (!subscribed) {
@@ -629,21 +700,21 @@ export default function SafeProfileMock() {
     const wasLiked = !!likedPosts[postId];
 
     setLikedPosts((prev) => ({ ...prev, [postId]: !wasLiked }));
-    
+
     if (!wasLiked) {
       setLikeCounts((prev) => ({
         ...prev,
-        [postId]: (prev[postId] || 0) + 1
+        [postId]: (prev[postId] || 0) + 1,
       }));
 
       try {
-        const { error } = await supabase
-          .from("post_likes")
-          .insert([{
+        const { error } = await supabase.from("post_likes").insert([
+          {
             post_id: postId,
             user_email: userEmail,
-            created_at: new Date().toISOString()
-          }]);
+            created_at: new Date().toISOString(),
+          },
+        ]);
 
         if (error) {
           if (error.code !== "23505") {
@@ -651,15 +722,12 @@ export default function SafeProfileMock() {
             setLikedPosts((prev) => ({ ...prev, [postId]: wasLiked }));
             setLikeCounts((prev) => ({
               ...prev,
-              [postId]: Math.max(0, (prev[postId] || 0) - 1)
+              [postId]: Math.max(0, (prev[postId] || 0) - 1),
             }));
           }
         }
 
-        const { count } = await supabase
-          .from("post_likes")
-          .select("*", { count: "exact", head: true })
-          .eq("post_id", postId);
+        const { count } = await supabase.from("post_likes").select("*", { count: "exact", head: true }).eq("post_id", postId);
 
         if (count !== null) {
           setLikeCounts((prev) => ({ ...prev, [postId]: count }));
@@ -669,35 +737,28 @@ export default function SafeProfileMock() {
         setLikedPosts((prev) => ({ ...prev, [postId]: wasLiked }));
         setLikeCounts((prev) => ({
           ...prev,
-          [postId]: Math.max(0, (prev[postId] || 0) - 1)
+          [postId]: Math.max(0, (prev[postId] || 0) - 1),
         }));
       }
     } else {
       setLikeCounts((prev) => ({
         ...prev,
-        [postId]: Math.max(0, (prev[postId] || 0) - 1)
+        [postId]: Math.max(0, (prev[postId] || 0) - 1),
       }));
 
       try {
-        const { error } = await supabase
-          .from("post_likes")
-          .delete()
-          .eq("post_id", postId)
-          .eq("user_email", userEmail);
+        const { error } = await supabase.from("post_likes").delete().eq("post_id", postId).eq("user_email", userEmail);
 
         if (error) {
           console.error("Failed to remove like:", error);
           setLikedPosts((prev) => ({ ...prev, [postId]: wasLiked }));
           setLikeCounts((prev) => ({
             ...prev,
-            [postId]: (prev[postId] || 0) + 1
+            [postId]: (prev[postId] || 0) + 1,
           }));
         }
 
-        const { count } = await supabase
-          .from("post_likes")
-          .select("*", { count: "exact", head: true })
-          .eq("post_id", postId);
+        const { count } = await supabase.from("post_likes").select("*", { count: "exact", head: true }).eq("post_id", postId);
 
         if (count !== null) {
           setLikeCounts((prev) => ({ ...prev, [postId]: count }));
@@ -707,7 +768,7 @@ export default function SafeProfileMock() {
         setLikedPosts((prev) => ({ ...prev, [postId]: wasLiked }));
         setLikeCounts((prev) => ({
           ...prev,
-          [postId]: (prev[postId] || 0) + 1
+          [postId]: (prev[postId] || 0) + 1,
         }));
       }
     }
@@ -740,11 +801,26 @@ export default function SafeProfileMock() {
     return isPostUnlocked(mediaId);
   };
 
-  const lockScroll = () => { try { document.body.style.overflow = "hidden"; } catch (e) {} };
-  const unlockScroll = () => { try { document.body.style.overflow = "auto"; } catch (e) {} };
+  const lockScroll = () => {
+    try {
+      document.body.style.overflow = "hidden";
+    } catch (e) {}
+  };
+  const unlockScroll = () => {
+    try {
+      document.body.style.overflow = "auto";
+    } catch (e) {}
+  };
 
-  const openSubModal = (planId) => { setSelectedPlan(planId || "monthly"); setShowSubModal(true); lockScroll(); };
-  const closeSubModal = () => { setShowSubModal(false); unlockScroll(); };
+  const openSubModal = (planId) => {
+    setSelectedPlan(planId || "monthly");
+    setShowSubModal(true);
+    lockScroll();
+  };
+  const closeSubModal = () => {
+    setShowSubModal(false);
+    unlockScroll();
+  };
 
   const buildViewerListFromPosts = useMemo(() => {
     return posts.filter((p) => isPostUnlocked(p.id) && p.mediaType).map((p) => ({ id: p.id, mediaType: p.mediaType, src: p.mediaSrc, title: `Post ${p.id}` }));
@@ -784,12 +860,8 @@ export default function SafeProfileMock() {
   // RENDER
   return (
     <ErrorBoundary>
-      {/* FIX 1: Removed borders and padding from outer container */}
       <div className="min-h-screen bg-gray-100">
-        <div
-  className="w-full min-h-screen bg-white text-[15px] relative overflow-y-auto"
-  style={{ zoom: "100%" }}
->
+        <div className="w-full min-h-screen bg-white text-[15px] relative overflow-y-auto" style={{ zoom: "100%" }}>
           {/* COVER */}
           <div className="relative h-36 bg-gray-200 overflow-hidden">
             <img src={creator.banner || "https://share.google/UeoTXYJKD7Fx6ZTLQ"} alt="banner" className="w-full h-full object-cover" />
@@ -811,11 +883,28 @@ export default function SafeProfileMock() {
 
           {/* PROFILE ROW */}
           <div className="px-4 -mt-10 flex items-start">
+            {/* Avatar + active dot — REPLACED to match Tae Rose style */}
             <div className="relative">
               <div className="w-20 h-20 rounded-full overflow-hidden shadow-md">
                 <img src={creator.avatar || "https://share.google/pKUGamvuSpMSo70j1"} alt="avatar" className="w-full h-full object-cover" />
               </div>
-              <div className="absolute right-0 bottom-0 w-4 h-4 bg-green-500 rounded-full active-dot" />
+
+              {/* Active dot: slightly outside bottom-right, white ring, subtle shadow */}
+              <span
+                aria-hidden="true"
+                style={{
+                  width: 14,
+                  height: 14,
+                  borderRadius: 9999,
+                  backgroundColor: "#22c55e", // green-500
+                  right: -6,
+                  bottom: -6,
+                  position: "absolute",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                  border: "2px solid white",
+                  display: "inline-block",
+                }}
+              />
             </div>
           </div>
 
@@ -873,9 +962,9 @@ export default function SafeProfileMock() {
               <div className="text-[13px] text-gray-500 truncate">{creator.handle} · Available now</div>
             </div>
 
-            <button 
-              onClick={openMessageModal} 
-              className="bg-[#00AFF0] text-white text-sm font-semibold rounded-full px-6 py-2 shadow flex-shrink-0" 
+            <button
+              onClick={openMessageModal}
+              className="bg-[#00AFF0] text-white text-sm font-semibold rounded-full px-6 py-2 shadow flex-shrink-0"
               aria-label="message creator"
             >
               Message
@@ -967,7 +1056,7 @@ export default function SafeProfileMock() {
                           {p.mediaType && !isPostUnlocked(p.id) ? (
                             <div className="bg-[#F8FAFB] border rounded-lg p-4">
                               <div className="flex flex-col items-center">
-                                <LockIcon />
+                                <LockIcon className="w-14 h-14" />
 
                                 <div className="w-full mt-3 max-w-[420px]">
                                   <div className="border rounded-md p-3 bg-white">
@@ -1018,7 +1107,9 @@ export default function SafeProfileMock() {
                                   <img src={p.mediaSrc} alt={`post ${p.id} poster`} className="w-full h-full object-cover" loading="lazy" />
                                   <div className="absolute">
                                     <div className="bg-black bg-opacity-40 rounded-full p-2">
-                                      <svg viewBox="0 0 24 24" className="w-6 h-6 text-white" fill="none" stroke="white" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7z" /></svg>
+                                      <svg viewBox="0 0 24 24" className="w-6 h-6 text-white" fill="none" stroke="white" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 5v14l11-7z" />
+                                      </svg>
                                     </div>
                                   </div>
                                 </div>
@@ -1074,19 +1165,23 @@ export default function SafeProfileMock() {
               <div>
                 <div className="grid grid-cols-3 gap-1">
                   {mediaItems.map((m) => {
-                    const locked = !(subscribed || (freeSample.active && (() => {
-                      const post = findPostById(m.id);
-                      if (!post) return false;
-                      if (!post.locked) return true;
-                      if (post.isDummy) {
-                        const match = String(post.id).match(/^dummy-(\d+)$/);
-                        if (match) {
-                          const idx = Number(match[1]);
-                          return idx <= (freeSample.unlockedCount || 0);
-                        }
-                      }
-                      return !post.locked;
-                    })()));
+                    const locked = !(
+                      subscribed ||
+                      (freeSample.active &&
+                        (() => {
+                          const post = findPostById(m.id);
+                          if (!post) return false;
+                          if (!post.locked) return true;
+                          if (post.isDummy) {
+                            const match = String(post.id).match(/^dummy-(\d+)$/);
+                            if (match) {
+                              const idx = Number(match[1]);
+                              return idx <= (freeSample.unlockedCount || 0);
+                            }
+                          }
+                          return !post.locked;
+                        })())
+                    );
                     return (
                       <div key={m.id} className="relative bg-white aspect-square border border-transparent">
                         {locked ? (
@@ -1172,10 +1267,16 @@ export default function SafeProfileMock() {
           {/* Viewer */}
           {viewerOpen && viewerList && viewerList.length > 0 && (
             <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black bg-opacity-90 p-4" role="dialog" aria-modal="true" aria-label={viewerList[viewerIndex]?.title || "Viewer"}>
-              <button onClick={closeViewer} aria-label="Close viewer" className="absolute top-6 right-6 z-30 bg-black bg-opacity-40 hover:bg-opacity-60 text-white rounded-full p-2">✕</button>
+              <button onClick={closeViewer} aria-label="Close viewer" className="absolute top-6 right-6 z-30 bg-black bg-opacity-40 hover:bg-opacity-60 text-white rounded-full p-2">
+                ✕
+              </button>
 
-              <button onClick={viewerPrev} disabled={viewerIndex === 0} aria-label="Previous" className={`absolute left-4 z-20 text-white p-2 rounded-full ${viewerIndex === 0 ? "opacity-40 pointer-events-none" : "hover:bg-black hover:bg-opacity-30"}`}>◀</button>
-              <button onClick={viewerNext} disabled={viewerIndex === viewerList.length - 1} aria-label="Next" className={`absolute right-4 z-20 text-white p-2 rounded-full ${viewerIndex === viewerList.length - 1 ? "opacity-40 pointer-events-none" : "hover:bg-black hover:bg-opacity-30"}`}>▶</button>
+              <button onClick={viewerPrev} disabled={viewerIndex === 0} aria-label="Previous" className={`absolute left-4 z-20 text-white p-2 rounded-full ${viewerIndex === 0 ? "opacity-40 pointer-events-none" : "hover:bg-black hover:bg-opacity-30"}`}>
+                ◀
+              </button>
+              <button onClick={viewerNext} disabled={viewerIndex === viewerList.length - 1} aria-label="Next" className={`absolute right-4 z-20 text-white p-2 rounded-full ${viewerIndex === viewerList.length - 1 ? "opacity-40 pointer-events-none" : "hover:bg-black hover:bg-opacity-30"}`}>
+                ▶
+              </button>
 
               <div className="max-w-[95%] max-h-[95%] w-full h-full flex items-center justify-center overflow-auto">
                 {viewerList[viewerIndex].mediaType === "image" ? (
@@ -1188,19 +1289,12 @@ export default function SafeProfileMock() {
           )}
 
           <ModalPortal isOpen={showSubModal} onClose={closeSubModal} zIndex={1000}>
-            <SubscriptionModal
-              creator={creator}
-              selectedPlan={selectedPlan}
-              onSelectPlan={(planId) => setSelectedPlan(planId)}
-              onClose={closeSubModal}
-              freeSampleActive={freeSample.active}
-            />
+            <SubscriptionModal creator={creator} selectedPlan={selectedPlan} onSelectPlan={(planId) => setSelectedPlan(planId)} onClose={closeSubModal} freeSampleActive={freeSample.active} />
           </ModalPortal>
 
           <ModalPortal isOpen={showMessageModal} onClose={closeMessageModal} zIndex={1000}>
             <MessageModal creator={creator} onClose={closeMessageModal} />
           </ModalPortal>
-
         </div>
       </div>
     </ErrorBoundary>
