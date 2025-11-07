@@ -15,7 +15,6 @@
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.9.3",
     "recharts": "^3.2.1",
-    "@tabler/icons-react",
     "tslib": "^2.8.1"
   },
   "devDependencies": {
