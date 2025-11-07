@@ -5,6 +5,7 @@ import ModalPortal from "../component/ModalPortal";
 import SubscriptionModal from "../component/SubcriptionModal";
 import MessageModal from "../component/MessageModal";
 import supabase from "../supabaseclient";
+import { IconHeart } from '@tabler/icons-react';
 
 const FREE_SAMPLE_LS_KEY = "freeSampleAccess_v1";
 
