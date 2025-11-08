@@ -423,7 +423,7 @@ export default function SafeProfileMock() {
           dbId: row.id,
           creator_handle: row.creator_handle,
           text: row.content || row.title || "",
-          mediaType: row.media_url ? (row.media_url.includes(".mp4") || row.media_url.includes("video") ? "video" : "image") : null,
+          mediaType: row.media_url ? (newRow.media_url.includes(".mp4") || newRow.media_url.includes("video") ? "video" : "image") : null,
           mediaSrc: row.media_url || null,
           likes: getStableLikeCount(postId),
           date: row.created_at ? new Date(row.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "",
@@ -1032,11 +1032,11 @@ export default function SafeProfileMock() {
                           />
                           {!isPostUnlocked(p.id) && (
                             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2">
-                              <LockIcon />
-                              <button onClick={() => openSubModal("monthly")} className="bg-[#00AFF0] text-white text-sm font-semibold rounded-full px-6 py-2 shadow">
-                                SUBSCRIBE TO SEE USER'S POSTS
-                              </button>
-                            </div>
+                                <LockIcon />
+                                <button onClick={() => openSubModal("monthly")} className="bg-[#00AFF0] text-white text-sm font-semibold rounded-full px-6 py-2 shadow">
+                                  SUBSCRIBE TO SEE USER'S POSTS
+                                </button>
+                              </div>
                           )}
                         </div>
 
