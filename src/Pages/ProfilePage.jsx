@@ -211,7 +211,7 @@ export default function SafeProfileMock() {
   const [starred, setStarred] = useState(false);
   const [likedPosts, setLikedPosts] = useState({});
   const [bookmarkedPosts, setBookmarkedPosts] = useState({});
-  const [tipActivePosts, setTipActivePosts] = useState({});
+  const [tipAnimatingPosts, setTipAnimatingPosts] = useState({});
   const [likeCounts, setLikeCounts] = useState({});
   const [messagesUnlocked, setMessagesUnlocked] = useState(true);
   const toastTimerRef = useRef(null);
