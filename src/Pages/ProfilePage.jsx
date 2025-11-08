@@ -184,7 +184,7 @@ function getStableLikeCount(postId) {
   try {
     const stored = typeof window !== "undefined" ? window.localStorage.getItem("post_likes_permanent") : null;
     if (stored) {
-      parsed = JSON.parse(stored);
+      const parsed = JSON.parse(stored);
       if (parsed[postId]) return parsed[postId];
     }
   } catch (err) {}
@@ -294,7 +294,7 @@ export default function SafeProfileMock() {
 
         if (postsError) {
           console.error("Supabase posts error:", postsError);
-        } else if (mounted && Array.isArray(postsData) ) {
+        } else if (mounted && Array.isArray(postsData)) {
           let persistedLikes = {};
           try {
             const stored = typeof window !== "undefined" ? window.localStorage.getItem("post_likes_permanent") : null;
@@ -800,7 +800,7 @@ export default function SafeProfileMock() {
               <div className="w-20 h-20 rounded-full overflow-hidden shadow-md">
                 <img src={creator.avatar || "https://share.google/pKUGamvuSpMSo70j1"} alt="avatar" className="w-full h-full object-cover" />
               </div>
-              <div className="absolute right-0 bottom-0 w-2.5 h-2.5 bg-green-400 rounded-full border border-white" />
+              <div className="absolute right-0 bottom-0 w-4 h-4 bg-green-400 rounded-full border-2 border-white" />
             </div>
           </div>
 
@@ -930,77 +930,81 @@ export default function SafeProfileMock() {
           {/* TAB CONTENT */}
           <div className="bg-white p-4">
             {activeTab === "posts" && (
-              <div>
-                <div className="space-y-6">
-                  {posts.map((p) => (
-                    <div key={p.id} className="border-b pb-4 last:border-none">
-                      <div className="flex items-start gap-3 mb-2">
-                        <div className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
-                          <img src={creator.avatar} alt="avatar" className="w-full h-full object-cover" />
-                          <div className="absolute right-0 bottom-0 w-2.5 h-2.5 bg-green-400 rounded-full border border-white" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1">
-                                <div className="font-semibold text-[14px] text-gray-900">{creator.name}</div>
-                                <VerifiedBadge />
-                              </div>
-                              <div className="text-[12px] text-gray-500">{creator.handle}</div>
+              <div className="space-y-6">
+                {posts.map((p) => (
+                  <div key={p.id} className="border-b pb-4 last:border-none">
+                    <div className="flex items-start gap-3 mb-2">
+                      <div className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                        <img src={creator.avatar} alt="avatar" className="w-full h-full object-cover" />
+                        <div className="absolute right-0 bottom-0 w-2.5 h-2.5 bg-green-400 rounded-full border border-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1">
+                              <div className="font-semibold text-[14px] text-gray-900">{creator.name}</div>
+                              <VerifiedBadge />
                             </div>
-                            <div className="text-[12px] text-gray-500">{p.date} ···</div>
+                            <div className="text-[12px] text-gray-500">{creator.handle}</div>
                           </div>
-
-                          <p className="mt-2 text-[14px] text-gray-800">{p.text}</p>
-
-                          <div className="mt-3 relative rounded-md overflow-hidden bg-gray-100 h-44 flex items-center justify-center">
-                            <img
-                              src={p.mediaSrc}
-                              alt={`post media ${p.id}`}
-                              className={`w-full h-full object-cover ${!isPostUnlocked(p.id) ? 'opacity-70 blur-sm' : 'cursor-pointer'}`}
-                              loading="lazy"
-                              onClick={() => {
-                                if (isPostUnlocked(p.id)) {
-                                  openFullImage(p.mediaSrc);
-                                }
-                              }}
-                            />
-                            {!isPostUnlocked(p.id) && (
-                              <LockIcon className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
-                            )}
-                          </div>
-
-                          <div className="mt-3 flex items-center gap-6 text-gray-500 text-[13px]">
-                            <button onClick={() => toggleLike(p.id)} aria-label={`like post ${p.id}`}>
-                              <IconLike active={!!likedPosts[p.id]} />
-                            </button>
-
-                            <button aria-label={`comment on post ${p.id}`}>
-                              <IconComment />
-                            </button>
-
-                            <button onClick={() => toggleTip(p.id)} className="flex items-center gap-1" aria-label={`tip post ${p.id}`}>
-                              <IconTip active={!!tipAnimatingPosts[p.id]} />
-                              <span>SEND TIP</span>
-                            </button>
-
-                            <button onClick={() => toggleBookmark(p.id)} className="ml-auto" aria-label={`bookmark post ${p.id}`}>
-                              <IconBookmark active={!!bookmarkedPosts[p.id]} />
-                            </button>
-                          </div>
-                          <div className="mt-1 text-[12px] text-gray-500">{formatLikes(likeCounts[p.id] ?? p.likes)} likes</div>
+                          <div className="text-[12px] text-gray-500">{p.date} ···</div>
                         </div>
+
+                        <p className="mt-2 text-[14px] text-gray-800">{p.text}</p>
+
+                        <div className="mt-3 relative rounded-md overflow-hidden bg-gray-100 h-44 flex items-center justify-center">
+                          <img
+                            src={p.mediaSrc}
+                            alt={`post media ${p.id}`}
+                            className={`w-full h-full object-cover ${!isPostUnlocked(p.id) ? 'opacity-70 blur-sm' : 'cursor-pointer'}`}
+                            loading="lazy"
+                            onClick={() => {
+                              if (isPostUnlocked(p.id)) {
+                                openFullImage(p.mediaSrc);
+                              }
+                            }}
+                          />
+                          {!isPostUnlocked(p.id) && (
+                            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2">
+                              <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" width="300px" height="157px" viewBox="0 0 1614.2857142857142 842.8571428571429">
+                                <g id="dd4789b5-03b7-41b2-a148-534740596f4f">
+                                  <rect style="stroke: rgb(193,193,193); stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;" x="-807.1428571428571" y="-421.42857142857144" rx="0" ry="0" width="1614.2857142857142" height="842.8571428571429" transform="matrix(1 0 0 1 807.142857 421.428571)"></rect>
+                                </g>
+                                <g id="ca9d0540-29e7-4418-be31-bf455c24c7ce">
+                                  <g style="">	<g>	<image style="stroke: rgb(193,193,193); stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;" xlinkHref="data:image/png;base64,( REPLACE YOUR BASE64 HERE )" x="-360" y="-189.5" width="720" height="379" transform="matrix(2.223897 0 0 2.223897 800.60292 421.428481)"></image>
+                                </g></g>	<rect x="-360" y="-189.5" width="720" height="379" style="stroke: rgb(193,193,193); stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: none; fill-rule: nonzero; opacity: 1;" transform="matrix(2.223897 0 0 2.223897 800.60292 421.428481)"></rect>
+                                </g>
+                              </svg>
+                              <button onClick={() => openSubModal("monthly")} className="bg-[#00AFF0] text-white text-sm font-semibold rounded-full px-6 py-2 shadow">
+                                SUBSCRIBE TO SEE USER'S POSTS
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="mt-3 flex items-center gap-6 text-gray-500 text-[13px]">
+                          <button onClick={() => toggleLike(p.id)} aria-label={`like post ${p.id}`}>
+                            <IconLike active={!!likedPosts[p.id]} />
+                          </button>
+
+                          <button aria-label={`comment on post ${p.id}`}>
+                            <IconComment />
+                          </button>
+
+                          <button onClick={() => toggleTip(p.id)} className="flex items-center gap-1" aria-label={`tip post ${p.id}`}>
+                            <IconTip active={!!tipAnimatingPosts[p.id]} />
+                            <span>SEND TIP</span>
+                          </button>
+
+                          <button onClick={() => toggleBookmark(p.id)} className="ml-auto" aria-label={`bookmark post ${p.id}`}>
+                            <IconBookmark active={!!bookmarkedPosts[p.id]} />
+                          </button>
+                        </div>
+                        <div className="mt-1 text-[12px] text-gray-500">{formatLikes(likeCounts[p.id] ?? p.likes)} likes</div>
                       </div>
                     </div>
-                  ))}
-                </div>
-                {!subscribed && !freeSample.active && (
-                  <div className="mt-4 text-center">
-                    <button onClick={() => openSubModal("monthly")} className="bg-[#00AFF0] text-white text-sm font-semibold rounded-full px-8 py-2 shadow">
-                      SUBSCRIBE TO SEE USER'S POSTS
-                    </button>
                   </div>
-                )}
+                ))}
               </div>
             )}
 
@@ -1023,7 +1027,20 @@ export default function SafeProfileMock() {
                           }}
                         />
                         {locked && (
-                          <LockIcon className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+                          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" width="300px" height="157px" viewBox="0 0 1614.2857142857142 842.8571428571429">
+                              <g id="dd4789b5-03b7-41b2-a148-534740596f4f">
+                                <rect style="stroke: rgb(193,193,193); stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;" x="-807.1428571428571" y="-421.42857142857144" rx="0" ry="0" width="1614.2857142857142" height="842.8571428571429" transform="matrix(1 0 0 1 807.142857 421.428571)"></rect>
+                              </g>
+                              <g id="ca9d0540-29e7-4418-be31-bf455c24c7ce">
+                                <g style="">	<g>	<image style="stroke: rgb(193,193,193); stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;" xlinkHref="data:image/png;base64,( REPLACE YOUR BASE64 HERE )" x="-360" y="-189.5" width="720" height="379" transform="matrix(2.223897 0 0 2.223897 800.60292 421.428481)"></image>
+                              </g></g>	<rect x="-360" y="-189.5" width="720" height="379" style="stroke: rgb(193,193,193); stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: none; fill-rule: nonzero; opacity: 1;" transform="matrix(2.223897 0 0 2.223897 800.60292 421.428481)"></rect>
+                              </g>
+                            </svg>
+                            <button onClick={() => openSubModal("monthly")} className="bg-[#00AFF0] text-white text-sm font-semibold rounded-full px-6 py-2 shadow">
+                              SUBSCRIBE TO SEE USER'S POSTS
+                            </button>
+                          </div>
                         )}
                       </div>
                     );
@@ -1050,7 +1067,7 @@ export default function SafeProfileMock() {
             </div>
           )}
 
-          <ModalPortal isOpen={showSubModal} onClose={closeSubModal} zIndex={1000}>
+  <ModalPortal isOpen={showSubModal} onClose={closeSubModal} zIndex={1000}>
             <SubscriptionModal
               creator={creator}
               selectedPlan={selectedPlan}
