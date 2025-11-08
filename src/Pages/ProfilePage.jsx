@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import ModalPortal from "../component/ModalPortal";
 import SubscriptionModal from "../component/SubcriptionModal";
-import MessageModal from "../component/MessageModal";
 import supabase from "../supabaseclient";
 
 const FREE_SAMPLE_LS_KEY = "freeSampleAccess_v1";
@@ -232,11 +231,6 @@ export default function SafeProfileMock() {
 
   const openMessageModal = () => {
     navigate("/messages");
-  };
-
-  const closeMessageModal = () => {
-    setShowMessageModal(false);
-    unlockScroll();
   };
 
   useEffect(() => {
@@ -1055,10 +1049,6 @@ export default function SafeProfileMock() {
               onClose={closeSubModal}
               freeSampleActive={freeSample.active}
             />
-          </ModalPortal>
-
-          <ModalPortal isOpen={showMessageModal} onClose={closeMessageModal} zIndex={1000}>
-            <MessageModal creator={creator} onClose={closeMessageModal} />
           </ModalPortal>
 
         </div>
