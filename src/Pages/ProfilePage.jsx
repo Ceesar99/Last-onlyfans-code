@@ -184,7 +184,7 @@ function getStableLikeCount(postId) {
   try {
     const stored = typeof window !== "undefined" ? window.localStorage.getItem("post_likes_permanent") : null;
     if (stored) {
-      const parsed = JSON.parse(stored);
+      parsed = JSON.parse(stored);
       if (parsed[postId]) return parsed[postId];
     }
   } catch (err) {}
@@ -294,7 +294,7 @@ export default function SafeProfileMock() {
 
         if (postsError) {
           console.error("Supabase posts error:", postsError);
-        } else if (mounted && Array.isArray(postsData)) {
+        } else if (mounted && Array.isArray(postsData) ) {
           let persistedLikes = {};
           try {
             const stored = typeof window !== "undefined" ? window.localStorage.getItem("post_likes_permanent") : null;
@@ -575,7 +575,7 @@ export default function SafeProfileMock() {
 
   const IconComment = ({ className = "w-5 h-5" }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" stroke="#9AA3AD">
-      <path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 
@@ -598,9 +598,9 @@ export default function SafeProfileMock() {
   };
 
   const LockIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="w-14 h-14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="10" width="18" height="11" rx="2" stroke="#D1D7DB" strokeWidth="1.6" />
-      <path d="M7 10V7a5 5 0 0110 0v3" stroke="#D1D7DB" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-gray-400" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="3" y="10" width="18" height="11" rx="2" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M7 10V7a5 5 0 0110 0v3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 
@@ -800,7 +800,7 @@ export default function SafeProfileMock() {
               <div className="w-20 h-20 rounded-full overflow-hidden shadow-md">
                 <img src={creator.avatar || "https://share.google/pKUGamvuSpMSo70j1"} alt="avatar" className="w-full h-full object-cover" />
               </div>
-              <div className="absolute right-0 bottom-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white" />
+              <div className="absolute right-0 bottom-0 w-2.5 h-2.5 bg-green-400 rounded-full border border-white" />
             </div>
           </div>
 
@@ -930,68 +930,77 @@ export default function SafeProfileMock() {
           {/* TAB CONTENT */}
           <div className="bg-white p-4">
             {activeTab === "posts" && (
-              <div className="space-y-6">
-                {posts.map((p) => (
-                  <div key={p.id} className="border-b pb-4 last:border-none">
-                    <div className="flex items-start gap-3 mb-2">
-                      <div className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
-                        <img src={creator.avatar} alt="avatar" className="w-full h-full object-cover" />
-                        <div className="absolute right-0 bottom-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1">
-                              <div className="font-semibold text-[14px] text-gray-900">{creator.name}</div>
-                              <VerifiedBadge />
+              <div>
+                <div className="space-y-6">
+                  {posts.map((p) => (
+                    <div key={p.id} className="border-b pb-4 last:border-none">
+                      <div className="flex items-start gap-3 mb-2">
+                        <div className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                          <img src={creator.avatar} alt="avatar" className="w-full h-full object-cover" />
+                          <div className="absolute right-0 bottom-0 w-2.5 h-2.5 bg-green-400 rounded-full border border-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1">
+                                <div className="font-semibold text-[14px] text-gray-900">{creator.name}</div>
+                                <VerifiedBadge />
+                              </div>
+                              <div className="text-[12px] text-gray-500">{creator.handle}</div>
                             </div>
-                            <div className="text-[12px] text-gray-500">{creator.handle}</div>
+                            <div className="text-[12px] text-gray-500">{p.date} ···</div>
                           </div>
-                          <div className="text-[12px] text-gray-500">{p.date} ···</div>
+
+                          <p className="mt-2 text-[14px] text-gray-800">{p.text}</p>
+
+                          <div className="mt-3 relative rounded-md overflow-hidden bg-gray-100 h-44 flex items-center justify-center">
+                            <img
+                              src={p.mediaSrc}
+                              alt={`post media ${p.id}`}
+                              className={`w-full h-full object-cover ${!isPostUnlocked(p.id) ? 'opacity-70 blur-sm' : 'cursor-pointer'}`}
+                              loading="lazy"
+                              onClick={() => {
+                                if (isPostUnlocked(p.id)) {
+                                  openFullImage(p.mediaSrc);
+                                }
+                              }}
+                            />
+                            {!isPostUnlocked(p.id) && (
+                              <LockIcon className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+                            )}
+                          </div>
+
+                          <div className="mt-3 flex items-center gap-6 text-gray-500 text-[13px]">
+                            <button onClick={() => toggleLike(p.id)} aria-label={`like post ${p.id}`}>
+                              <IconLike active={!!likedPosts[p.id]} />
+                            </button>
+
+                            <button aria-label={`comment on post ${p.id}`}>
+                              <IconComment />
+                            </button>
+
+                            <button onClick={() => toggleTip(p.id)} className="flex items-center gap-1" aria-label={`tip post ${p.id}`}>
+                              <IconTip active={!!tipAnimatingPosts[p.id]} />
+                              <span>SEND TIP</span>
+                            </button>
+
+                            <button onClick={() => toggleBookmark(p.id)} className="ml-auto" aria-label={`bookmark post ${p.id}`}>
+                              <IconBookmark active={!!bookmarkedPosts[p.id]} />
+                            </button>
+                          </div>
+                          <div className="mt-1 text-[12px] text-gray-500">{formatLikes(likeCounts[p.id] ?? p.likes)} likes</div>
                         </div>
-
-                        <p className="mt-2 text-[14px] text-gray-800">{p.text}</p>
-
-                        <div className="mt-3 relative rounded-md overflow-hidden bg-gray-100 h-44 flex items-center justify-center">
-                          <img
-                            src={p.mediaSrc}
-                            alt={`post media ${p.id}`}
-                            className={`w-full h-full object-cover ${!isPostUnlocked(p.id) ? 'opacity-70 blur-sm' : 'cursor-pointer'}`}
-                            loading="lazy"
-                            onClick={() => {
-                              if (isPostUnlocked(p.id)) {
-                                openFullImage(p.mediaSrc);
-                              }
-                            }}
-                          />
-                          {!isPostUnlocked(p.id) && (
-                            <LockIcon className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
-                          )}
-                        </div>
-
-                        <div className="mt-3 flex items-center gap-6 text-gray-500 text-[13px]">
-                          <button onClick={() => toggleLike(p.id)} aria-label={`like post ${p.id}`}>
-                            <IconLike active={!!likedPosts[p.id]} />
-                          </button>
-
-                          <button aria-label={`comment on post ${p.id}`}>
-                            <IconComment />
-                          </button>
-
-                          <button onClick={() => toggleTip(p.id)} className="flex items-center gap-1" aria-label={`tip post ${p.id}`}>
-                            <IconTip active={!!tipAnimatingPosts[p.id]} />
-                            <span>SEND TIP</span>
-                          </button>
-
-                          <button onClick={() => toggleBookmark(p.id)} className="ml-auto" aria-label={`bookmark post ${p.id}`}>
-                            <IconBookmark active={!!bookmarkedPosts[p.id]} />
-                          </button>
-                        </div>
-                        <div className="mt-1 text-[12px] text-gray-500">{formatLikes(likeCounts[p.id] ?? p.likes)} likes</div>
                       </div>
                     </div>
+                  ))}
+                </div>
+                {!subscribed && !freeSample.active && (
+                  <div className="mt-4 text-center">
+                    <button onClick={() => openSubModal("monthly")} className="bg-[#00AFF0] text-white text-sm font-semibold rounded-full px-8 py-2 shadow">
+                      SUBSCRIBE TO SEE USER'S POSTS
+                    </button>
                   </div>
-                ))}
+                )}
               </div>
             )}
 
@@ -1014,7 +1023,7 @@ export default function SafeProfileMock() {
                           }}
                         />
                         {locked && (
-                          <LockIcon className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-12 h-12" />
+                          <LockIcon className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
                         )}
                       </div>
                     );
