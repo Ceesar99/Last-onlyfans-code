@@ -1206,13 +1206,23 @@ export default function SafeProfileMock() {
             )}
           </div>
 
-          {/* Full Image Viewer */}
-          {currentFullImage && (
-            <div className="fixed inset-0 z-[2000] bg-white flex items-center justify-center p-4" onClick={closeFullImage} role="dialog" aria-modal="true">
-              <img src={currentFullImage} alt="Full post image" className="max-w-full max-h-full object-contain" />
+          {/* Viewer */}
+          {viewerOpen && viewerList && viewerList.length > 0 && (
+            <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black bg-opacity-90 p-4" role="dialog" aria-modal="true" aria-label={viewerList[viewerIndex]?.title || "Viewer"}>
+              <button onClick={closeViewer} aria-label="Close viewer" className="absolute top-6 right-6 z-30 bg-black bg-opacity-40 hover:bg-opacity-60 text-white rounded-full p-2">✕</button>
+
+              <button onClick={viewerPrev} disabled={viewerIndex === 0} aria-label="Previous" className={`absolute left-4 z-20 text-white p-2 rounded-full ${viewerIndex === 0 ? "opacity-40 pointer-events-none" : "hover:bg-black hover:bg-opacity-30"}`}>◀</button>
+              <button onClick={viewerNext} disabled={viewerIndex === viewerList.length - 1} aria-label="Next" className={`absolute right-4 z-20 text-white p-2 rounded-full ${viewerIndex === viewerList.length - 1 ? "opacity-40 pointer-events-none" : "hover:bg-black hover:bg-opacity-30"}`}>▶</button>
+
+              <div className="max-w-[95%] max-h-[95%] w-full h-full flex items-center justify-center overflow-auto">
+                {viewerList[viewerIndex].mediaType === "image" ? (
+                  <img src={viewerList[viewerIndex].src} alt={viewerList[viewerIndex].title} className="max-w-full max-h-full object-contain" loading="eager" />
+                ) : (
+                  <video src={viewerList[viewerIndex].src} className="max-w-full max-h-full" controls autoPlay playsInline />
+                )}
+              </div>
             </div>
           )}
-
           <ModalPortal isOpen={showSubModal} onClose={closeSubModal} zIndex={1000}>
             <SubscriptionModal
               creator={creator}
