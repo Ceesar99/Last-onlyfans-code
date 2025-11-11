@@ -982,95 +982,108 @@ export default function SafeProfileMock() {
               <div className="space-y-4">
                 {posts.map((p) => (
                   <div key={p.id} className="border-b pb-0 last:border-none px-4">
-                    {isPostUnlocked(p.id) ? (
-                      <>
-                        {/* Header: Avatar + Name + Date */}
-                        <div className="flex items-start gap-3 mb-2">
-                          <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-                            <img src={creator.avatar} alt="avatar" className="w-full h-full object-cover" />
+                    {/* Header: Avatar + Name + Date */}
+                    <div className="flex items-start gap-3 mb-2">
+                      <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                        <img src={creator.avatar} alt="avatar" className="w-full h-full object-cover" />
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-1">
+                              <div className="font-semibold text-[15px] text-gray-900">{creator.name}</div>
+                              <VerifiedBadge />
+                            </div>
+                            <div className="text-[13px] text-gray-500">{creator.handle}</div>
                           </div>
-                          
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between">
-                              <div className="flex flex-col">
-                                <div className="flex items-center gap-1">
-                                  <div className="font-semibold text-[15px] text-gray-900">{creator.name}</div>
-                                  <VerifiedBadge />
+                          <div className="text-[13px] text-gray-500 flex items-center gap-1">
+                            {p.date}
+                            <span>···</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Caption */}
+                    <p className="text-[15px] text-gray-900 mb-2 px-0">{p.text}</p>
+
+                    {/* Image/Video - FULL WIDTH NO INDENT */}
+                    <div className="relative w-full mb-2">
+                      {isPostUnlocked(p.id) ? (
+                        <div
+                          className="rounded-lg overflow-hidden bg-gray-100"
+                          style={{ width: "100%", aspectRatio: "1614 / 843" }}
+                        >
+                          {p.mediaType === "video" ? (
+                            <div
+                              role="button"
+                              tabIndex={0}
+                              onClick={() =>
+                                openViewer({
+                                  list: buildViewerListFromPosts,
+                                  index: buildViewerListFromPosts.findIndex((x) => x.id === p.id),
+                                })
+                              }
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  openViewer({
+                                    list: buildViewerListFromPosts,
+                                    index: buildViewerListFromPosts.findIndex((x) => x.id === p.id),
+                                  });
+                                }
+                              }}
+                              className="w-full h-full cursor-pointer flex items-center justify-center relative"
+                              aria-label={`Open video post ${p.id}`}
+                            >
+                              <video
+                                src={p.mediaSrc}
+                                className="w-full h-full object-cover"
+                                preload="metadata"
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="bg-black bg-opacity-40 rounded-full p-3">
+                                  <svg
+                                    viewBox="0 0 24 24"
+                                    className="w-8 h-8 text-white"
+                                    fill="white"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M8 5v14l11-7z" />
+                                  </svg>
                                 </div>
-                                <div className="text-[13px] text-gray-500">{creator.handle}</div>
-                              </div>
-                              <div className="text-[13px] text-gray-500 flex items-center gap-1">
-                                {p.date}
-                                <span>···</span>
                               </div>
                             </div>
+                          ) : (
+                            <img
+                              src={p.mediaSrc}
+                              alt={`post media ${p.id}`}
+                              className="w-full h-full object-cover cursor-pointer"
+                              loading="lazy"
+                              onClick={() =>
+                                openViewer({
+                                  list: buildViewerListFromPosts,
+                                  index: buildViewerListFromPosts.findIndex((x) => x.id === p.id),
+                                })
+                              }
+                            />
+                          )}
+                        </div>
+                      ) : (
+                        <div
+                          className="relative bg-[#F8FAFB] rounded-lg overflow-hidden"
+                          style={{ width: "100%", aspectRatio: "1614 / 843" }}
+                        >
+                          {/* Static SVG Background - fixed to container size */}
+                          <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
+                            <LockSVGStatic />
                           </div>
                         </div>
+                      )}
+                    </div>
 
-                        {/* Caption */}
-                        <p className="text-[15px] text-gray-900 mb-2 px-0">{p.text}</p>
-
-                        {/* Image/Video - FULL WIDTH NO INDENT */}
-                        <div className="relative w-full mb-2">
-                          <div
-                            className="rounded-lg overflow-hidden bg-gray-100"
-                            style={{ width: "100%", aspectRatio: "1614 / 843" }}
-                          >
-                            {p.mediaType === "video" ? (
-                              <div
-                                role="button"
-                                tabIndex={0}
-                                onClick={() =>
-                                  openViewer({
-                                    list: buildViewerListFromPosts,
-                                    index: buildViewerListFromPosts.findIndex((x) => x.id === p.id),
-                                  })
-                                }
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter" || e.key === " ") {
-                                    openViewer({
-                                      list: buildViewerListFromPosts,
-                                      index: buildViewerListFromPosts.findIndex((x) => x.id === p.id),
-                                    });
-                                  }
-                                }}
-                                className="w-full h-full cursor-pointer flex items-center justify-center relative"
-                                aria-label={`Open video post ${p.id}`}
-                              >
-                                <video
-                                  src={p.mediaSrc}
-                                  className="w-full h-full object-cover"
-                                  preload="metadata"
-                                />
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                  <div className="bg-black bg-opacity-40 rounded-full p-3">
-                                    <svg
-                                      viewBox="0 0 24 24"
-                                      className="w-8 h-8 text-white"
-                                      fill="white"
-                                      xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                      <path d="M8 5v14l11-7z" />
-                                    </svg>
-                                  </div>
-                                </div>
-                              </div>
-                            ) : (
-                              <img
-                                src={p.mediaSrc}
-                                alt={`post media ${p.id}`}
-                                className="w-full h-full object-cover cursor-pointer"
-                                loading="lazy"
-                                onClick={() =>
-                                  openViewer({
-                                    list: buildViewerListFromPosts,
-                                    index: buildViewerListFromPosts.findIndex((x) => x.id === p.id),
-                                  })
-                                }
-                              />
-                            )}
-                          </div>
-                        </div>
+                    {isPostUnlocked(p.id) ? (
+                      <>
                         {/* Icons Row - NO INDENT */}
                         <div className="flex items-center gap-6 text-gray-500 mb-2">
                           <button onClick={() => toggleLike(p.id)} aria-label={`like post ${p.id}`}>
@@ -1096,7 +1109,7 @@ export default function SafeProfileMock() {
                       </>
                     ) : (
                       <>
-                        {/* Subscribe section */}
+                        {/* Subscribe section below media */}
                         <div className="mt-2 mb-2">
                           <div className="flex items-center mb-1">
                             <div className="bg-white rounded px-1 flex items-center gap-1 text-gray-500 text-[13px]">
@@ -1134,44 +1147,6 @@ export default function SafeProfileMock() {
 
                         {/* Likes Count */}
                         <div className="text-[13px] text-gray-600 mb-2">{formatLikes(likeCounts[p.id] ?? p.likes)} likes</div>
-
-                        {/* Header: Avatar + Name + Date */}
-                        <div className="flex items-start gap-3 mb-2">
-                          <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-                            <img src={creator.avatar} alt="avatar" className="w-full h-full object-cover" />
-                          </div>
-                          
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between">
-                              <div className="flex flex-col">
-                                <div className="flex items-center gap-1">
-                                  <div className="font-semibold text-[15px] text-gray-900">{creator.name}</div>
-                                  <VerifiedBadge />
-                                </div>
-                                <div className="text-[13px] text-gray-500">{creator.handle}</div>
-                              </div>
-                              <div className="text-[13px] text-gray-500 flex items-center gap-1">
-                                {p.date}
-                                <span>···</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Caption */}
-                        <p className="text-[15px] text-gray-900 mb-2 px-0">{p.text}</p>
-
-                        {/* Locked media */}
-                        <div className="relative w-full mb-2">
-                          <div
-                            className="relative bg-[#F8FAFB] rounded-lg overflow-hidden"
-                            style={{ width: "100%", aspectRatio: "1614 / 843" }}
-                          >
-                            <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
-                              <LockSVGStatic />
-                            </div>
-                          </div>
-                        </div>
                       </>
                     )}
                   </div>
