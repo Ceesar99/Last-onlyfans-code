@@ -567,7 +567,7 @@ export default function SafeProfileMock() {
       style={{ display: "inline-block" }}
     >
       <image
-        href="data:image/png;base64,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"
+        href="data:image/png;base64,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"
         x="0"
         y="0"
         width="33"
@@ -655,7 +655,9 @@ export default function SafeProfileMock() {
   </div>
 );
   const toggleLike = async (id) => {
-    if (!isPostUnlocked(id)) return;
+    if (!subscribed) {
+      return;
+    }
 
     const userEmail = typeof window !== "undefined" ? window.localStorage.getItem("user_email") : null;
     if (!userEmail) {
@@ -980,147 +982,198 @@ export default function SafeProfileMock() {
               <div className="space-y-4">
                 {posts.map((p) => (
                   <div key={p.id} className="border-b pb-0 last:border-none px-4">
-                    {/* Header: Avatar + Name + Date */}
-                    <div className="flex items-start gap-3 mb-2">
-                      <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-                        <img src={creator.avatar} alt="avatar" className="w-full h-full object-cover" />
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <div className="flex flex-col">
-                            <div className="flex items-center gap-1">
-                              <div className="font-semibold text-[15px] text-gray-900">{creator.name}</div>
-                              <VerifiedBadge />
-                            </div>
-                            <div className="text-[13px] text-gray-500">{creator.handle}</div>
+                    {isPostUnlocked(p.id) ? (
+                      <>
+                        {/* Header: Avatar + Name + Date */}
+                        <div className="flex items-start gap-3 mb-2">
+                          <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                            <img src={creator.avatar} alt="avatar" className="w-full h-full object-cover" />
                           </div>
-                          <div className="text-[13px] text-gray-500 flex items-center gap-1">
-                            {p.date}
-                            <span>···</span>
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <div className="flex flex-col">
+                                <div className="flex items-center gap-1">
+                                  <div className="font-semibold text-[15px] text-gray-900">{creator.name}</div>
+                                  <VerifiedBadge />
+                                </div>
+                                <div className="text-[13px] text-gray-500">{creator.handle}</div>
+                              </div>
+                              <div className="text-[13px] text-gray-500 flex items-center gap-1">
+                                {p.date}
+                                <span>···</span>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
 
-                    {/* Caption */}
-                    <p className="text-[15px] text-gray-900 mb-2 px-0">{p.text}</p>
+                        {/* Caption */}
+                        <p className="text-[15px] text-gray-900 mb-2 px-0">{p.text}</p>
 
-                    {/* Image/Video - FULL WIDTH NO INDENT */}
-                    <div className="relative w-full mb-2">
-  {!isPostUnlocked(p.id) ? (
-    <div
-      className="relative bg-[#F8FAFB] rounded-lg overflow-hidden"
-      style={{ width: "100%", aspectRatio: "1614 / 843" }}
-    >
-      {/* Static SVG Background - fixed to container size */}
-      <div
-        className="absolute top-0 left-0 w-full h-full flex items-center justify-center"
-      >
-        <LockSVGStatic />
-      </div>
+                        {/* Image/Video - FULL WIDTH NO INDENT */}
+                        <div className="relative w-full mb-2">
+                          <div
+                            className="rounded-lg overflow-hidden bg-gray-100"
+                            style={{ width: "100%", aspectRatio: "1614 / 843" }}
+                          >
+                            {p.mediaType === "video" ? (
+                              <div
+                                role="button"
+                                tabIndex={0}
+                                onClick={() =>
+                                  openViewer({
+                                    list: buildViewerListFromPosts,
+                                    index: buildViewerListFromPosts.findIndex((x) => x.id === p.id),
+                                  })
+                                }
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" || e.key === " ") {
+                                    openViewer({
+                                      list: buildViewerListFromPosts,
+                                      index: buildViewerListFromPosts.findIndex((x) => x.id === p.id),
+                                    });
+                                  }
+                                }}
+                                className="w-full h-full cursor-pointer flex items-center justify-center relative"
+                                aria-label={`Open video post ${p.id}`}
+                              >
+                                <video
+                                  src={p.mediaSrc}
+                                  className="w-full h-full object-cover"
+                                  preload="metadata"
+                                />
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <div className="bg-black bg-opacity-40 rounded-full p-3">
+                                    <svg
+                                      viewBox="0 0 24 24"
+                                      className="w-8 h-8 text-white"
+                                      fill="white"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path d="M8 5v14l11-7z" />
+                                    </svg>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <img
+                                src={p.mediaSrc}
+                                alt={`post media ${p.id}`}
+                                className="w-full h-full object-cover cursor-pointer"
+                                loading="lazy"
+                                onClick={() =>
+                                  openViewer({
+                                    list: buildViewerListFromPosts,
+                                    index: buildViewerListFromPosts.findIndex((x) => x.id === p.id),
+                                  })
+                                }
+                              />
+                            )}
+                          </div>
+                        </div>
+                        {/* Icons Row - NO INDENT */}
+                        <div className="flex items-center gap-6 text-gray-500 mb-2">
+                          <button onClick={() => toggleLike(p.id)} aria-label={`like post ${p.id}`}>
+                            <IconLike active={!!likedPosts[p.id]} />
+                          </button>
 
-      {/* Functional Button Overlay - EXACTLY covering static one */}
-      <button
-        onClick={() => openSubModal("monthly")}
-        className="absolute bg-[#00AFF0] text-white text-[14px] font-semibold rounded-full shadow-lg hover:bg-[#00AFF0]/90 transition-colors"
-        style={{
-          width: "calc(100% - 40px)",
-          height: "48px",
-          top: "calc(50% + 85px)",
-          left: "50%",
-          transform: "translateX(-50%)",
-          padding: "0 20px",
-          letterSpacing: "0.02em",
-          zIndex: 50,
-        }}
-      >
-        SUBSCRIBE TO SEE USER'S POSTS
-      </button>
-    </div>
-  ) : (
-    <div
-      className="rounded-lg overflow-hidden bg-gray-100"
-      style={{ width: "100%", aspectRatio: "1614 / 843" }}
-    >
-      {p.mediaType === "video" ? (
-        <div
-          role="button"
-          tabIndex={0}
-          onClick={() =>
-            openViewer({
-              list: buildViewerListFromPosts,
-              index: buildViewerListFromPosts.findIndex((x) => x.id === p.id),
-            })
-          }
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              openViewer({
-                list: buildViewerListFromPosts,
-                index: buildViewerListFromPosts.findIndex((x) => x.id === p.id),
-              });
-            }
-          }}
-          className="w-full h-full cursor-pointer flex items-center justify-center relative"
-          aria-label={`Open video post ${p.id}`}
-        >
-          <video
-            src={p.mediaSrc}
-            className="w-full h-full object-cover"
-            preload="metadata"
-          />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="bg-black bg-opacity-40 rounded-full p-3">
-              <svg
-                viewBox="0 0 24 24"
-                className="w-8 h-8 text-white"
-                fill="white"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <img
-          src={p.mediaSrc}
-          alt={`post media ${p.id}`}
-          className="w-full h-full object-cover cursor-pointer"
-          loading="lazy"
-          onClick={() =>
-            openViewer({
-              list: buildViewerListFromPosts,
-              index: buildViewerListFromPosts.findIndex((x) => x.id === p.id),
-            })
-          }
-        />
-      )}
-    </div>
-  )}
-</div>
-                    {/* Icons Row - NO INDENT */}
-                    <div className="flex items-center gap-6 text-gray-500 mb-2">
-                      <button onClick={() => toggleLike(p.id)} aria-label={`like post ${p.id}`}>
-                        <IconLike active={!!likedPosts[p.id]} />
-                      </button>
+                          <button aria-label={`comment on post ${p.id}`}>
+                            <IconComment />
+                          </button>
 
-                      <button aria-label={`comment on post ${p.id}`}>
-                        <IconComment />
-                      </button>
+                          <button onClick={() => toggleTip(p.id)} className="flex items-center gap-1" aria-label={`tip post ${p.id}`}>
+                            <IconTip active={!!tipAnimatingPosts[p.id]} />
+                            <span className="text-[13px]">SEND TIP</span>
+                          </button>
 
-                      <button onClick={() => toggleTip(p.id)} className="flex items-center gap-1" aria-label={`tip post ${p.id}`}>
-                        <IconTip active={!!tipAnimatingPosts[p.id]} />
-                        <span className="text-[13px]">SEND TIP</span>
-                      </button>
+                          <button onClick={() => toggleBookmark(p.id)} className="ml-auto" aria-label={`bookmark post ${p.id}`}>
+                            <IconBookmark active={!!bookmarkedPosts[p.id]} />
+                          </button>
+                        </div>
 
-                      <button onClick={() => toggleBookmark(p.id)} className="ml-auto" aria-label={`bookmark post ${p.id}`}>
-                        <IconBookmark active={!!bookmarkedPosts[p.id]} />
-                      </button>
-                    </div>
+                        {/* Likes Count */}
+                        <div className="text-[13px] text-gray-600 mb-2">{formatLikes(likeCounts[p.id] ?? p.likes)} likes</div>
+                      </>
+                    ) : (
+                      <>
+                        {/* Subscribe section */}
+                        <div className="mt-2 mb-2">
+                          <div className="flex items-center mb-1">
+                            <div className="bg-white rounded px-1 flex items-center gap-1 text-gray-500 text-[13px]">
+                              <IconComment className="w-4 h-4" />
+                              1
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => openSubModal("monthly")}
+                            className="w-full bg-[#00AFF0] text-white text-[14px] font-semibold rounded-full py-3 shadow-lg hover:bg-[#00AFF0]/90 transition-colors"
+                          >
+                            SUBSCRIBE TO SEE USER'S POSTS
+                          </button>
+                        </div>
 
-                    {/* Likes Count */}
-                    <div className="text-[13px] text-gray-600 mb-2">{formatLikes(likeCounts[p.id] ?? p.likes)} likes</div>
+                        {/* Icons Row - disabled */}
+                        <div className="flex items-center gap-6 text-gray-500 mb-2">
+                          <button onClick={() => {}} className="pointer-events-none opacity-50" aria-label={`like post ${p.id}`}>
+                            <IconLike active={false} />
+                          </button>
+
+                          <button onClick={() => {}} className="pointer-events-none opacity-50" aria-label={`comment on post ${p.id}`}>
+                            <IconComment />
+                          </button>
+
+                          <button onClick={() => {}} className="flex items-center gap-1 pointer-events-none opacity-50" aria-label={`tip post ${p.id}`}>
+                            <IconTip active={false} />
+                            <span className="text-[13px]">SEND TIP</span>
+                          </button>
+
+                          <button onClick={() => {}} className="ml-auto pointer-events-none opacity-50" aria-label={`bookmark post ${p.id}`}>
+                            <IconBookmark active={false} />
+                          </button>
+                        </div>
+
+                        {/* Likes Count */}
+                        <div className="text-[13px] text-gray-600 mb-2">{formatLikes(likeCounts[p.id] ?? p.likes)} likes</div>
+
+                        {/* Header: Avatar + Name + Date */}
+                        <div className="flex items-start gap-3 mb-2">
+                          <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                            <img src={creator.avatar} alt="avatar" className="w-full h-full object-cover" />
+                          </div>
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <div className="flex flex-col">
+                                <div className="flex items-center gap-1">
+                                  <div className="font-semibold text-[15px] text-gray-900">{creator.name}</div>
+                                  <VerifiedBadge />
+                                </div>
+                                <div className="text-[13px] text-gray-500">{creator.handle}</div>
+                              </div>
+                              <div className="text-[13px] text-gray-500 flex items-center gap-1">
+                                {p.date}
+                                <span>···</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Caption */}
+                        <p className="text-[15px] text-gray-900 mb-2 px-0">{p.text}</p>
+
+                        {/* Locked media */}
+                        <div className="relative w-full mb-2">
+                          <div
+                            className="relative bg-[#F8FAFB] rounded-lg overflow-hidden"
+                            style={{ width: "100%", aspectRatio: "1614 / 843" }}
+                          >
+                            <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
+                              <LockSVGStatic />
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 ))}
               </div>
@@ -1130,19 +1183,7 @@ export default function SafeProfileMock() {
               <div>
                 <div className="grid grid-cols-3 gap-1">
                   {mediaItems.map((m) => {
-                    const locked = !(subscribed || (freeSample.active && (() => {
-                      const post = findPostById(m.id);
-                      if (!post) return false;
-                      if (!post.locked) return true;
-                      if (post.isDummy) {
-                        const match = String(post.id).match(/^dummy-(\d+)$/);
-                        if (match) {
-                          const idx = Number(match[1]);
-                          return idx <= (freeSample.unlockedCount || 0);
-                        }
-                      }
-                      return !post.locked;
-                    })()));
+                    const locked = !isMediaUnlocked(m.id);
                     return (
                       <div key={m.id} className="relative bg-white aspect-square border border-transparent">
                         {locked ? (
@@ -1213,7 +1254,8 @@ export default function SafeProfileMock() {
           </div>
 
           {/* Viewer */}
-          <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-white p-4" role="dialog" aria-modal="true" aria-label={viewerList[viewerIndex]?.title || "Viewer"}>
+          {viewerOpen && viewerList && viewerList.length > 0 && (
+            <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-white p-4" role="dialog" aria-modal="true" aria-label={viewerList[viewerIndex]?.title || "Viewer"}>
               <button onClick={closeViewer} aria-label="Close viewer" className="absolute top-6 right-6 z-30 bg-white bg-opacity-40 hover:bg-opacity-60 text-black rounded-full p-2">✕</button>
 
               <div className="max-w-[95%] max-h-[95%] w-full h-full flex items-center justify-center overflow-auto">
@@ -1235,9 +1277,9 @@ export default function SafeProfileMock() {
             />
           </ModalPortal>
 
-  <ModalPortal isOpen={showMessageModal} onClose={closeMessageModal} zIndex={1000}>
-    <MessageModal creator={creator} onClose={closeMessageModal} />
-  </ModalPortal>
+          <ModalPortal isOpen={showMessageModal} onClose={closeMessageModal} zIndex={1000}>
+            <MessageModal creator={creator} onClose={closeMessageModal} />
+          </ModalPortal>
 
         </div>
       </div>
