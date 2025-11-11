@@ -471,7 +471,7 @@ export default function SafeProfileMock() {
           bio: row.bio || prev.bio,
           id: row.id || prev.id,
           created_at: row.created_at || prev.created_at,
-        });
+        }));
       })
       .subscribe();
 
