@@ -1043,32 +1043,29 @@ export default function SafeProfileMock() {
       className="relative bg-[#F8FAFB] rounded-lg overflow-hidden"
       style={{ height: "380px", width: "100%" }}
     >
-      {/* Static SVG Background */}
+      {/* Static SVG Background - fixed to container size */}
       <div
-        className="absolute inset-0 flex items-center justify-center"
-        style={{ height: "100%", width: "100%" }}
+        className="absolute top-0 left-0 w-full h-full flex items-center justify-center"
+        style={{ height: "380px" }}
       >
         <LockSVGStatic />
       </div>
 
-      {/* Functional Button Overlay - perfectly covering static one */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <button
-          onClick={() => openSubModal("monthly")}
-          className="bg-[#00AFF0] text-white text-sm font-semibold rounded-full py-3 shadow-lg hover:bg-[#00AFF0]/90 transition-colors"
-          style={{
-            width: "85%",
-            height: "45px",
-            position: "absolute",
-            top: "55%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            zIndex: 10,
-          }}
-        >
-          SUBSCRIBE TO SEE USER'S POSTS
-        </button>
-      </div>
+      {/* Functional Button Overlay - EXACTLY covering static one */}
+      <button
+        onClick={() => openSubModal("monthly")}
+        className="absolute bg-[#00AFF0] text-white text-sm font-semibold rounded-full py-3 shadow-lg hover:bg-[#00AFF0]/90 transition-colors"
+        style={{
+          width: "85%",
+          height: "45px",
+          top: "55%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          zIndex: 50,
+        }}
+      >
+        SUBSCRIBE TO SEE USER'S POSTS
+      </button>
     </div>
   ) : (
     <div
@@ -1132,7 +1129,6 @@ export default function SafeProfileMock() {
     </div>
   )}
 </div>
-
                     {/* Icons Row - NO INDENT */}
                     <div className="flex items-center gap-6 text-gray-500 mb-1">
                       <button onClick={() => toggleLike(p.id)} aria-label={`like post ${p.id}`}>
