@@ -609,7 +609,7 @@ export default function SafeProfileMock() {
   <div
     style={{
       width: "100%",
-      height: "100%",
+      aspectRatio: "1614 / 843",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -618,12 +618,12 @@ export default function SafeProfileMock() {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       xmlnsXlink="http://www.w3.org/1999/xlink"
-      viewBox="0 0 1614.2857142857142 842.8571428571429"
+      viewBox="0 0 1614 843"
       preserveAspectRatio="xMidYMid meet"
       style={{
         width: "100%",
         height: "100%",
-        objectFit: "cover",
+        objectFit: "contain",
       }}
     >
       <g id="dd4789b5-03b7-41b2-a148-534740596f4f">
@@ -633,11 +633,11 @@ export default function SafeProfileMock() {
             strokeWidth: 0,
             fill: "rgb(255,255,255)",
           }}
-          x="-807.1428571428571"
-          y="-421.42857142857144"
-          width="1614.2857142857142"
-          height="842.8571428571429"
-          transform="matrix(1 0 0 1 807.142857 421.428571)"
+          x="-807"
+          y="-421.5"
+          width="1614"
+          height="843"
+          transform="matrix(1 0 0 1 807 421.5)"
         />
       </g>
       <g id="ca9d0540-29e7-4418-be31-bf455c24c7ce">
@@ -807,15 +807,11 @@ export default function SafeProfileMock() {
     setViewerOpen(false);
     setTimeout(() => unlockScroll(), 60);
   };
-  const viewerNext = () => setViewerIndex((i) => (i + 1 < viewerList.length ? i + 1 : i));
-  const viewerPrev = () => setViewerIndex((i) => (i - 1 >= 0 ? i - 1 : i));
 
   useEffect(() => {
     if (!viewerOpen) return;
     const onKey = (e) => {
       if (e.key === "Escape") closeViewer();
-      else if (e.key === "ArrowRight") viewerNext();
-      else if (e.key === "ArrowLeft") viewerPrev();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -1016,12 +1012,11 @@ export default function SafeProfileMock() {
   {!isPostUnlocked(p.id) ? (
     <div
       className="relative bg-[#F8FAFB] rounded-lg overflow-hidden"
-      style={{ height: "380px", width: "100%" }}
+      style={{ width: "100%", aspectRatio: "1614 / 843" }}
     >
       {/* Static SVG Background - fixed to container size */}
       <div
         className="absolute top-0 left-0 w-full h-full flex items-center justify-center"
-        style={{ height: "380px" }}
       >
         <LockSVGStatic />
       </div>
@@ -1031,11 +1026,11 @@ export default function SafeProfileMock() {
         onClick={() => openSubModal("monthly")}
         className="absolute bg-[#00AFF0] text-white text-sm font-semibold rounded-full py-3 shadow-lg hover:bg-[#00AFF0]/90 transition-colors"
         style={{
-          width: "90%",
-          height: "50px",
-          top: "60%",
+          width: "calc(100% - 32px)",
+          height: "48px",
+          top: "calc(50% + 80px)",
           left: "50%",
-          transform: "translate(-50%, -50%)",
+          transform: "translateX(-50%)",
           zIndex: 50,
         }}
       >
@@ -1045,7 +1040,7 @@ export default function SafeProfileMock() {
   ) : (
     <div
       className="rounded-lg overflow-hidden bg-gray-100"
-      style={{ height: "380px", width: "100%" }}
+      style={{ width: "100%", aspectRatio: "1614 / 843" }}
     >
       {p.mediaType === "video" ? (
         <div
@@ -1124,7 +1119,7 @@ export default function SafeProfileMock() {
                     </div>
 
                     {/* Likes Count */}
-                    <div className="text-[13px] text-gray-600">{formatLikes(likeCounts[p.id] ?? p.likes)} likes</div>
+                    <div className="text-[13px] text-gray-600 mb-0">{formatLikes(likeCounts[p.id] ?? p.likes)} likes</div>
                   </div>
                 ))}
               </div>
@@ -1220,9 +1215,6 @@ export default function SafeProfileMock() {
           {viewerOpen && viewerList && viewerList.length > 0 && (
             <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-white p-4" role="dialog" aria-modal="true" aria-label={viewerList[viewerIndex]?.title || "Viewer"}>
               <button onClick={closeViewer} aria-label="Close viewer" className="absolute top-6 right-6 z-30 bg-white bg-opacity-40 hover:bg-opacity-60 text-black rounded-full p-2">✕</button>
-
-              <button onClick={viewerPrev} disabled={viewerIndex === 0} aria-label="Previous" className={`absolute left-4 z-20 text-black p-2 rounded-full ${viewerIndex === 0 ? "opacity-40 pointer-events-none" : "hover:bg-white hover:bg-opacity-30"}`}>◀</button>
-              <button onClick={viewerNext} disabled={viewerIndex === viewerList.length - 1} aria-label="Next" className={`absolute right-4 z-20 text-black p-2 rounded-full ${viewerIndex === viewerList.length - 1 ? "opacity-40 pointer-events-none" : "hover:bg-white hover:bg-opacity-30"}`}>▶</button>
 
               <div className="max-w-[95%] max-h-[95%] w-full h-full flex items-center justify-center overflow-auto">
                 {viewerList[viewerIndex].mediaType === "image" ? (
