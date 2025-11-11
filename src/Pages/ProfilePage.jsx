@@ -1038,60 +1038,100 @@ export default function SafeProfileMock() {
 
                     {/* Image/Video - FULL WIDTH NO INDENT */}
                     <div className="relative w-full mb-3">
-                      {!isPostUnlocked(p.id) ? (
-                        <div className="relative bg-[#F8FAFB] rounded-lg overflow-hidden" style={{ height: '380px' }}>
-                          {/* Static SVG Background */}
-                          <div className="absolute inset-0">
-                            <LockSVGStatic />
-                          </div>
-                          
-                          {/* Functional Button Overlay - Positioned on top */}
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="absolute" style={{ top: '55%', left: '50%', transform: 'translate(-50%, -50%)', width: '85%' }}>
-                              <button 
-                                onClick={() => openSubModal("monthly")} 
-                                className="w-full bg-[#00AFF0] text-white text-sm font-semibold rounded-full py-3 shadow-lg hover:bg-[#00AFF0]/90 transition-colors"
-                                style={{ height: '45px' }}
-                              >
-                                SUBSCRIBE TO SEE USER'S POSTS
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="rounded-lg overflow-hidden bg-gray-100" style={{ height: '380px' }}>
-                          {p.mediaType === "video" ? (
-                            <div
-                              role="button"
-                              tabIndex={0}
-                              onClick={() => openViewer({ list: buildViewerListFromPosts, index: buildViewerListFromPosts.findIndex((x) => x.id === p.id) })}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" || e.key === " ") {
-                                  openViewer({ list: buildViewerListFromPosts, index: buildViewerListFromPosts.findIndex((x) => x.id === p.id) });
-                                }
-                              }}
-                              className="w-full h-full cursor-pointer flex items-center justify-center relative"
-                              aria-label={`Open video post ${p.id}`}
-                            >
-                              <img src={p.mediaSrc} alt={`post ${p.id} poster`} className="w-full h-full object-cover" loading="lazy" />
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="bg-black bg-opacity-40 rounded-full p-3">
-                                  <svg viewBox="0 0 24 24" className="w-8 h-8 text-white" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7z" /></svg>
-                                </div>
-                              </div>
-                            </div>
-                          ) : (
-                            <img
-                              src={p.mediaSrc}
-                              alt={`post media ${p.id}`}
-                              className="w-full h-full object-cover cursor-pointer"
-                              loading="lazy"
-                              onClick={() => openViewer({ list: buildViewerListFromPosts, index: buildViewerListFromPosts.findIndex((x) => x.id === p.id) })}
-                            />
-                          )}
-                        </div>
-                      )}
-                    </div>
+  {!isPostUnlocked(p.id) ? (
+    <div
+      className="relative bg-[#F8FAFB] rounded-lg overflow-hidden"
+      style={{ height: "380px", width: "100%" }}
+    >
+      {/* Static SVG Background */}
+      <div
+        className="absolute inset-0 flex items-center justify-center"
+        style={{ height: "100%", width: "100%" }}
+      >
+        <LockSVGStatic />
+      </div>
+
+      {/* Functional Button Overlay - perfectly covering static one */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <button
+          onClick={() => openSubModal("monthly")}
+          className="bg-[#00AFF0] text-white text-sm font-semibold rounded-full py-3 shadow-lg hover:bg-[#00AFF0]/90 transition-colors"
+          style={{
+            width: "85%",
+            height: "45px",
+            position: "absolute",
+            top: "55%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            zIndex: 10,
+          }}
+        >
+          SUBSCRIBE TO SEE USER'S POSTS
+        </button>
+      </div>
+    </div>
+  ) : (
+    <div
+      className="rounded-lg overflow-hidden bg-gray-100"
+      style={{ height: "380px", width: "100%" }}
+    >
+      {p.mediaType === "video" ? (
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() =>
+            openViewer({
+              list: buildViewerListFromPosts,
+              index: buildViewerListFromPosts.findIndex((x) => x.id === p.id),
+            })
+          }
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              openViewer({
+                list: buildViewerListFromPosts,
+                index: buildViewerListFromPosts.findIndex((x) => x.id === p.id),
+              });
+            }
+          }}
+          className="w-full h-full cursor-pointer flex items-center justify-center relative"
+          aria-label={`Open video post ${p.id}`}
+        >
+          <img
+            src={p.mediaSrc}
+            alt={`post ${p.id} poster`}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="bg-black bg-opacity-40 rounded-full p-3">
+              <svg
+                viewBox="0 0 24 24"
+                className="w-8 h-8 text-white"
+                fill="white"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <img
+          src={p.mediaSrc}
+          alt={`post media ${p.id}`}
+          className="w-full h-full object-cover cursor-pointer"
+          loading="lazy"
+          onClick={() =>
+            openViewer({
+              list: buildViewerListFromPosts,
+              index: buildViewerListFromPosts.findIndex((x) => x.id === p.id),
+            })
+          }
+        />
+      )}
+    </div>
+  )}
+</div>
 
                     {/* Icons Row - NO INDENT */}
                     <div className="flex items-center gap-6 text-gray-500 mb-1">
