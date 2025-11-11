@@ -1,5 +1,4 @@
-// ProfilePage.jsx - COMPLETE FIXED VERSION - OLD CODE BASE WITH NEW LAYOUT
-// Part 1 of 2
+// ProfilePage.jsx - COMPLETE FIXED VERSION - UPDATED LAYOUT
 
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
@@ -983,11 +982,11 @@ export default function SafeProfileMock() {
           {/* TAB CONTENT - NEW LAYOUT FOR ALL POSTS */}
           <div className="bg-white">
             {activeTab === "posts" && (
-              <div className="space-y-4">
+              <div className="space-y-0">
                 {posts.map((p) => (
-                  <div key={p.id} className="border-b pb-4 last:border-none px-4">
+                  <div key={p.id} className="border-b pb-0 last:border-none px-4">
                     {/* Header: Avatar + Name + Date */}
-                    <div className="flex items-start gap-3 mb-3">
+                    <div className="flex items-start gap-3 mb-0">
                       <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
                         <img src={creator.avatar} alt="avatar" className="w-full h-full object-cover" />
                       </div>
@@ -1010,10 +1009,10 @@ export default function SafeProfileMock() {
                     </div>
 
                     {/* Caption */}
-                    <p className="text-[15px] text-gray-900 mb-3 px-0">{p.text}</p>
+                    <p className="text-[15px] text-gray-900 mb-0 px-0">{p.text}</p>
 
                     {/* Image/Video - FULL WIDTH NO INDENT */}
-                    <div className="relative w-full mb-3">
+                    <div className="relative w-full mb-0">
   {!isPostUnlocked(p.id) ? (
     <div
       className="relative bg-[#F8FAFB] rounded-lg overflow-hidden"
@@ -1032,9 +1031,9 @@ export default function SafeProfileMock() {
         onClick={() => openSubModal("monthly")}
         className="absolute bg-[#00AFF0] text-white text-sm font-semibold rounded-full py-3 shadow-lg hover:bg-[#00AFF0]/90 transition-colors"
         style={{
-          width: "85%",
-          height: "45px",
-          top: "55%",
+          width: "90%",
+          height: "50px",
+          top: "60%",
           left: "50%",
           transform: "translate(-50%, -50%)",
           zIndex: 50,
@@ -1069,11 +1068,10 @@ export default function SafeProfileMock() {
           className="w-full h-full cursor-pointer flex items-center justify-center relative"
           aria-label={`Open video post ${p.id}`}
         >
-          <img
+          <video
             src={p.mediaSrc}
-            alt={`post ${p.id} poster`}
             className="w-full h-full object-cover"
-            loading="lazy"
+            preload="metadata"
           />
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="bg-black bg-opacity-40 rounded-full p-3">
@@ -1106,7 +1104,7 @@ export default function SafeProfileMock() {
   )}
 </div>
                     {/* Icons Row - NO INDENT */}
-                    <div className="flex items-center gap-6 text-gray-500 mb-1">
+                    <div className="flex items-center gap-6 text-gray-500 mb-0">
                       <button onClick={() => toggleLike(p.id)} aria-label={`like post ${p.id}`}>
                         <IconLike active={!!likedPosts[p.id]} />
                       </button>
@@ -1220,17 +1218,17 @@ export default function SafeProfileMock() {
 
           {/* Viewer */}
           {viewerOpen && viewerList && viewerList.length > 0 && (
-            <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black bg-opacity-90 p-4" role="dialog" aria-modal="true" aria-label={viewerList[viewerIndex]?.title || "Viewer"}>
-              <button onClick={closeViewer} aria-label="Close viewer" className="absolute top-6 right-6 z-30 bg-black bg-opacity-40 hover:bg-opacity-60 text-white rounded-full p-2">✕</button>
+            <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-white p-4" role="dialog" aria-modal="true" aria-label={viewerList[viewerIndex]?.title || "Viewer"}>
+              <button onClick={closeViewer} aria-label="Close viewer" className="absolute top-6 right-6 z-30 bg-white bg-opacity-40 hover:bg-opacity-60 text-black rounded-full p-2">✕</button>
 
-              <button onClick={viewerPrev} disabled={viewerIndex === 0} aria-label="Previous" className={`absolute left-4 z-20 text-white p-2 rounded-full ${viewerIndex === 0 ? "opacity-40 pointer-events-none" : "hover:bg-black hover:bg-opacity-30"}`}>◀</button>
-              <button onClick={viewerNext} disabled={viewerIndex === viewerList.length - 1} aria-label="Next" className={`absolute right-4 z-20 text-white p-2 rounded-full ${viewerIndex === viewerList.length - 1 ? "opacity-40 pointer-events-none" : "hover:bg-black hover:bg-opacity-30"}`}>▶</button>
+              <button onClick={viewerPrev} disabled={viewerIndex === 0} aria-label="Previous" className={`absolute left-4 z-20 text-black p-2 rounded-full ${viewerIndex === 0 ? "opacity-40 pointer-events-none" : "hover:bg-white hover:bg-opacity-30"}`}>◀</button>
+              <button onClick={viewerNext} disabled={viewerIndex === viewerList.length - 1} aria-label="Next" className={`absolute right-4 z-20 text-black p-2 rounded-full ${viewerIndex === viewerList.length - 1 ? "opacity-40 pointer-events-none" : "hover:bg-white hover:bg-opacity-30"}`}>▶</button>
 
               <div className="max-w-[95%] max-h-[95%] w-full h-full flex items-center justify-center overflow-auto">
                 {viewerList[viewerIndex].mediaType === "image" ? (
                   <img src={viewerList[viewerIndex].src} alt={viewerList[viewerIndex].title} className="max-w-full max-h-full object-contain" loading="eager" />
                 ) : (
-                  <video src={viewerList[viewerIndex].src} className="max-w-full max-h-full" controls autoPlay playsInline />
+                  <video src={viewerList[viewerIndex].src} className="max-w-full max-h-full" controls autoPlay playsInline preload="auto" />
                 )}
               </div>
             </div>
