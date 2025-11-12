@@ -1245,4 +1245,3 @@ export default function SafeProfileMock() {
     </ErrorBoundary>
   );
 }
-```
