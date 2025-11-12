@@ -1086,7 +1086,7 @@ export default function SafeProfileMock() {
                             style={{
                               width: "calc(100% - 40px)",
                               height: "40px",
-                              bottom: "18px",
+                              bottom: "16px",
                               left: "20px",
                               padding: "0 16px",
                               zIndex: 50,
