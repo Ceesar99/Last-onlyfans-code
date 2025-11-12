@@ -165,7 +165,7 @@ function buildLocalDummyPosts() {
 
     const postId = `dummy-${idx}`;
     if (!persistedLikes[postId]) {
-      persistedLikes[postId] = Math.floor(Math.random() * 1800001) + 200000;
+      persistedLikes[postId] = Math.floor(Math.random() * 41) + 10; // 10-50 likes
     }
 
     return {
@@ -190,7 +190,7 @@ function getStableLikeCount(postId) {
       if (parsed[postId]) return parsed[postId];
     }
   } catch (err) {}
-  const newCount = 50; // start at 50
+  const newCount = Math.floor(Math.random() * 41) + 10; // 10-50 likes
   try {
     if (typeof window !== "undefined" && window.localStorage) {
       const stored = window.localStorage.getItem("post_likes_permanent");
@@ -201,29 +201,6 @@ function getStableLikeCount(postId) {
   } catch (err) {}
   return newCount;
 }
-
-// Growth function inside component
-useEffect(() => {
-  const growLikes = () => {
-    setLikeCounts((prev) => {
-      const newCounts = {...prev};
-      posts.forEach((p) => {
-        if (p.created_at) {
-          const age = (Date.now() - new Date(p.created_at).getTime()) / (1000 * 60 * 60 * 24); // days old
-          if (age < 1 && newCounts[p.id] < 2000000) {
-            newCounts[p.id] += 20;
-            if (newCounts[p.id] > 2000000) newCounts[p.id] = 2000000;
-          }
-        }
-      });
-      return newCounts;
-    });
-  };
-
-  const interval = setInterval(growLikes, 86400000); // Daily
-
-  return () => clearInterval(interval);
-}, [posts]);
 
 export default function SafeProfileMock() {
   const navigate = useNavigate();
@@ -341,7 +318,7 @@ export default function SafeProfileMock() {
           const mappedDB = postsData.map((post) => {
             const postId = `db-${post.id}`;
             if (!persistedLikes[postId]) {
-              persistedLikes[postId] = 50;
+              persistedLikes[postId] = Math.floor(Math.random() * 41) + 10; // 10-50 likes
             }
             
             return {
@@ -767,7 +744,9 @@ export default function SafeProfileMock() {
       } catch (err) {
         console.error("toggleLike error:", err);
         setLikedPosts((prev) => ({ ...prev, [postId]: wasLiked }));
-        setLikeCounts((prev) => ({ ...prev, [postId]: (prev[postId] || 0) + 1
+        setLikeCounts((prev) => ({
+          ...prev,
+          [postId]: (prev[postId] || 0) + 1
         }));
       }
     }
