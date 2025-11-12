@@ -165,7 +165,7 @@ function buildLocalDummyPosts() {
 
     const postId = `dummy-${idx}`;
     if (!persistedLikes[postId]) {
-      persistedLikes[postId] = Math.floor(Math.random() * 41) + 10; // 10-50 likes
+      persistedLikes[postId] = Math.floor(Math.random() * 41) + 10; // 10-50 likes initial
     }
 
     return {
@@ -201,6 +201,26 @@ function getStableLikeCount(postId) {
   } catch (err) {}
   return newCount;
 }
+
+// Growth function
+useEffect(() => {
+  const growLikes = () => {
+    setLikeCounts((prev) => {
+      const newCounts = {...prev};
+      Object.keys(newCounts).forEach((id) => {
+        if (newCounts[id] < 2000000) {
+          newCounts[id] += 20;
+          if (newCounts[id] > 2000000) newCounts[id] = 2000000;
+        }
+      });
+      return newCounts;
+    });
+  };
+
+  const interval = setInterval(growLikes, 3600000); // Every hour
+
+  return () => clearInterval(interval);
+}, []);
 
 export default function SafeProfileMock() {
   const navigate = useNavigate();
@@ -489,7 +509,7 @@ export default function SafeProfileMock() {
       .map((p) => ({
         id: p.id,
         type: p.mediaType || "image",
-        src: p.mediaSrc,
+        src: p.mediaType === "video" ? p.mediaSrc + '#t=0.1' : p.mediaSrc, // thumbnail for video
         duration: p.mediaType === "video" ? `${Math.floor(Math.random() * 3)}:${String(Math.floor(Math.random() * 60)).padStart(2, "0")}` : undefined,
         count: 1,
       }));
@@ -1178,8 +1198,10 @@ export default function SafeProfileMock() {
                                 onClick={() => openViewer({ list: buildViewerListFromMedia, index: buildViewerListFromMedia.findIndex((x) => x.id === m.id) })}
                               />
                             ) : (
-                              <div
-                                className="w-full h-full bg-black flex items-center justify-center text-white text-xs cursor-pointer"
+                              <video
+                                src={m.src}
+                                className="w-full h-full object-cover cursor-pointer"
+                                poster={m.src + '#t=0.1'}
                                 onClick={() => openViewer({ list: buildViewerListFromMedia, index: buildViewerListFromMedia.findIndex((x) => x.id === m.id) })}
                                 role="button"
                                 tabIndex={0}
@@ -1188,9 +1210,7 @@ export default function SafeProfileMock() {
                                     openViewer({ list: buildViewerListFromMedia, index: buildViewerListFromMedia.findIndex((x) => x.id === m.id) });
                                   }
                                 }}
-                              >
-                                VIDEO
-                              </div>
+                              />
                             )}
                             {m.type === "video" && (
                               <div className="absolute right-1 bottom-1 bg-black bg-opacity-60 text-white text-[11px] px-1 rounded">▶ {m.duration}</div>
