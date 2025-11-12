@@ -42,6 +42,8 @@ const LoadingSplash = ({ children }) => {
       {stage === "logo" && (
         <div
           style={{
+            width: 480,
+            height: 660,
             position: "absolute",
             top: "50%",
             left: "50%",
@@ -97,6 +99,8 @@ const LoadingSplash = ({ children }) => {
       {stage === "spinner" && (
         <div
           style={{
+            width: 180,
+            height: 260,
             position: "absolute",
             top: "50%",
             left: "50%",
