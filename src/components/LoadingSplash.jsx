@@ -49,7 +49,7 @@ display: "flex",
 alignItems: "center",
 justifyContent: "center",
 animation: "fadeIn 0.9s ease-out forwards",
-marginTop: "-50px",
+marginTop: "-80px",
 }}
 >
 {/* keep your SVG exactly as provided */}
