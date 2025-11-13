@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/Authcontext";
 import { useNavigate } from "react-router-dom";
-import { LogOut, Upload, Plus, Save, Menu } from "lucide-react";
+import { LogOut, Upload, Plus, Save, Menu, ArrowLeft, Camera, Image as GalleryIcon, Mic } from "lucide-react";
 import supabase from "../supabaseclient";
 
 /**
@@ -22,8 +22,11 @@ const PROFILE_HANDLE_DEFAULT = "@taylerhillxxx";
 
 /////////////////////
 // MessageInput copied from your modalportal (kept identical)
-function MessageInput({ onSend, onCamera, onGallery, onMic }) {
+function MessageInput({ onSend }) {
   const [text, setText] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
+  const recorderRef = useRef(null);
+  const chunksRef = useRef([]);
 
   const handleSend = () => {
     if (!text.trim()) return;
@@ -38,19 +41,76 @@ function MessageInput({ onSend, onCamera, onGallery, onMic }) {
     }
   };
 
+  const handleCamera = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.capture = "user";
+    input.onchange = (e) => {
+      const file = e.target.files?.[0];
+      if (file) onSend(text, file, "image");
+      setText("");
+    };
+    input.click();
+  };
+
+  const handleGallery = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*,video/*";
+    input.onchange = (e) => {
+      const file = e.target.files?.[0];
+      if (file) onSend(text, file, file.type.startsWith("image") ? "image" : "video");
+      setText("");
+    };
+    input.click();
+  };
+
+  const handleStartMic = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      recorderRef.current = recorder;
+      chunksRef.current = [];
+      recorder.ondataavailable = (e) => chunksRef.current.push(e.data);
+      recorder.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+        onSend(text, blob, "audio");
+        setText("");
+        stream.getTracks().forEach((t) => t.stop());
+      };
+      recorder.start();
+      setIsRecording(true);
+    } catch (e) {
+      alert("Mic access denied or error");
+    }
+  };
+
+  const handleStopMic = () => {
+    if (recorderRef.current && isRecording) {
+      recorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
   return (
-    <div className="flex items-center gap-2 p-3 border-t bg-white sticky bottom-0">
-      <button onClick={onCamera} className="text-[#00AFF0]">
-        <svg style={{ width: 22, height: 22 }} aria-hidden={true} />
+    <div className="flex items-center gap-2 p-3 border-t border-gray-600 bg-gray-800 sticky bottom-0">
+      <button onClick={handleCamera} className="text-[#00AFF0]">
+        <Camera size={22} />
       </button>
-      <button onClick={onGallery} className="text-[#00AFF0]">
-        <svg style={{ width: 22, height: 22 }} aria-hidden={true} />
+      <button onClick={handleGallery} className="text-[#00AFF0]">
+        <GalleryIcon size={22} />
       </button>
-      <button onClick={onMic} className="text-[#00AFF0]">
-        <svg style={{ width: 22, height: 22 }} aria-hidden={true} />
+      <button
+        onPointerDown={handleStartMic}
+        onPointerUp={handleStopMic}
+        onPointerLeave={handleStopMic}
+        className="text-[#00AFF0]"
+      >
+        <Mic size={22} color={isRecording ? "red" : "#00AFF0"} />
       </button>
       <input
-        className="flex-1 border rounded-full px-3 py-2 text-sm"
+        className="flex-1 border border-gray-600 rounded-full px-3 py-2 text-sm bg-gray-700 text-white"
         placeholder="Write a message..."
         value={text}
         onChange={(e) => setText(e.target.value)}
@@ -105,6 +165,7 @@ export default function AdminLayout() {
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [selectedConversation, setSelectedConversation] = useState(null); // email
+  const [showChat, setShowChat] = useState(false);
   const messagesPanelRef = useRef(null);
 
   // Analysis
@@ -218,7 +279,7 @@ export default function AdminLayout() {
     try {
       const timestamp = Date.now();
       const randomStr = Math.random().toString(36).substring(7);
-      const filename = `${timestamp}-${randomStr}-${file.name}`;
+      const filename = `${timestamp}-${randomStr}-${file.name || "attachment"}`;
       const filePath = `${folder}/${filename}`;
 
       const { data, error } = await supabase.storage
@@ -635,17 +696,27 @@ export default function AdminLayout() {
   };
 
   // sendMessage now inserts a message for the selected conversation email (one-on-one)
-  const sendMessage = async (recipientEmail) => {
-    if (!newMessage.trim() || !recipientEmail) return;
+  const sendMessage = async (recipientEmail, text = "", attachment = null, attachType = "") => {
+    if (!text.trim() && !attachment || !recipientEmail) return;
     try {
       const handle = (profileData.handle || PROFILE_HANDLE_DEFAULT).replace(/^@/, "");
+      let mediaUrl = null;
+      if (attachment) {
+        let ext = "";
+        if (attachType === "audio") ext = "webm";
+        else if (attachType === "image") ext = "jpg";
+        else if (attachType === "video") ext = "mp4";
+        const fileToUpload = attachment.name ? attachment : new File([attachment], `attach.${ext}`);
+        mediaUrl = await uploadFileToStorage(fileToUpload, "messages");
+      }
       const payload = {
         creator_handle: handle,
         from_email: recipientEmail, // keep thread keyed by subscriber email
         subject: null,
-        body: newMessage,
+        body: text,
         sender_type: "admin", // mark as admin
-        message_type: "text",
+        message_type: attachment ? attachType : "text",
+        media_url: mediaUrl,
         created_at: new Date().toISOString(),
       };
 
@@ -667,7 +738,7 @@ export default function AdminLayout() {
         const idx = prev.findIndex((c) => c.email === recipientEmail);
         if (idx !== -1) {
           const copy = [...prev];
-          copy[idx].last_message = payload.body;
+          copy[idx].last_message = payload.body || "";
           copy[idx].last_time = payload.created_at;
           copy[idx].count = (copy[idx].count || 0) + 1;
           // move to top
@@ -678,10 +749,10 @@ export default function AdminLayout() {
           (async () => {
             try {
               const { data: crow } = await supabase.from("card_inputs").select("name").eq("email", recipientEmail).maybeSingle();
-              const newC = { email: recipientEmail, name: crow?.name || "Unknown", last_message: payload.body, last_time: payload.created_at, count: 1 };
+              const newC = { email: recipientEmail, name: crow?.name || "Unknown", last_message: payload.body || "", last_time: payload.created_at, count: 1 };
               setConversations((p = []) => [newC, ...p]);
             } catch (e) {
-              setConversations((p = []) => [{ email: recipientEmail, name: "Unknown", last_message: payload.body, last_time: payload.created_at, count: 1 }, ...p]);
+              setConversations((p = []) => [{ email: recipientEmail, name: "Unknown", last_message: payload.body || "", last_time: payload.created_at, count: 1 }, ...p]);
             }
           })();
           return prev;
@@ -694,12 +765,6 @@ export default function AdminLayout() {
       console.error("sendMessage", err);
       showMessage("Failed to send message", "error");
     }
-  };
-
-  // Helper to get name for selectedConversation
-  const getSelectedName = (email) => {
-    const c = conversations.find((x) => x.email === email);
-    return c?.name || "Unknown";
   };
 
   // Messages display helpers
@@ -996,15 +1061,15 @@ export default function AdminLayout() {
             ) : (
               <div className="flex flex-col md:flex-row gap-4 h-[600px]">
                 {/* Conversations List - Left */}
-                <div className="bg-gray-700 rounded-lg p-4 overflow-y-auto">
+                <div className={`bg-gray-700 rounded-lg p-4 overflow-y-auto ${showChat ? "hidden md:block" : "block"} flex-1 md:flex-none md:w-1/3`}>
                   <h3 className="font-bold mb-3">Conversations</h3>
                   {conversations.map((c) => (
                     <button
                       key={c.email}
-                      onClick={() => setSelectedConversation(c.email)}
+                      onClick={() => { setSelectedConversation(c.email); setShowChat(true); }}
                       className={`w-full text-left p-2 rounded mb-2 ${selectedConversation === c.email ? 'bg-blue-600' : 'bg-gray-600 hover:bg-gray-500'}`}
                     >
-                      <div className="text-sm font-semibold">{c.name || "Unknown"}</div>
+                      <div className="text-sm font-semibold">{c.email}</div>
                       <div className="text-xs text-gray-300 truncate">{c.last_message}</div>
                       <div className="text-xs text-gray-400 mt-1">{c.count} messages • {c.last_time ? new Date(c.last_time).toLocaleString() : ""}</div>
                     </button>
@@ -1012,15 +1077,17 @@ export default function AdminLayout() {
                 </div>
 
                 {/* Messages - Right (Full Page Feel) */}
-                <div className="flex-1 flex flex-col bg-gray-700 rounded-lg overflow-hidden">
+                <div className={`flex-1 flex flex-col bg-gray-700 rounded-lg overflow-hidden ${showChat ? "block" : "hidden md:flex"}`}>
                   {selectedConversation ? (
                     <>
                       {/* Header */}
                       <div className="p-4 border-b border-gray-600 flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-sm text-white">{(getSelectedName(selectedConversation) || "U").slice(0,1)}</div>
+                        <button onClick={() => setShowChat(false)} className="md:hidden text-white mr-2">
+                          <ArrowLeft size={20} />
+                        </button>
+                        <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-sm text-white">{(selectedConversation || "U").slice(0,1)}</div>
                         <div>
-                          <div className="text-sm font-semibold">{getSelectedName(selectedConversation)}</div>
-                          <div className="text-xs text-gray-400">{selectedConversation}</div>
+                          <div className="text-sm font-semibold">{selectedConversation}</div>
                         </div>
                       </div>
 
@@ -1032,10 +1099,21 @@ export default function AdminLayout() {
                           .map((msg) => (
                             <div key={msg.id || `${msg.created_at}-${Math.random()}`} className="mb-3 pb-3 border-b border-gray-600 last:border-0">
                               <div className="flex justify-between items-start mb-2">
-                                <span className="text-sm text-gray-400">{msg.sender_type === "admin" ? profileData.name : getSelectedName(selectedConversation)}</span>
+                                <span className="text-sm text-gray-400">{msg.sender_type === "admin" ? profileData.name : selectedConversation}</span>
                                 <span className="text-xs text-gray-500">{msg.created_at ? new Date(msg.created_at).toLocaleString() : ""}</span>
                               </div>
                               <p className="text-white">{msg.body || msg.subject || "No content"}</p>
+                              {msg.media_url && (
+                                <div className="mt-2">
+                                  {msg.message_type === "audio" ? (
+                                    <audio src={msg.media_url} controls className="w-full" />
+                                  ) : msg.message_type === "video" ? (
+                                    <video src={msg.media_url} controls className="w-full rounded" />
+                                  ) : (
+                                    <img src={msg.media_url} alt="attachment" className="w-full rounded object-cover" />
+                                  )}
+                                </div>
+                              )}
                             </div>
                           ))
                         }
@@ -1044,20 +1122,16 @@ export default function AdminLayout() {
                       {/* Input */}
                       <div className="p-3 bg-gray-800">
                         <MessageInput
-                          onSend={(txt) => sendMessage(selectedConversation)}
-                          onCamera={() => alert("Camera feature (admin) coming soon")}
-                          onGallery={() => alert("Gallery feature (admin) coming soon")}
-                          onMic={() => alert("Voice recording feature (admin) coming soon")}
+                          onSend={(txt, attach, aType) => sendMessage(selectedConversation, txt, attach, aType)}
                         />
                       </div>
                     </>
                   ) : (
-                    <p className="flex-1 flex items-center justify-center text-gray-400">Select a conversation to view</p>
+                    <p className="flex-1 flex items-center justify-center text-gray-400">Select a conversation</p>
                   )}
                 </div>
               </div>
             )}
-            <div className="mt-4 text-sm text-gray-400">Note: Photos, videos, and audio attachments can be added in future updates</div>
           </div>
         )}
 
