@@ -22,7 +22,7 @@ const PROFILE_HANDLE_DEFAULT = "@taylerhillxxx";
 
 /////////////////////
 // MessageInput copied from your modalportal (kept identical)
-function MessageInput({ onSend }) {
+function MessageInput({ onPreview }) {
   const [text, setText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const recorderRef = useRef(null);
@@ -30,7 +30,7 @@ function MessageInput({ onSend }) {
 
   const handleSend = () => {
     if (!text.trim()) return;
-    onSend(text);
+    onPreview(text, null, "text");
     setText("");
   };
 
@@ -48,8 +48,10 @@ function MessageInput({ onSend }) {
     input.capture = "user";
     input.onchange = (e) => {
       const file = e.target.files?.[0];
-      if (file) onSend(text, file, "image");
-      setText("");
+      if (file) {
+        const url = URL.createObjectURL(file);
+        onPreview("", file, "image", url);
+      }
     };
     input.click();
   };
@@ -60,8 +62,10 @@ function MessageInput({ onSend }) {
     input.accept = "image/*,video/*";
     input.onchange = (e) => {
       const file = e.target.files?.[0];
-      if (file) onSend(text, file, file.type.startsWith("image") ? "image" : "video");
-      setText("");
+      if (file) {
+        const url = URL.createObjectURL(file);
+        onPreview("", file, file.type.startsWith("image") ? "image" : "video", url);
+      }
     };
     input.click();
   };
@@ -75,8 +79,8 @@ function MessageInput({ onSend }) {
       recorder.ondataavailable = (e) => chunksRef.current.push(e.data);
       recorder.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: "audio/webm" });
-        onSend(text, blob, "audio");
-        setText("");
+        const url = URL.createObjectURL(blob);
+        onPreview("", blob, "audio", url);
         stream.getTracks().forEach((t) => t.stop());
       };
       recorder.start();
@@ -94,7 +98,7 @@ function MessageInput({ onSend }) {
   };
 
   return (
-    <div className="flex items-center gap-2 p-3 border-t border-gray-600 bg-gray-800 sticky bottom-0">
+    <div className="flex items-center gap-2 p-3 border-t border-gray-600 bg-gray-800 sticky bottom-0 w-full">
       <button onClick={handleCamera} className="text-[#00AFF0]">
         <Camera size={22} />
       </button>
@@ -167,6 +171,9 @@ export default function AdminLayout() {
   const [selectedConversation, setSelectedConversation] = useState(null); // email
   const [showChat, setShowChat] = useState(false);
   const messagesPanelRef = useRef(null);
+
+  // Preview state
+  const [preview, setPreview] = useState(null); // { text, file, type, url, caption }
 
   // Analysis
   const [analysisData, setAnalysisData] = useState({
@@ -645,6 +652,7 @@ export default function AdminLayout() {
 
           // append to messages
           setMessages((prev) => {
+            if (prev.some(m => m.id === newMsg.id)) return prev; // prevent double
             const updated = [newMsg, ...(prev || [])]; // keep newest-first
             return updated;
           });
@@ -733,7 +741,10 @@ export default function AdminLayout() {
       }
 
       // Update local state immediately (optimistic)
-      setMessages((prev) => [data, ...(prev || [])]);
+      setMessages((prev) => {
+        if (prev.some(m => m.id === data.id)) return prev; // prevent double
+        return [data, ...(prev || [])];
+      });
       setConversations((prev = []) => {
         const idx = prev.findIndex((c) => c.email === recipientEmail);
         if (idx !== -1) {
@@ -776,6 +787,16 @@ export default function AdminLayout() {
       }
     } catch (e) {}
   }, [selectedConversation, messages]);
+
+  // Preview handler
+  const handlePreview = (text, file, type, url) => {
+    setPreview({ text, file, type, url, caption: "" });
+  };
+
+  const handleSendFromPreview = () => {
+    sendMessage(selectedConversation, preview.caption || preview.text, preview.file, preview.type);
+    setPreview(null);
+  };
 
   // ---------------- Analysis ----------------
   const fetchAnalysisData = async () => {
@@ -880,28 +901,28 @@ export default function AdminLayout() {
         <button onClick={() => { logout(); navigate("/admin/login"); }} className="mt-auto flex items-center gap-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded"><LogOut size={18} /> Logout</button>
       </aside>
 
-      <div className="flex-1 p-6 overflow-y-auto">
+      <div className="flex-1 p-0 overflow-y-auto w-full">
         {/* Hamburger for mobile */}
         <button 
-          className="md:hidden mb-4 p-2 bg-gray-800 rounded"
+          className="md:hidden m-0 p-2 bg-gray-800 rounded w-full"
           onClick={() => setSidebarOpen(true)}
         >
           <Menu size={24} />
         </button>
 
         {message.text && (
-          <div className={`mb-4 p-3 rounded-lg ${message.type === "success" ? "bg-green-500/20 border border-green-500 text-green-300" : "bg-red-500/20 border border-red-500 text-red-300"}`}>
+          <div className={`m-0 p-3 rounded-lg w-full ${message.type === "success" ? "bg-green-500/20 border border-green-500 text-green-300" : "bg-red-500/20 border border-red-500 text-red-300"}`}>
             {message.text}
           </div>
         )}
 
         {/* PROFILE */}
         {activeTab === "profile" && (
-          <div className="bg-gray-800 rounded-lg p-6">
-            <h2 className="text-2xl font-bold mb-6">Profile Manager</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-gray-800 rounded-lg p-0 w-full">
+            <h2 className="text-2xl font-bold">Profile Manager</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-0 w-full">
               <div className="md:col-span-2">
-                <div className="relative h-36 bg-gray-700 rounded mb-4 overflow-hidden">
+                <div className="relative h-36 bg-gray-700 rounded overflow-hidden w-full">
                   <img src={profileData.banner_url || "https://via.placeholder.com/1200x300"} alt="banner" className="w-full h-full object-cover" />
                   <div className="absolute left-4 bottom-[-36px]">
                     <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-gray-900 shadow">
@@ -911,20 +932,20 @@ export default function AdminLayout() {
                 </div>
 
                 <div className="mt-10">
-                  <label className="block text-gray-300 mb-2">Name</label>
+                  <label className="block text-gray-300">Name</label>
                   <input value={profileData.name} onChange={(e) => setProfileData((p) => ({ ...p, name: e.target.value }))} className="w-full px-4 py-2 rounded bg-gray-700 text-white border border-gray-600" />
-                  <label className="block text-gray-300 mt-4 mb-2">Handle</label>
+                  <label className="block text-gray-300 mt-0">Handle</label>
                   <input value={profileData.handle} onChange={(e) => setProfileData((p) => ({ ...p, handle: e.target.value }))} className="w-full px-4 py-2 rounded bg-gray-700 text-white border border-gray-600" />
-                  <label className="block text-gray-300 mt-4 mb-2">Bio</label>
+                  <label className="block text-gray-300 mt-0">Bio</label>
                   <textarea value={profileData.bio} onChange={(e) => setProfileData((p) => ({ ...p, bio: e.target.value }))} rows={5} className="w-full px-4 py-2 rounded bg-gray-700 text-white border border-gray-600" />
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-0">
                 <div>
-                  <label className="block text-gray-300 mb-2">Avatar</label>
-                  <div className="mb-3">
-                    <img src={profileData.avatar_url || "https://via.placeholder.com/160"} alt="avatar" className="w-28 h-28 rounded-full object-cover mb-2" />
+                  <label className="block text-gray-300">Avatar</label>
+                  <div>
+                    <img src={profileData.avatar_url || "https://via.placeholder.com/160"} alt="avatar" className="w-28 h-28 rounded-full object-cover" />
                     <label className="inline-flex items-center gap-2 bg-blue-600 px-3 py-2 rounded cursor-pointer">
                       <Upload size={16} /> Upload Avatar
                       <input type="file" accept="image/*" onChange={handleAvatarPick} className="hidden" />
@@ -933,9 +954,9 @@ export default function AdminLayout() {
                 </div>
 
                 <div>
-                  <label className="block text-gray-300 mb-2">Banner</label>
-                  <div className="mb-3">
-                    <img src={profileData.banner_url || "https://via.placeholder.com/800x200"} alt="banner" className="w-full h-32 object-cover rounded mb-2" />
+                  <label className="block text-gray-300">Banner</label>
+                  <div>
+                    <img src={profileData.banner_url || "https://via.placeholder.com/800x200"} alt="banner" className="w-full h-32 object-cover rounded" />
                     <label className="inline-flex items-center gap-2 bg-blue-600 px-3 py-2 rounded cursor-pointer">
                       <Upload size={16} /> Upload Banner
                       <input type="file" accept="image/*" onChange={handleBannerPick} className="hidden" />
@@ -955,11 +976,11 @@ export default function AdminLayout() {
 
         {/* POSTS */}
         {activeTab === "posts" && (
-          <div className="bg-gray-800 rounded-lg p-6">
-            <h2 className="text-2xl font-bold mb-6">Post Manager</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-gray-800 rounded-lg p-0 w-full">
+            <h2 className="text-2xl font-bold">Post Manager</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-0 w-full">
               <div className="md:col-span-2">
-                <div className="flex gap-2 mb-3">
+                <div className="flex gap-2">
                   <button onClick={() => setCreatingPost((c) => ({ ...c, type: "text" }))} className={`px-3 py-1 rounded ${creatingPost.type === "text" ? "bg-blue-600" : "bg-gray-700"}`}>Text</button>
                   <button onClick={() => setCreatingPost((c) => ({ ...c, type: "media" }))} className={`px-3 py-1 rounded ${creatingPost.type === "media" ? "bg-blue-600" : "bg-gray-700"}`}>Image/Video</button>
                 </div>
@@ -968,7 +989,7 @@ export default function AdminLayout() {
                   <textarea value={creatingPost.text} onChange={(e) => setCreatingPost((c) => ({ ...c, text: e.target.value }))} rows={4} className="w-full px-4 py-2 rounded bg-gray-700 text-white" placeholder="Text-only post content" />
                 ) : (
                   <>
-                    <input type="text" value={creatingPost.mediaUrlInput} onChange={(e) => setCreatingPost((c) => ({ ...c, mediaUrlInput: e.target.value }))} className="w-full px-4 py-2 rounded bg-gray-700 text-white mb-2" placeholder="Or paste media URL (optional)" />
+                    <input type="text" value={creatingPost.mediaUrlInput} onChange={(e) => setCreatingPost((c) => ({ ...c, mediaUrlInput: e.target.value }))} className="w-full px-4 py-2 rounded bg-gray-700 text-white" placeholder="Or paste media URL (optional)" />
                     <div className="flex items-center gap-2">
                       <label className="inline-flex items-center gap-2 bg-blue-600 px-3 py-2 rounded cursor-pointer">
                         <Upload size={16} /> Upload Media
@@ -976,12 +997,12 @@ export default function AdminLayout() {
                       </label>
                       {creatingPost.mediaFile && <div className="text-sm">{creatingPost.mediaFile.name}</div>}
                     </div>
-                    <input type="text" value={creatingPost.caption} onChange={(e) => setCreatingPost((c) => ({ ...c, caption: e.target.value }))} className="w-full px-4 py-2 rounded bg-gray-700 text-white mt-3" placeholder="Caption for media" />
+                    <input type="text" value={creatingPost.caption} onChange={(e) => setCreatingPost((c) => ({ ...c, caption: e.target.value }))} className="w-full px-4 py-2 rounded bg-gray-700 text-white" placeholder="Caption for media" />
                   </>
                 )}
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-0">
                 <label className="flex items-center gap-2">
                   <input type="checkbox" checked={creatingPost.locked} onChange={(e) => setCreatingPost((c) => ({ ...c, locked: e.target.checked }))} />
                   <span className="text-gray-300">Locked (requires subscription)</span>
@@ -993,26 +1014,26 @@ export default function AdminLayout() {
               </div>
             </div>
 
-            <h3 className="text-xl font-bold mt-8 mb-4">Existing Posts (latest 25)</h3>
-            <div className="space-y-4">
+            <h3 className="text-xl font-bold mt-0">Existing Posts (latest 25)</h3>
+            <div className="space-y-0">
               {posts.length === 0 ? <p className="text-gray-400">No posts yet.</p> : posts.map((post, idx) => (
-                <div key={post.id} className="bg-gray-700 rounded p-4 grid grid-cols-1 md:grid-cols-6 gap-4 items-start">
+                <div key={post.id} className="bg-gray-700 rounded p-0 grid grid-cols-1 md:grid-cols-6 gap-0 items-start w-full">
                   <div className="md:col-span-3">
-                    <input type="text" value={post.title || ""} onChange={(e) => setPosts((s) => { const c=[...s]; c[idx].title = e.target.value; return c; })} className="w-full px-3 py-2 rounded bg-gray-800 text-white mb-2" placeholder="Title" />
-                    <textarea value={post.text || ""} onChange={(e) => setPosts((s) => { const c=[...s]; c[idx].text = e.target.value; return c; })} rows={3} className="w-full px-3 py-2 rounded bg-gray-800 text-white mb-2" placeholder="Caption / text" />
-                    <div className="text-sm text-gray-400 mb-2">Date: {post.created_at ? new Date(post.created_at).toLocaleString() : "—"}</div>
+                    <input type="text" value={post.title || ""} onChange={(e) => setPosts((s) => { const c=[...s]; c[idx].title = e.target.value; return c; })} className="w-full px-3 py-2 rounded bg-gray-800 text-white" placeholder="Title" />
+                    <textarea value={post.text || ""} onChange={(e) => setPosts((s) => { const c=[...s]; c[idx].text = e.target.value; return c; })} rows={3} className="w-full px-3 py-2 rounded bg-gray-800 text-white" placeholder="Caption / text" />
+                    <div className="text-sm text-gray-400">Date: {post.created_at ? new Date(post.created_at).toLocaleString() : "—"}</div>
                   </div>
 
                   <div className="md:col-span-2">
                     {post.media_url ? (
-                      <div className="mb-2">
+                      <div>
                         {String(post.media_url).includes(".mp4") || String(post.media_url).includes("video") ? (
                           <video src={post.media_url} controls className="w-full h-40 object-cover rounded" />
                         ) : (
                           <img src={post.media_url} alt="post media" className="w-full h-40 object-cover rounded" />
                         )}
                       </div>
-                    ) : <div className="mb-2 w-full h-40 bg-gray-600 rounded flex items-center justify-center text-sm text-gray-300">No media</div> }
+                    ) : <div className="w-full h-40 bg-gray-600 rounded flex items-center justify-center text-sm text-gray-300">No media</div> }
 
                     <div className="flex items-center gap-2">
                       <label className="inline-flex items-center gap-2 bg-blue-600 px-3 py-2 rounded cursor-pointer text-sm">
@@ -1022,7 +1043,7 @@ export default function AdminLayout() {
                       <input type="text" value={post.media_url || ""} onChange={(e) => setPosts((s) => { const c=[...s]; c[idx].media_url = e.target.value; return c; })} className="px-3 py-1 rounded bg-gray-800 text-white flex-1 text-sm" placeholder="Or paste URL" />
                     </div>
 
-                    <div className="mt-3 flex items-center gap-2">
+                    <div className="flex items-center gap-2">
                       <label className="flex items-center gap-2 text-sm">
                         <input type="checkbox" checked={post.locked === true || post.locked === "true"} onChange={(e) => setPosts((s) => { const c=[...s]; c[idx].locked = e.target.checked; return c; })} />
                         <span>Locked</span>
@@ -1030,7 +1051,7 @@ export default function AdminLayout() {
                     </div>
                   </div>
 
-                  <div className="md:col-span-1 flex flex-col gap-2">
+                  <div className="md:col-span-1 flex flex-col gap-0">
                     <button onClick={() => handleSavePost(idx)} disabled={loading} className="bg-green-600 hover:bg-green-700 px-3 py-2 rounded text-sm">
                       <Save size={14} /> Save
                     </button>
@@ -1046,8 +1067,8 @@ export default function AdminLayout() {
 
         {/* MESSAGES */}
         {activeTab === "messages" && (
-          <div className="bg-gray-800 rounded-lg p-6">
-            <div className="flex justify-between items-center mb-4">
+          <div className="bg-gray-800 rounded-lg p-0 w-full">
+            <div className="flex justify-between items-center w-full">
               <h2 className="text-2xl font-bold">Messages</h2>
               <button onClick={fetchMessages} disabled={messagesLoading} className="bg-blue-600 px-4 py-2 rounded">
                 {messagesLoading ? "Loading..." : "Refresh"}
@@ -1059,30 +1080,30 @@ export default function AdminLayout() {
             ) : conversations.length === 0 ? (
               <p className="text-gray-400">No conversations yet.</p>
             ) : (
-              <div className="flex flex-col md:flex-row gap-4 h-[600px]">
+              <div className="flex flex-col md:flex-row gap-0 h-screen w-full">
                 {/* Conversations List - Left */}
-                <div className={`bg-gray-700 rounded-lg p-4 overflow-y-auto ${showChat ? "hidden md:block" : "block"} flex-1 md:flex-none md:w-1/3`}>
-                  <h3 className="font-bold mb-3">Conversations</h3>
+                <div className={`bg-gray-700 rounded-lg p-0 overflow-y-auto ${showChat ? "hidden md:block" : "block"} flex-1 md:flex-none md:w-1/3 w-full`}>
+                  <h3 className="font-bold">Conversations</h3>
                   {conversations.map((c) => (
                     <button
                       key={c.email}
                       onClick={() => { setSelectedConversation(c.email); setShowChat(true); }}
-                      className={`w-full text-left p-2 rounded mb-2 ${selectedConversation === c.email ? 'bg-blue-600' : 'bg-gray-600 hover:bg-gray-500'}`}
+                      className={`w-full text-left p-2 rounded ${selectedConversation === c.email ? 'bg-blue-600' : 'bg-gray-600 hover:bg-gray-500'}`}
                     >
                       <div className="text-sm font-semibold">{c.email}</div>
                       <div className="text-xs text-gray-300 truncate">{c.last_message}</div>
-                      <div className="text-xs text-gray-400 mt-1">{c.count} messages • {c.last_time ? new Date(c.last_time).toLocaleString() : ""}</div>
+                      <div className="text-xs text-gray-400">{c.count} messages • {c.last_time ? new Date(c.last_time).toLocaleString() : ""}</div>
                     </button>
                   ))}
                 </div>
 
                 {/* Messages - Right (Full Page Feel) */}
-                <div className={`flex-1 flex flex-col bg-gray-700 rounded-lg overflow-hidden ${showChat ? "block" : "hidden md:flex"}`}>
+                <div className={`flex-1 flex flex-col bg-gray-700 rounded-lg overflow-hidden ${showChat ? "block" : "hidden md:flex"} w-full`}>
                   {selectedConversation ? (
                     <>
                       {/* Header */}
-                      <div className="p-4 border-b border-gray-600 flex items-center gap-3">
-                        <button onClick={() => setShowChat(false)} className="md:hidden text-white mr-2">
+                      <div className="p-0 flex items-center gap-3 w-full">
+                        <button onClick={() => setShowChat(false)} className="md:hidden text-white">
                           <ArrowLeft size={20} />
                         </button>
                         <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-sm text-white">{(selectedConversation || "U").slice(0,1)}</div>
@@ -1092,19 +1113,19 @@ export default function AdminLayout() {
                       </div>
 
                       {/* Chat Thread */}
-                      <div className="flex-1 p-4 overflow-y-auto" ref={messagesPanelRef}>
+                      <div className="flex-1 p-0 overflow-y-auto w-full" ref={messagesPanelRef}>
                         {messages
                           .filter((m) => m.from_email === selectedConversation)
                           .sort((a,b) => new Date(a.created_at) - new Date(b.created_at))
                           .map((msg) => (
-                            <div key={msg.id || `${msg.created_at}-${Math.random()}`} className="mb-3 pb-3 border-b border-gray-600 last:border-0">
-                              <div className="flex justify-between items-start mb-2">
+                            <div key={msg.id || `${msg.created_at}-${Math.random()}`} className="mb-0 pb-0 last:border-0 w-full">
+                              <div className="flex justify-between items-start">
                                 <span className="text-sm text-gray-400">{msg.sender_type === "admin" ? profileData.name : selectedConversation}</span>
                                 <span className="text-xs text-gray-500">{msg.created_at ? new Date(msg.created_at).toLocaleString() : ""}</span>
                               </div>
-                              <p className="text-white">{msg.body || msg.subject || "No content"}</p>
+                              <p className="text-white">{msg.body || ""}</p>
                               {msg.media_url && (
-                                <div className="mt-2">
+                                <div>
                                   {msg.message_type === "audio" ? (
                                     <audio src={msg.media_url} controls className="w-full" />
                                   ) : msg.message_type === "video" ? (
@@ -1120,9 +1141,9 @@ export default function AdminLayout() {
                       </div>
 
                       {/* Input */}
-                      <div className="p-3 bg-gray-800">
+                      <div className="p-0 bg-gray-800 w-full">
                         <MessageInput
-                          onSend={(txt, attach, aType) => sendMessage(selectedConversation, txt, attach, aType)}
+                          onPreview={handlePreview}
                         />
                       </div>
                     </>
@@ -1135,10 +1156,38 @@ export default function AdminLayout() {
           </div>
         )}
 
+        {preview && (
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+            <div className="bg-gray-800 p-4 rounded w-full max-w-md">
+              <h3 className="text-lg font-bold mb-2">Preview</h3>
+              {preview.type === "text" ? (
+                <p>{preview.text}</p>
+              ) : preview.type === "audio" ? (
+                <audio src={preview.url} controls className="w-full mb-2" />
+              ) : preview.type === "video" ? (
+                <video src={preview.url} controls className="w-full mb-2" />
+              ) : (
+                <img src={preview.url} alt="preview" className="w-full mb-2" />
+              )}
+              <input
+                type="text"
+                placeholder="Add caption..."
+                value={preview.caption}
+                onChange={(e) => setPreview({ ...preview, caption: e.target.value })}
+                className="w-full px-3 py-2 rounded bg-gray-700 text-white mb-2"
+              />
+              <div className="flex gap-2">
+                <button onClick={() => setPreview(null)} className="bg-red-600 px-4 py-2 rounded">Cancel</button>
+                <button onClick={handleSendFromPreview} className="bg-blue-600 px-4 py-2 rounded">Send</button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ANALYSIS */}
         {activeTab === "analysis" && (
-          <div className="bg-gray-800 rounded-lg p-6">
-            <div className="flex justify-between items-center mb-4">
+          <div className="bg-gray-800 rounded-lg p-0 w-full">
+            <div className="flex justify-between items-center w-full">
               <h2 className="text-2xl font-bold">Analysis</h2>
               <button onClick={fetchAnalysisData} disabled={analysisLoading} className="bg-blue-600 px-4 py-2 rounded">
                 {analysisLoading ? "Loading..." : "Refresh"}
@@ -1148,8 +1197,8 @@ export default function AdminLayout() {
             {analysisLoading ? (
               <p className="text-gray-400">Loading analysis...</p>
             ) : (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-0 w-full">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-0 w-full">
                   <div className="bg-gray-700 p-4 rounded">
                     <h3 className="text-sm text-gray-300">Daily Revenue</h3>
                     <p className="text-2xl font-bold">${analysisData.dailyRevenue.toFixed(2)}</p>
@@ -1163,7 +1212,7 @@ export default function AdminLayout() {
                     <p className="text-2xl font-bold">${analysisData.monthlyRevenue.toFixed(2)}</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-0 w-full">
                   <div className="bg-gray-700 p-4 rounded">
                     <h3 className="text-sm text-gray-300">Total Subscribers</h3>
                     <p className="text-2xl font-bold">{analysisData.totalSubs}</p>
@@ -1173,8 +1222,8 @@ export default function AdminLayout() {
                     <p className="text-2xl font-bold">{analysisData.dailyJobs}</p>
                   </div>
                 </div>
-                <div className="bg-gray-700 p-4 rounded">
-                  <h3 className="text-sm text-gray-300 mb-2">Revenue Trend (Last 7 Days)</h3>
+                <div className="bg-gray-700 p-4 rounded w-full">
+                  <h3 className="text-sm text-gray-300">Revenue Trend (Last 7 Days)</h3>
                   <div className="h-40 bg-gray-600 rounded flex items-center justify-center text-gray-400">
                     [Chart Placeholder - Integrate Chart.js or similar for bar graph]
                   </div>
