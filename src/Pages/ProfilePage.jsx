@@ -16,27 +16,27 @@ class ErrorBoundary extends React.Component {
     super(props);
     this.state = { hasError: false };
   }
-  static getDerivedStateFromError() {
+  static getDerivedStateFromError(error) {
     return { hasError: true };
   }
   componentDidCatch(error, info) {
-  this.setState({ hasError: true });
-  console.error("SafeProfileMock caught error:", error, info);
-}
-
-render() {
-  if (this.state.hasError) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="bg-white p-6 rounded shadow text-center">
-          <h2 className="text-lg font-semibold text-red-600">Something went wrong</h2>
-          <p className="text-sm text-gray-600 mt-2">Please refresh the page or try again later.</p>
-        </div>
-      </div>
-    );
+    console.error("ErrorBoundary caught error:", error, info);
   }
-  return this.props.children;
-}
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center p-6">
+          <div className="bg-white p-6 rounded shadow text-center">
+            <h2 className="text-lg font-semibold text-red-600">Something went wrong</h2>
+            <p className="text-sm text-gray-600 mt-2">Please refresh the page or try again later.</p>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+};
 
 /* fallback data kept similar to your original */
 const defaultCreator = {
@@ -47,7 +47,6 @@ const defaultCreator = {
   bio:
     "Hi 😊 I'm your favorite 19 year old & I love showing all of ME for your pleasure; ) you'll love it here! 🍆💦 Message me 👆 for daily nudes and videos in the feed ✨ S tapes, bjs , hjs , stripteases Dildo, vibrator, creampie, baby oil, roleplay 💦 Private messages with me ✨ NO SPAM OR ADS Turn on your auto-renew on and get freebies xo",
 };
-
 const UNLOCKED_POST_IMAGES = [
   "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760742247894-wuga4b-tayler-hills-onlyfans-7su4i-72.jpeg",
   "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760701141796-9roite-Screenshot_20251017-123357.jpg",
