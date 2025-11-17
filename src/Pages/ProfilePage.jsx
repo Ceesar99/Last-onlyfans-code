@@ -125,7 +125,6 @@ const DUMMY_POST_CAPTIONS = [
   "Curves that captivate, moves that motivate. Motivated? 💪",
   "Sinful symphony playing now. Dance? 💃",
   "Unlock levels of lust. Level up? 🎮",
-  ",
   "Body bliss incoming. Bliss out? ☁️",
   "Tease queen reigning supreme. Bow? 👑",
   "Sinful sweets for the taking. Take? 👐",
