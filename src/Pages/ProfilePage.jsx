@@ -722,7 +722,6 @@ export default function SafeProfileMock() {
         viewBox="0 0 1614 843"
         preserveAspectRatio="xMidYMid meet"
         style={{
-          {{
           width: "100%",
           height: "100%",
           objectFit: "contain",
