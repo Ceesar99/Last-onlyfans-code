@@ -90,7 +90,7 @@ export default function SubscriptionModal({
           />
         </div>
 
-        <div className="px-6 -mt-12 relative flex items-end gap-3">
+        <div className="px-6 -mt-12 relative">
           <div className="relative w-20 h-20 rounded-full overflow-hidden shadow">
             <img
               src={creator?.avatar || "https://via.placeholder.com/80"}
@@ -98,18 +98,19 @@ export default function SubscriptionModal({
               className="w-full h-full object-cover"
             />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-lg font-bold text-gray-900 flex items-center">
-                {creator?.name || "Creator Name"}
-                <VerifiedBadge />
-              </h3>
-            </div>
+        </div>
 
-            <p className="text-sm text-gray-500 mt-1">
-              {creator?.handle || "@username"}
-            </p>
+        <div className="px-6 mt-0">
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-bold text-gray-900 flex items-center">
+              {creator?.name || "Creator Name"}
+              <VerifiedBadge />
+            </h3>
           </div>
+
+          <p className="text-sm text-gray-500 mt-1">
+            {creator?.handle || "@username"}
+          </p>
         </div>
 
         <div className="px-6 pb-4 mt-4">
