@@ -20,12 +20,14 @@ export default function SubscriptionModal({
     {
       id: "3months",
       label: "3 MONTHS",
-      priceText: creator?.prices?.threeMonths || "$15 total",
+      discount: "30% off",
+      priceText: creator?.prices?.threeMonths || "$8.58 total",
     },
     {
       id: "6months",
       label: "6 MONTHS",
-      priceText: creator?.prices?.sixMonths || "$30 total",
+      discount: "40% off",
+      priceText: creator?.prices?.sixMonths || "$11.59 total",
     },
   ];
 
@@ -81,7 +83,7 @@ export default function SubscriptionModal({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm overflow-y-auto" onClick={onClose}>
-      <div className="modal-card bg-white rounded-2xl overflow-hidden max-w-sm mx-auto shadow-xl" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-card bg-white rounded-2xl overflow-hidden max-w-md mx-auto shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="h-28 overflow-hidden">
           <img
             src={creator?.banner || "https://via.placeholder.com/720x220"}
@@ -90,7 +92,7 @@ export default function SubscriptionModal({
           />
         </div>
 
-        <div className="px-6 -mt-12 relative">
+        <div className="px-6 -mt-12 relative flex items-end gap-3">
           <div className="relative w-20 h-20 rounded-full overflow-hidden shadow">
             <img
               src={creator?.avatar || "https://via.placeholder.com/80"}
@@ -98,19 +100,18 @@ export default function SubscriptionModal({
               className="w-full h-full object-cover"
             />
           </div>
-        </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-bold text-gray-900 flex items-center">
+                {creator?.name || "Creator Name"}
+                <VerifiedBadge />
+              </h3>
+            </div>
 
-        <div className="px-6 mt-0 ml-24">
-          <div className="flex items-center gap-2">
-            <h3 className="text-lg font-bold text-gray-900 flex items-center">
-              {creator?.name || "Creator Name"}
-              <VerifiedBadge />
-            </h3>
+            <p className="text-sm text-gray-500 mt-1">
+              {creator?.handle || "@username"}
+            </p>
           </div>
-
-          <p className="text-sm text-gray-500 mt-1">
-            {creator?.handle || "@username"}
-          </p>
         </div>
 
         <div className="px-6 pb-4 mt-4">
@@ -158,13 +159,16 @@ export default function SubscriptionModal({
                   role="radio"
                   aria-checked={active}
                   onClick={() => onSelectPlan && onSelectPlan(p.id)}
-                  className={`w-full py-3 px-4 rounded-full border flex justify-between items-center transition ${
+                  className={`w-full flex justify-between items-center transition ${
                     active
-                      ? "border-[#00AFF0] text-[#00AFF0] font-semibold"
-                      : "border-gray-200 text-gray-700"
+                      ? "text-[#00AFF0] font-semibold"
+                      : "text-gray-700"
                   }`}
                 >
-                  <span>{p.label}</span>
+                  <span>
+                    {p.label}
+                    {p.discount && <span className="text-gray-500 ml-1">({p.discount})</span>}
+                  </span>
                   <span
                     className={
                       p.id === "monthly"
@@ -179,11 +183,11 @@ export default function SubscriptionModal({
             })}
           </div>
 
-          <div className="mt-6">
+          <div className="mt-6 flex items-center gap-4">
             <button
               onClick={handleAddCard}
               disabled={!selectedPlan}
-              className={`w-full py-3 rounded-full border transition ${
+              className={`flex-1 py-3 rounded-full border transition ${
                 !selectedPlan
                   ? "border-gray-200 text-gray-400 bg-gray-100 cursor-not-allowed"
                   : "border-[#00AFF0] text-[#00AFF0] font-semibold hover:bg-[#00AFF0] hover:text-white"
@@ -192,9 +196,6 @@ export default function SubscriptionModal({
             >
               PLEASE ADD A PAYMENT CARD
             </button>
-          </div>
-
-          <div className="mt-4 text-right">
             <button
               onClick={onClose}
               className="text-sm font-semibold text-[#00AFF0]"
