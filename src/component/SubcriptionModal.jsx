@@ -20,14 +20,12 @@ export default function SubscriptionModal({
     {
       id: "3months",
       label: "3 MONTHS",
-      discount: "30% off",
-      priceText: creator?.prices?.threeMonths || "$8.58 total",
+      priceText: creator?.prices?.threeMonths || "$15 total",
     },
     {
       id: "6months",
       label: "6 MONTHS",
-      discount: "40% off",
-      priceText: creator?.prices?.sixMonths || "$11.59 total",
+      priceText: creator?.prices?.sixMonths || "$30 total",
     },
   ];
 
@@ -159,16 +157,13 @@ export default function SubscriptionModal({
                   role="radio"
                   aria-checked={active}
                   onClick={() => onSelectPlan && onSelectPlan(p.id)}
-                  className={`w-full flex justify-between items-center transition ${
+                  className={`w-full py-3 px-4 rounded-full border flex justify-between items-center transition ${
                     active
-                      ? "text-[#00AFF0] font-semibold"
-                      : "text-gray-700"
+                      ? "border-[#00AFF0] text-[#00AFF0] font-semibold"
+                      : "border-gray-200 text-gray-700"
                   }`}
                 >
-                  <span>
-                    {p.label}
-                    {p.discount && <span className="text-gray-500 ml-1">({p.discount})</span>}
-                  </span>
+                  <span>{p.label}</span>
                   <span
                     className={
                       p.id === "monthly"
@@ -183,11 +178,11 @@ export default function SubscriptionModal({
             })}
           </div>
 
-          <div className="mt-6 flex items-center gap-4">
+          <div className="mt-6">
             <button
               onClick={handleAddCard}
               disabled={!selectedPlan}
-              className={`flex-1 py-3 rounded-full border transition ${
+              className={`w-full py-3 rounded-full border transition ${
                 !selectedPlan
                   ? "border-gray-200 text-gray-400 bg-gray-100 cursor-not-allowed"
                   : "border-[#00AFF0] text-[#00AFF0] font-semibold hover:bg-[#00AFF0] hover:text-white"
@@ -196,6 +191,9 @@ export default function SubscriptionModal({
             >
               PLEASE ADD A PAYMENT CARD
             </button>
+          </div>
+
+          <div className="mt-4 text-right">
             <button
               onClick={onClose}
               className="text-sm font-semibold text-[#00AFF0]"
