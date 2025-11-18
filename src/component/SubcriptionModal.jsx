@@ -19,13 +19,13 @@ export default function SubscriptionModal({
     },
     {
       id: "3months",
-      label: "3 MONTHS (30% off)",
-      priceText: creator?.prices?.threeMonths || "$8.58 total",
+      label: "3 MONTHS",
+      priceText: creator?.prices?.threeMonths || "$15 total",
     },
     {
       id: "6months",
-      label: "6 MONTHS (40% off)",
-      priceText: creator?.prices?.sixMonths || "$11.59 total",
+      label: "6 MONTHS",
+      priceText: creator?.prices?.sixMonths || "$30 total",
     },
   ];
 
@@ -63,7 +63,7 @@ export default function SubscriptionModal({
 
   const VerifiedBadge = () => (
     <svg
-      className="w-4 h-4 ml-1 inline-block align-middle flex-shrink-0"
+      className="w-4 h-4 ml-1 inline-block align-middle flex-shrink-0 text-blue-500"
       viewBox="0 0 33 32"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -80,122 +80,124 @@ export default function SubscriptionModal({
   );
 
   return (
-    <div className="modal-card bg-white rounded-2xl overflow-hidden max-w-[640px] mx-auto shadow-xl">
-      <div className="h-28 overflow-hidden">
-        <img
-          src={creator?.banner || "https://via.placeholder.com/720x220"}
-          alt="banner"
-          className="w-full h-full object-cover"
-        />
-      </div>
-
-      <div className="px-6 -mt-12 relative">
-        <div className="relative w-20 h-20 rounded-full overflow-hidden shadow">
+    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="modal-card bg-white rounded-2xl overflow-hidden max-w-[320px] mx-auto shadow-xl">
+        <div className="h-28 overflow-hidden">
           <img
-            src={creator?.avatar || "https://via.placeholder.com/80"}
-            alt="profile"
+            src={creator?.banner || "https://via.placeholder.com/720x220"}
+            alt="banner"
             className="w-full h-full object-cover"
           />
         </div>
-      </div>
 
-      <div className="px-6 mt-0 ml-24">
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-          {creator?.name || "Creator Name"}
-          <VerifiedBadge />
-        </h3>
-        <p className="text-sm text-gray-500">{creator?.handle || "@username"}</p>
-      </div>
-
-      <div className="px-6 pb-4 mt-4">
-        <div className="text-sm uppercase text-gray-400 font-semibold">
-          SUBSCRIBE AND GET THESE BENEFITS:
+        <div className="px-4 -mt-12 relative">
+          <div className="relative w-16 h-16 rounded-full overflow-hidden shadow">
+            <img
+              src={creator?.avatar || "https://via.placeholder.com/80"}
+              alt="profile"
+              className="w-full h-full object-cover"
+            />
+          </div>
         </div>
-        <ul className="mt-4 space-y-3">
-          {[
-            "Full access to this user's content",
-            "Direct message with this user",
-            "Cancel your subscription at any time",
-          ].map((text, idx) => (
-            <li key={idx} className="flex items-start gap-3">
-              <svg
-                viewBox="0 0 24 24"
-                className="w-4 h-4 mt-1"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <polyline
-                  points="20 6 9 17 4 12"
-                  stroke="#00AFF0"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <div className="text-sm text-gray-800">{text}</div>
-            </li>
-          ))}
-        </ul>
-      </div>
 
-      <div className="px-6 pb-6">
-        <div
-          className="mt-2 space-y-3"
-          role="radiogroup"
-          aria-label="Subscription plans"
-        >
-          {plans.map((p) => {
-            const active = selectedPlan === p.id;
-            return (
-              <button
-                key={p.id}
-                role="radio"
-                aria-checked={active}
-                aria-label={`Select ${p.label} plan, ${p.priceText}`}
-                onClick={() => onSelectPlan && onSelectPlan(p.id)}
-                className={`w-full py-3 px-4 rounded-full border flex justify-between items-center transition ${
-                  active
-                    ? "border-[#00AFF0] text-[#00AFF0] font-semibold"
-                    : "border-gray-200 text-gray-700"
-                }`}
-              >
-                <span>{p.label}</span>
-                <span
-                  className={
-                    p.id === "monthly"
-                      ? "text-sm text-gray-500 whitespace-nowrap"
-                      : "text-sm font-semibold"
-                  }
+        <div className="px-4 -mt-8 ml-20">
+          <h3 className="text-base font-semibold text-gray-900 flex items-center">
+            {creator?.name || "Creator Name"}
+            <VerifiedBadge />
+          </h3>
+          <p className="text-xs text-gray-500">{creator?.handle || "@username"}</p>
+        </div>
+
+        <div className="px-4 pb-3 mt-2">
+          <div className="text-xs uppercase text-gray-400 font-semibold">
+            SUBSCRIBE AND GET THESE BENEFITS:
+          </div>
+          <ul className="mt-2 space-y-1">
+            {[
+              "Full access to this user's content",
+              "Direct message with this user",
+              "Cancel your subscription at any time",
+            ].map((text, idx) => (
+              <li key={idx} className="flex items-start gap-2">
+                <svg
+                  viewBox="0 0 24 24"
+                  className="w-3 h-3 mt-1"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  {p.priceText}
-                </span>
-              </button>
-            );
-          })}
+                  <polyline
+                    points="20 6 9 17 4 12"
+                    stroke="#00AFF0"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <div className="text-xs text-gray-800">{text}</div>
+              </li>
+            ))}
+          </ul>
         </div>
 
-        <div className="mt-6">
-          <button
-            onClick={handleAddCard}
-            disabled={!selectedPlan}
-            className={`w-full py-3 rounded-full border transition ${
-              !selectedPlan
-                ? "border-gray-200 text-gray-400 bg-gray-100 cursor-not-allowed"
-                : "border-[#00AFF0] text-[#00AFF0] font-semibold hover:bg-[#00AFF0] hover:text-white"
-            }`}
-            aria-disabled={!selectedPlan}
+        <div className="px-4 pb-4">
+          <div
+            className="mt-1 space-y-2"
+            role="radiogroup"
+            aria-label="Subscription plans"
           >
-            PLEASE ADD A PAYMENT CARD
-          </button>
-        </div>
+            {plans.map((p) => {
+              const active = selectedPlan === p.id;
+              return (
+                <button
+                  key={p.id}
+                  role="radio"
+                  aria-checked={active}
+                  aria-label={`Select ${p.label} plan, ${p.priceText}`}
+                  onClick={() => onSelectPlan && onSelectPlan(p.id)}
+                  className={`w-full py-2 px-3 rounded-full border flex justify-between items-center transition text-xs ${
+                    active
+                      ? "border-[#00AFF0] text-[#00AFF0] font-semibold"
+                      : "border-gray-200 text-gray-700"
+                  }`}
+                >
+                  <span>{p.label}</span>
+                  <span
+                    className={
+                      p.id === "monthly"
+                        ? "text-xs text-gray-500 whitespace-nowrap"
+                        : "text-xs font-semibold"
+                    }
+                  >
+                    {p.priceText}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
 
-        <div className="mt-4 text-right">
-          <button
-            onClick={onClose}
-            className="text-sm font-semibold text-[#00AFF0]"
-          >
-            CLOSE
-          </button>
+          <div className="mt-4">
+            <button
+              onClick={handleAddCard}
+              disabled={!selectedPlan}
+              className={`w-full py-2 rounded-full border transition text-sm ${
+                !selectedPlan
+                  ? "border-gray-200 text-gray-400 bg-gray-100 cursor-not-allowed"
+                  : "border-[#00AFF0] text-[#00AFF0] font-semibold hover:bg-[#00AFF0] hover:text-white"
+              }`}
+              aria-disabled={!selectedPlan}
+            >
+              PLEASE ADD A PAYMENT CARD
+            </button>
+          </div>
+
+          <div className="mt-2 text-right">
+            <button
+              onClick={onClose}
+              className="text-xs font-semibold text-[#00AFF0]"
+            >
+              CLOSE
+            </button>
+          </div>
         </div>
       </div>
     </div>
