@@ -81,7 +81,7 @@ export default function SubscriptionModal({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm overflow-y-auto" onClick={onClose}>
-      <div className="modal-card bg-white rounded-2xl overflow-hidden max-w-[640px] mx-auto shadow-xl" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-card bg-white rounded-2xl overflow-hidden mx-auto shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="h-28 overflow-hidden">
           <img
             src={creator?.banner || "https://via.placeholder.com/720x220"}
