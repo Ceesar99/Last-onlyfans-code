@@ -515,6 +515,5 @@ export default function AddCardForm({ onClose, onSuccess, selectedPlan }) {
         </div>
       </div>
     </div>
-  </div>
 );
 }
