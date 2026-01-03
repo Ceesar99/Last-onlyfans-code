@@ -1,11 +1,10 @@
-// SubscriptionModal.jsx - UPDATED TO REMOVE BACKDROP-BLUR FOR PERFORMANCE
+// SubscriptionModal.jsx (updated with new VerifiedBadge)
 import React, { useEffect, useState } from "react";
 
 export default function SubscriptionModal({
   creator,
   selectedPlan,
   onSelectPlan,
-  onAddCard,
   onClose,
   freeSampleActive = false,
 }) {
@@ -29,35 +28,57 @@ export default function SubscriptionModal({
     },
   ];
 
-  // Disable page scroll when modal is open
+  const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [iframeToken, setIframeToken] = useState(null);
+  const [sessionId, setSessionId] = useState(null);
+  const [error, setError] = useState(null);
+
+  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
   useEffect(() => {
     if (typeof document !== "undefined" && document?.body) {
       const prevOverflow = document.body.style.overflow;
       document.body.style.overflow = "hidden";
       return () => {
-        try {
-          document.body.style.overflow = prevOverflow || "auto";
-        } catch (e) {
-          /* ignore */
-        }
+        document.body.style.overflow = prevOverflow || "auto";
       };
     }
-    return undefined;
   }, []);
 
-  const handleAddCard = () => {
-    if (!selectedPlan) return;
+  const handlePayment = async () => {
+    if (!selectedPlan || !isValidEmail(email)) return;
+    setIsLoading(true);
+    setError(null);
 
     try {
-      if (typeof onAddCard === "function") {
-        onAddCard();
+      const response = await fetch(
+        `${process.env.SUPABASE_URL}/functions/v1/charge`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-internal-secret": process.env.APP_INTERNAL_SECRET,
+          },
+          body: JSON.stringify({
+            billing_email: email,
+            plan: selectedPlan,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error((await response.text()) || "Payment initiation failed");
       }
-    } catch (e) {
-      try {
-        onAddCard(selectedPlan);
-      } catch (e2) {
-        console.warn("SubscriptionModal: onAddCard call failed:", e2);
-      }
+
+      const { iframe_token, session_id } = await response.json();
+      setIframeToken(iframe_token);
+      setSessionId(session_id);
+    } catch (err) {
+      console.error("Payment error:", err);
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -80,9 +101,9 @@ export default function SubscriptionModal({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 overflow-y-auto" onClick={onClose}>
-      {/* Removed all max-w classes → full-width on mobile, natural max on desktop */}
-      <div className="w-full mx-4 my-8 sm:mx-auto sm:max-w-lg md:max-w-xl lg:max-w-2xl bg-white rounded-2xl overflow-hidden shadow-xl" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 overflow-y-auto">
+      <div className="bg-white rounded-2xl overflow-hidden w-[90%] max-w-[640px] mx-auto shadow-xl">
+        {/* Banner */}
         <div className="h-28 overflow-hidden">
           <img
             src={creator?.banner || "https://via.placeholder.com/720x220"}
@@ -91,6 +112,7 @@ export default function SubscriptionModal({
           />
         </div>
 
+        {/* Profile picture */}
         <div className="px-6 -mt-12 relative">
           <div className="relative w-20 h-20 rounded-full overflow-hidden shadow">
             <img
@@ -101,7 +123,8 @@ export default function SubscriptionModal({
           </div>
         </div>
 
-        <div className="px-6 mt-0">
+        {/* Name & verified badge */}
+        <div className="px-6 mt-2 ml-24">
           <div className="flex items-center gap-2">
             <h3 className="text-lg font-bold text-gray-900 flex items-center">
               {creator?.name || "Creator Name"}
@@ -114,6 +137,7 @@ export default function SubscriptionModal({
           </p>
         </div>
 
+        {/* Benefits */}
         <div className="px-6 pb-4 mt-4">
           <div className="text-sm uppercase text-gray-400 font-semibold">
             SUBSCRIBE AND GET THESE BENEFITS:
@@ -145,6 +169,7 @@ export default function SubscriptionModal({
           </ul>
         </div>
 
+        {/* Plans */}
         <div className="px-6 pb-6">
           <div
             className="mt-2 space-y-3"
@@ -180,21 +205,55 @@ export default function SubscriptionModal({
             })}
           </div>
 
+          {/* Email Input */}
+          <div className="mt-4">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your billing email"
+              className="w-full py-3 px-4 rounded-full border border-gray-200 text-gray-700 focus:border-[#00AFF0] focus:outline-none transition"
+              aria-label="Billing email"
+            />
+          </div>
+
+          {/* Payment button */}
           <div className="mt-6">
             <button
-              onClick={handleAddCard}
-              disabled={!selectedPlan}
+              onClick={handlePayment}
+              disabled={!selectedPlan || !isValidEmail(email) || isLoading}
               className={`w-full py-3 rounded-full border transition ${
-                !selectedPlan
+                !selectedPlan || !isValidEmail(email) || isLoading
                   ? "border-gray-200 text-gray-400 bg-gray-100 cursor-not-allowed"
                   : "border-[#00AFF0] text-[#00AFF0] font-semibold hover:bg-[#00AFF0] hover:text-white"
               }`}
-              aria-disabled={!selectedPlan}
             >
-              PLEASE ADD A PAYMENT CARD
+              {isLoading ? "Processing..." : "PLEASE ADD A PAYMENT CARD"}
             </button>
           </div>
 
+          {/* Payment iframe */}
+          {iframeToken && (
+            <div className="mt-4 text-center">
+              <iframe
+                src={`https://api.maxelpay.com/embed?token=${iframeToken}`}
+                width="100%"
+                height="80"
+                style={{ border: "none" }}
+                title="Maxel Payment Iframe"
+              ></iframe>
+              <p className="text-sm text-gray-500 mt-2">
+                Enter your card details above to complete subscription.
+              </p>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <p className="text-sm text-red-500 mt-2 text-center">{error}</p>
+          )}
+
+          {/* Close button */}
           <div className="mt-4 text-right">
             <button
               onClick={onClose}
@@ -207,4 +266,4 @@ export default function SubscriptionModal({
       </div>
     </div>
   );
-        }
+}
