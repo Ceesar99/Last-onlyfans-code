@@ -176,7 +176,7 @@ function buildLocalDummyPosts() {
       likes: persistedLikes[postId],
       date: postDate.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
       created_at: postDate.toISOString(),
-      locked: idx > 15,
+      locked: true,
       isDummy: true,
     };
   });
