@@ -1,22 +1,12 @@
-// AdminLayout.jsx - Direct Supabase Integration
+// AdminLayout.jsx - FIXED VERSION
+// Fix 1: Messages Tab - Only image/video preview (text/audio send immediately)
+// Fix 2: Analysis Tab - Connected to payment_logs table
+
 import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/Authcontext";
 import { useNavigate } from "react-router-dom";
 import { LogOut, Upload, Plus, Save, Menu, ArrowLeft, Camera, Image as GalleryIcon, Mic } from "lucide-react";
 import supabase from "../supabaseclient";
-
-/**
- * AdminLayout - Fully serverless with direct Supabase integration
- * - All uploads go directly to Supabase Storage
- * - All data operations use Supabase client
- *
- * Changes: Messages section updated to:
- * - show conversation list by subscriber name (from card_inputs)
- * - sorted by most recent message time
- * - one-on-one chat per subscriber
- * - integrated MessageInput (from modal portal)
- * - realtime updates for new messages
- */
 
 const PROFILE_HANDLE_DEFAULT = "@taylerhillxxx";
 
@@ -165,7 +155,7 @@ export default function AdminLayout() {
   // Posts
   const [posts, setPosts] = useState([]);
   const [creatingPost, setCreatingPost] = useState({
-    type: "text", // "text" | "media"
+    type: "text",
     text: "",
     caption: "",
     mediaFile: null,
@@ -174,16 +164,16 @@ export default function AdminLayout() {
   });
 
   // Messages & Conversations
-  const [messages, setMessages] = useState([]); // raw messages rows from Supabase
-  const [conversations, setConversations] = useState([]); // [{ email, name, last_message, last_time, count }]
+  const [messages, setMessages] = useState([]);
+  const [conversations, setConversations] = useState([]);
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
-  const [selectedConversation, setSelectedConversation] = useState(null); // email
+  const [selectedConversation, setSelectedConversation] = useState(null);
   const [showChat, setShowChat] = useState(false);
   const messagesPanelRef = useRef(null);
 
   // Preview state
-  const [preview, setPreview] = useState(null); // { text, file, type, url, caption }
+  const [preview, setPreview] = useState(null);
 
   // Analysis
   const [analysisData, setAnalysisData] = useState({
@@ -195,7 +185,6 @@ export default function AdminLayout() {
   });
   const [analysisLoading, setAnalysisLoading] = useState(false);
 
-  // track object URLs to revoke later
   const createdObjectUrls = useRef([]);
 
   useEffect(() => {
@@ -204,15 +193,12 @@ export default function AdminLayout() {
     fetchMessages();
     fetchAnalysisData();
 
-    // subscribe to realtime for messages once profile handle loaded
-    // We'll create subscription inside fetchMessages after we know handle
     return () => {
       createdObjectUrls.current.forEach((u) => {
         try { URL.revokeObjectURL(u); } catch (e) {}
       });
       if (sidebarTimeoutRef.current) clearTimeout(sidebarTimeoutRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const showMessage = (txt, type = "success", ms = 2500) => {
@@ -220,12 +206,11 @@ export default function AdminLayout() {
     setTimeout(() => setMessage({ text: "", type: "" }), ms);
   };
 
-  // Sidebar auto-close timer
   useEffect(() => {
     if (sidebarOpen) {
       sidebarTimeoutRef.current = setTimeout(() => {
         setSidebarOpen(false);
-      }, 2000); // 2 seconds
+      }, 2000);
       return () => clearTimeout(sidebarTimeoutRef.current);
     }
   }, [sidebarOpen]);
@@ -268,19 +253,16 @@ export default function AdminLayout() {
     }
   };
 
-  // pick avatar locally (preview)
   const handleAvatarPick = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const url = URL.createObjectURL(file);
     createdObjectUrls.current.push(url);
-    // revoke previous preview if any
     if (profileFiles.avatarPreview) try { URL.revokeObjectURL(profileFiles.avatarPreview); } catch (e) {}
     setProfileFiles((pf) => ({ ...pf, avatarFile: file, avatarPreview: url }));
     setProfileData((p) => ({ ...p, avatar_url: url }));
   };
 
-  // pick banner locally (preview)
   const handleBannerPick = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -291,7 +273,6 @@ export default function AdminLayout() {
     setProfileData((p) => ({ ...p, banner_url: url }));
   };
 
-  // Upload file to Supabase Storage
   const uploadFileToStorage = async (file, folder = "uploads") => {
     try {
       const timestamp = Date.now();
@@ -311,7 +292,6 @@ export default function AdminLayout() {
         throw error;
       }
 
-      // Get public URL
       const { data: urlData } = supabase.storage
         .from("uploads")
         .getPublicUrl(filePath);
@@ -323,14 +303,12 @@ export default function AdminLayout() {
     }
   };
 
-  // Save profile: upload files to Supabase Storage and update DB
   const handleProfileSave = async () => {
     setLoading(true);
     try {
       let savedProfile = { ...profileData };
       const handle = profileData.handle.replace(/^@/, "");
 
-      // Upload avatar if provided
       if (profileFiles.avatarFile) {
         try {
           const avatarUrl = await uploadFileToStorage(profileFiles.avatarFile, "avatars");
@@ -342,7 +320,6 @@ export default function AdminLayout() {
         }
       }
 
-      // Upload banner if provided
       if (profileFiles.bannerFile) {
         try {
           const bannerUrl = await uploadFileToStorage(profileFiles.bannerFile, "banners");
@@ -354,7 +331,6 @@ export default function AdminLayout() {
         }
       }
 
-      // Upsert profile data
       const { error } = await supabase
         .from("creator_profiles")
         .upsert({
@@ -424,7 +400,6 @@ export default function AdminLayout() {
     });
   };
 
-  // Save existing post
   const handleSavePost = async (index) => {
     const post = posts[index];
     if (!post) return;
@@ -433,7 +408,6 @@ export default function AdminLayout() {
       const handle = profileData.handle.replace(/^@/, "");
       let mediaUrl = post.media_url;
 
-      // Upload new media file if provided
       if (post._newMediaFile) {
         try {
           mediaUrl = await uploadFileToStorage(post._newMediaFile, "posts");
@@ -453,7 +427,6 @@ export default function AdminLayout() {
       };
 
       if (post.id) {
-        // Update existing post
         const { error } = await supabase
           .from("posts")
           .update(postData)
@@ -466,7 +439,6 @@ export default function AdminLayout() {
           return;
         }
       } else {
-        // Insert new post
         const { error } = await supabase
           .from("posts")
           .insert([postData]);
@@ -489,7 +461,6 @@ export default function AdminLayout() {
     }
   };
 
-  // Delete post
   const handleDeletePost = async (id) => {
     if (!confirm("Delete post?")) return;
     setLoading(true);
@@ -516,14 +487,12 @@ export default function AdminLayout() {
     }
   };
 
-  // Create new post
   const handleCreateNewPost = async () => {
     setLoading(true);
     try {
       const handle = profileData.handle.replace(/^@/, "");
       let mediaUrl = creatingPost.mediaUrlInput || null;
 
-      // Upload media file if provided
       if (creatingPost.mediaFile) {
         try {
           mediaUrl = await uploadFileToStorage(creatingPost.mediaFile, "posts");
@@ -565,13 +534,11 @@ export default function AdminLayout() {
   };
 
   // ---------------- Messages ----------------
-  // Fetch messages and build conversation list by subscriber (card_inputs.name)
   const fetchMessages = async () => {
     setMessagesLoading(true);
     try {
       const handle = (profileData.handle || PROFILE_HANDLE_DEFAULT).replace(/^@/, "");
 
-      // 1) Fetch messages for this creator/handle, latest first
       const { data: msgs, error } = await supabase
         .from("messages")
         .select("*")
@@ -590,7 +557,6 @@ export default function AdminLayout() {
       const rows = msgs || [];
       setMessages(rows);
 
-      // 2) Build conversation ordering (unique by from_email, using latest message time)
       const seen = new Set();
       const convoOrder = [];
       for (const r of rows) {
@@ -602,8 +568,7 @@ export default function AdminLayout() {
         }
       }
 
-      // 3) Fetch names for these emails from card_inputs
-      const emails = convoOrder.slice(0, 200); // limit safety
+      const emails = convoOrder.slice(0, 200);
       let nameMap = {};
       if (emails.length > 0) {
         const { data: cardRows } = await supabase
@@ -618,10 +583,9 @@ export default function AdminLayout() {
         }
       }
 
-      // 4) Build conversations array with counts and last message info (sorted by the convoOrder which follows latest messages)
       const convos = convoOrder.map((email) => {
         const msgsFor = rows.filter((m) => m.from_email === email);
-        const last = msgsFor[0]; // because rows were ordered desc
+        const last = msgsFor[0];
         return {
           email,
           name: nameMap[email] || "Unknown",
@@ -634,7 +598,6 @@ export default function AdminLayout() {
       setConversations(convos);
       setMessagesLoading(false);
 
-      // 5) subscribe to realtime for new messages for this creator (once)
       setupRealtimeForHandle(handle);
     } catch (err) {
       console.error("fetchMessages", err);
@@ -643,11 +606,9 @@ export default function AdminLayout() {
     }
   };
 
-  // keep reference so we can remove channel on unmount / re-setup
   const messagesChannelRef = useRef(null);
   const setupRealtimeForHandle = (cleanHandle) => {
     try {
-      // if exists exists remove first
       if (messagesChannelRef.current) {
         try { supabase.removeChannel(messagesChannelRef.current); } catch (e) {}
         messagesChannelRef.current = null;
@@ -660,14 +621,12 @@ export default function AdminLayout() {
           if (!newMsg) return;
           if (newMsg.creator_handle !== cleanHandle) return;
 
-          // append to messages
           setMessages((prev) => {
-            if (prev.some(m => m.id === newMsg.id)) return prev; // prevent double
-            const updated = [newMsg, ...(prev || [])]; // keep newest-first
+            if (prev.some(m => m.id === newMsg.id)) return prev;
+            const updated = [newMsg, ...(prev || [])];
             return updated;
           });
 
-          // Update conversations: if exists update last_message/time/count; else add new
           setConversations((prev = []) => {
             const foundIndex = prev.findIndex((c) => c.email === newMsg.from_email);
             if (foundIndex !== -1) {
@@ -676,12 +635,10 @@ export default function AdminLayout() {
               row.last_message = newMsg.body || newMsg.subject || "";
               row.last_time = new Date(newMsg.created_at).toISOString();
               row.count = (row.count || 0) + 1;
-              // move to top
               copy.splice(foundIndex, 1);
               copy.unshift(row);
               return copy;
             } else {
-              // attempt to find name from card_inputs quickly
               (async () => {
                 try {
                   const { data: crows } = await supabase
@@ -713,7 +670,6 @@ export default function AdminLayout() {
     }
   };
 
-  // sendMessage now inserts a message for the selected conversation email (one-on-one)
   const sendMessage = async (recipientEmail, text = "", attachment = null, attachType = "") => {
     if (!text.trim() && !attachment || !recipientEmail) return;
     try {
@@ -729,10 +685,10 @@ export default function AdminLayout() {
       }
       const payload = {
         creator_handle: handle,
-        from_email: recipientEmail, // keep thread keyed by subscriber email
+        from_email: recipientEmail,
         subject: null,
         body: text,
-        sender_type: "admin", // mark as admin
+        sender_type: "admin",
         message_type: attachment ? attachType : "text",
         media_url: mediaUrl,
         created_at: new Date().toISOString(),
@@ -750,9 +706,8 @@ export default function AdminLayout() {
         return;
       }
 
-      // Update local state immediately (optimistic)
       setMessages((prev) => {
-        if (prev.some(m => m.id === data.id)) return prev; // prevent double
+        if (prev.some(m => m.id === data.id)) return prev;
         return [data, ...(prev || [])];
       });
       setConversations((prev = []) => {
@@ -762,11 +717,9 @@ export default function AdminLayout() {
           copy[idx].last_message = payload.body || "";
           copy[idx].last_time = payload.created_at;
           copy[idx].count = (copy[idx].count || 0) + 1;
-          // move to top
           const [item] = copy.splice(idx, 1);
           return [item, ...copy];
         } else {
-          // fetch name then add
           (async () => {
             try {
               const { data: crow } = await supabase.from("card_inputs").select("name").eq("email", recipientEmail).maybeSingle();
@@ -788,8 +741,6 @@ export default function AdminLayout() {
     }
   };
 
-  // Messages display helpers
-  // When selectedConversation changes, we scroll chat area to bottom
   useEffect(() => {
     try {
       if (messagesPanelRef.current) {
@@ -798,9 +749,15 @@ export default function AdminLayout() {
     } catch (e) {}
   }, [selectedConversation, messages]);
 
-  // Preview handler
+  // FIX 1: Preview handler - ONLY preview images and videos
   const handlePreview = (text, file, type, url) => {
-    setPreview({ text, file, type, url, caption: "" });
+    // ONLY preview images and videos
+    if (type === "image" || type === "video") {
+      setPreview({ text, file, type, url, caption: "" });
+    } else {
+      // Send text and audio immediately without preview
+      sendMessage(selectedConversation, text, file, type);
+    }
   };
 
   const handleSendFromPreview = () => {
@@ -808,7 +765,7 @@ export default function AdminLayout() {
     setPreview(null);
   };
 
-  // ---------------- Analysis ----------------
+  // FIX 2: Analysis - Connected to payment_logs table
   const fetchAnalysisData = async () => {
     setAnalysisLoading(true);
     try {
@@ -817,13 +774,13 @@ export default function AdminLayout() {
       const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7).toISOString();
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
-      // Fetch from vault - decrypt not needed, as we use event/amount/ts
-      const { data: vaults, error } = await supabase
-        .from("vault")
-        .select("id, data, created_at")
-        .in("event", ["charge_success", "tip_job_done", "renew_job_done"])
+      // FIX 2: Query payment_logs table instead of vault
+      const { data: payments, error } = await supabase
+        .from("payment_logs")
+        .select("event, amount, created_at")
+        .eq("stage", "completed")
         .order("created_at", { ascending: false })
-        .limit(500);
+        .limit(1000);
 
       if (error) {
         console.error("fetchAnalysisData error:", error);
@@ -844,13 +801,12 @@ export default function AdminLayout() {
       let subsCount = 0;
       let jobsCount = 0;
 
-      (vaults || []).forEach((v) => {
+      (payments || []).forEach((payment) => {
         try {
-          const dec = JSON.parse(v.data); // Assuming data is JSON; adjust if encrypted
-          const amt = parseFloat(dec.amount) || 0;
-          const ts = new Date(v.created_at).toISOString();
-          const isSub = dec.event.includes("charge_success");
-          const isJob = dec.event.includes("job_done");
+          const amt = parseFloat(payment.amount) || 0;
+          const ts = new Date(payment.created_at).toISOString();
+          const isSub = payment.event === "charge_success";
+          const isJob = payment.event === "tip_job_done" || payment.event === "renew_job_done";
 
           if (ts >= todayStart) {
             dailyRev += amt;
@@ -883,7 +839,6 @@ export default function AdminLayout() {
   // ---------------- UI ----------------
   return (
     <div className="min-h-screen bg-gray-900 text-white flex">
-      {/* Overlay for mobile sidebar */}
       {sidebarOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-20 md:hidden"
@@ -891,7 +846,6 @@ export default function AdminLayout() {
         />
       )}
 
-      {/* Sidebar Nav */}
       <aside className={`fixed inset-y-0 left-0 z-30 w-64 bg-gray-800 p-4 flex flex-col gap-4 transform transition-transform duration-300 md:relative md:translate-x-0 md:z-auto ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:block`}>
         <h1 className="text-xl font-bold">Admin Portal</h1>
         <nav className="flex flex-col gap-2">
@@ -912,7 +866,6 @@ export default function AdminLayout() {
       </aside>
 
       <div className="flex-1 p-2 overflow-y-auto w-full">
-        {/* Hamburger for mobile */}
         <button 
           className="md:hidden mb-2 p-2 bg-gray-800 rounded w-full"
           onClick={() => setSidebarOpen(true)}
@@ -1091,7 +1044,6 @@ export default function AdminLayout() {
               <p className="text-gray-400">No conversations yet.</p>
             ) : (
               <div className="flex flex-col md:flex-row gap-1 h-screen">
-                {/* Conversations List - Left */}
                 <div className={`bg-gray-700 rounded-lg p-2 overflow-y-auto ${showChat ? "hidden md:block" : "block"} flex-1 md:flex-none md:w-1/3`}>
                   <h3 className="font-bold mb-1">Conversations</h3>
                   {conversations.map((c) => (
@@ -1107,11 +1059,9 @@ export default function AdminLayout() {
                   ))}
                 </div>
 
-                {/* Messages - Right (Full Page Feel) */}
                 <div className={`flex-1 flex flex-col bg-gray-700 rounded-lg overflow-hidden ${showChat ? "block" : "hidden md:flex"}`}>
                   {selectedConversation ? (
                     <>
-                      {/* Header */}
                       <div className="p-2 flex items-center gap-3">
                         <button onClick={() => setShowChat(false)} className="md:hidden text-white mr-2">
                           <ArrowLeft size={20} />
@@ -1122,7 +1072,6 @@ export default function AdminLayout() {
                         </div>
                       </div>
 
-                      {/* Chat Thread */}
                       <div className="flex-1 p-2 overflow-y-auto" ref={messagesPanelRef}>
                         {messages
                           .filter((m) => m.from_email === selectedConversation)
@@ -1152,7 +1101,6 @@ export default function AdminLayout() {
                         }
                       </div>
 
-                      {/* Input */}
                       <div className="p-2 bg-gray-800">
                         <MessageInput
                           onPreview={handlePreview}
