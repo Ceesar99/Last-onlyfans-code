@@ -149,8 +149,6 @@ const LoadingSplash = ({ children }) => {
             </g>
           </svg>
           {/* Loading text */}
-          <p style={{ marginTop: 16, color: "#666", fontSize: 14 }}>
-            Loading profile...
           </p>
         </div>
       )}
