@@ -1,7 +1,4 @@
 // ProfilePage.jsx - FIXED VERSION
-// Fix 1: Instant loading (postsLoading starts as false)
-// Fix 2: Like counts increase/decrease properly (550 → 551, not 550 → 1)
-
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import ModalPortal from "../component/ModalPortal";
@@ -11,7 +8,6 @@ import supabase from "../supabaseclient";
 
 const FREE_SAMPLE_LS_KEY = "freeSampleAccess_v1";
 
-/* ErrorBoundary unchanged */
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -38,7 +34,6 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-/* fallback data kept similar to your original */
 const defaultCreator = {
   name: "Tayler Hills",
   avatar: "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760699188347-6c2tnk-images%20(9).jpeg",
@@ -48,7 +43,6 @@ const defaultCreator = {
     "Hi 😊 I'm your favorite 19 year old & I love showing all of ME for your pleasure; ) you'll love it here! 🍆💦 Message me 👆 for daily nudes and videos in the feed ✨ S tapes, bjs , hjs , stripteases Dildo, vibrator, creampie, baby oil, roleplay 💦 Private messages with me ✨ NO SPAM OR ADS Turn on your your auto-renew on and get freebies xo",
 };
 
-// Post captions and images arrays (keeping them as before)
 const UNLOCKED_POST_IMAGES = [
   "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760742247894-wuga4b-tayler-hills-onlyfans-7su4i-72.jpeg",
   "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760701141796-9roite-Screenshot_20251017-123357.jpg",
@@ -212,7 +206,7 @@ export default function SafeProfileMock() {
   const navigate = useNavigate();
   const [creator, setCreator] = useState(defaultCreator);
   const [posts, setPosts] = useState(() => buildLocalDummyPosts());
-  const [postsLoading, setPostsLoading] = useState(false); // FIX 1: Changed to false for instant load
+  const [postsLoading, setPostsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("posts");
   const [bioExpanded, setBioExpanded] = useState(false);
   const [starred, setStarred] = useState(false);
@@ -384,7 +378,13 @@ export default function SafeProfileMock() {
       } catch (err) {
         console.error("Unexpected fetch error:", err);
       } finally {
-        if (mounted) setPostsLoading(false);
+        if (mounted) {
+          setPostsLoading(false);
+          
+          if (window.onProfileDataLoaded) {
+            window.onProfileDataLoaded();
+          }
+        }
       }
     };
 
@@ -688,7 +688,6 @@ export default function SafeProfileMock() {
     </div>
   );
 
-  // FIX 2: Toggle like - adds +1 to existing count (550 → 551, not 550 → 1)
   const toggleLike = (id) => {
     const postId = String(id);
     const post = findPostById(postId);
@@ -702,7 +701,6 @@ export default function SafeProfileMock() {
     
     setLikedPosts(newLikedState);
     
-    // FIX 2: Update like count by adding/subtracting from CURRENT count
     setLikeCounts((prevCounts) => {
       const currentCount = prevCounts[postId] !== undefined ? prevCounts[postId] : (post?.likes || 0);
       return {
