@@ -297,96 +297,106 @@ export default function SafeProfileMock() {
     const handle = (urlHandle && urlHandle.replace(/^@/, "")) || (storedHandle && storedHandle.replace(/^@/, "")) || null;
 
     const loadInitialData = async () => {
+  console.log("🔄 Starting to load profile data...");
+  
+  try {
+    if (handle) {
+      const { data: profileData, error: profileError } = await supabase
+        .from("creator_profiles")
+        .select("id, handle, name, bio, avatar_url, banner_url, created_at")
+        .eq("handle", handle)
+        .maybeSingle();
+
+      if (profileError) {
+        console.error("Supabase profile error:", profileError);
+      } else if (profileData && mounted) {
+        setCreator((prev) => ({
+          ...prev,
+          name: profileData.name || prev.name,
+          avatar: profileData.avatar_url || prev.avatar,
+          banner: profileData.banner_url || prev.banner,
+          handle: profileData.handle ? (profileData.handle.startsWith("@") ? profileData.handle : `@${profileData.handle}`) : prev.handle,
+          bio: profileData.bio || prev.bio,
+          id: profileData.id || prev.id,
+          created_at: profileData.created_at || prev.created_at,
+        }));
+      }
+    }
+
+    let postsQuery = supabase.from("posts").select("id, creator_handle, title, content, media_url, locked, created_at");
+    if (handle) postsQuery = postsQuery.eq("creator_handle", handle);
+    postsQuery = postsQuery.order("created_at", { ascending: false }).limit(500);
+
+    const { data: postsData, error: postsError } = await postsQuery;
+
+    if (postsError) {
+      console.error("Supabase posts error:", postsError);
+    } else if (mounted && Array.isArray(postsData)) {
+      let persistedLikes = {};
       try {
-        if (handle) {
-          const { data: profileData, error: profileError } = await supabase
-            .from("creator_profiles")
-            .select("id, handle, name, bio, avatar_url, banner_url, created_at")
-            .eq("handle", handle)
-            .maybeSingle();
-
-          if (profileError) {
-            console.error("Supabase profile error:", profileError);
-          } else if (profileData && mounted) {
-            setCreator((prev) => ({
-              ...prev,
-              name: profileData.name || prev.name,
-              avatar: profileData.avatar_url || prev.avatar,
-              banner: profileData.banner_url || prev.banner,
-              handle: profileData.handle ? (profileData.handle.startsWith("@") ? profileData.handle : `@${profileData.handle}`) : prev.handle,
-              bio: profileData.bio || prev.bio,
-              id: profileData.id || prev.id,
-              created_at: profileData.created_at || prev.created_at,
-            }));
-          }
-        }
-
-        let postsQuery = supabase.from("posts").select("id, creator_handle, title, content, media_url, locked, created_at");
-        if (handle) postsQuery = postsQuery.eq("creator_handle", handle);
-        postsQuery = postsQuery.order("created_at", { ascending: false }).limit(500);
-
-        const { data: postsData, error: postsError } = await postsQuery;
-
-        if (postsError) {
-          console.error("Supabase posts error:", postsError);
-        } else if (mounted && Array.isArray(postsData)) {
-          let persistedLikes = {};
-          try {
-            const stored = typeof window !== "undefined" ? window.localStorage.getItem("post_likes_permanent") : null;
-            if (stored) {
-              persistedLikes = JSON.parse(stored);
-            }
-          } catch (err) {
-            console.warn("Failed to load persisted likes:", err);
-          }
-
-          const mappedDB = postsData.map((post) => {
-            const postId = `db-${post.id}`;
-            if (!persistedLikes[postId]) {
-              persistedLikes[postId] = Math.floor(Math.random() * 1800001) + 200000;
-            }
-            
-            return {
-              id: postId,
-              dbId: post.id,
-              creator_handle: post.creator_handle,
-              text: post.content || post.title || "",
-              mediaType: post.media_url ? (post.media_url.includes(".mp4") || post.media_url.includes("video") ? "video" : "image") : null,
-              mediaSrc: post.media_url || null,
-              likes: persistedLikes[postId],
-              date: post.created_at ? new Date(post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "",
-              locked: post.locked === true,
-              created_at: post.created_at,
-              isDummy: false,
-            };
-          });
-
-          try {
-            if (typeof window !== "undefined" && window.localStorage) {
-              localStorage.setItem("post_likes_permanent", JSON.stringify(persistedLikes));
-            }
-          } catch (err) {
-            console.warn("Failed to save persisted likes:", err);
-          }
-
-          setPosts((prev) => {
-            const dummyPosts = prev.filter((p) => p.isDummy);
-            const merged = [...mappedDB, ...dummyPosts];
-            return merged;
-          });
+        const stored = typeof window !== "undefined" ? window.localStorage.getItem("post_likes_permanent") : null;
+        if (stored) {
+          persistedLikes = JSON.parse(stored);
         }
       } catch (err) {
-        console.error("Unexpected fetch error:", err);
-      } finally {
-        if (mounted) {
-          setPostsLoading(false);
-          
-          if (window.onProfileDataLoaded) {
-            window.onProfileDataLoaded();
-          }
-        }
+        console.warn("Failed to load persisted likes:", err);
       }
-    };
+
+      const mappedDB = postsData.map((post) => {
+        const postId = `db-${post.id}`;
+        if (!persistedLikes[postId]) {
+          persistedLikes[postId] = Math.floor(Math.random() * 1800001) + 200000;
+        }
+        
+        return {
+          id: postId,
+          dbId: post.id,
+          creator_handle: post.creator_handle,
+          text: post.content || post.title || "",
+          mediaType: post.media_url ? (post.media_url.includes(".mp4") || post.media_url.includes("video") ? "video" : "image") : null,
+          mediaSrc: post.media_url || null,
+          likes: persistedLikes[postId],
+          date: post.created_at ? new Date(post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "",
+          locked: post.locked === true,
+          created_at: post.created_at,
+          isDummy: false,
+        };
+      });
+
+      try {
+        if (typeof window !== "undefined" && window.localStorage) {
+          localStorage.setItem("post_likes_permanent", JSON.stringify(persistedLikes));
+        }
+      } catch (err) {
+        console.warn("Failed to save persisted likes:", err);
+      }
+
+      setPosts((prev) => {
+        const dummyPosts = prev.filter((p) => p.isDummy);
+        const merged = [...mappedDB, ...dummyPosts];
+        return merged;
+      });
+    }
+    
+    console.log("✅ Profile data loaded successfully!");
+    
+  } catch (err) {
+    console.error("Unexpected fetch error:", err);
+  }
+  
+  // ALWAYS signal completion - even if there are errors
+  if (mounted) {
+    setPostsLoading(false);
+    
+    console.log("📢 Signaling LoadingSplash...");
+    if (window.onProfileDataLoaded) {
+      window.onProfileDataLoaded();
+      console.log("✅ Signal sent!");
+    } else {
+      console.log("❌ window.onProfileDataLoaded not found!");
+    }
+  }
+};
 
     loadInitialData();
 
