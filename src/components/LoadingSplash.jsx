@@ -7,12 +7,15 @@ const LoadingSplash = ({ children }) => {
   const [dataLoaded, setDataLoaded] = useState(false);
 
   useEffect(() => {
-    const logoTime = Math.random() * 2000 + 3000;
+    // Logo shows for 2-3 seconds
+    const logoTime = Math.random() * 1000 + 2000; // 2-3 seconds
     const logoTimer = setTimeout(() => {
       setStage("spinner");
     }, logoTime);
 
+    // Listen for profile data loaded signal
     window.onProfileDataLoaded = () => {
+      console.log("✅ Profile data loaded!");
       setDataLoaded(true);
     };
 
@@ -23,7 +26,8 @@ const LoadingSplash = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    if (stage === "spinner" && dataLoaded) {
+    // Hide splash when data is loaded (regardless of stage)
+    if (dataLoaded) {
       const hideTimer = setTimeout(() => {
         setIsVisible(false);
         setStage("done");
@@ -31,7 +35,7 @@ const LoadingSplash = ({ children }) => {
 
       return () => clearTimeout(hideTimer);
     }
-  }, [stage, dataLoaded]);
+  }, [dataLoaded]);
 
   if (!isVisible) return children;
 
