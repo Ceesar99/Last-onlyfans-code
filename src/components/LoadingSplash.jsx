@@ -2,20 +2,17 @@
 import React, { useState, useEffect } from "react";
 
 const LoadingSplash = ({ children }) => {
-  const [stage, setStage] = useState("logo"); // 'logo' | 'spinner' | 'done'
+  const [stage, setStage] = useState("logo");
   const [isVisible, setIsVisible] = useState(true);
   const [dataLoaded, setDataLoaded] = useState(false);
 
   useEffect(() => {
-    // Logo phase: 3-5s
     const logoTime = Math.random() * 2000 + 3000;
     const logoTimer = setTimeout(() => {
       setStage("spinner");
     }, logoTime);
 
-    // Listen for ProfilePage to signal it's loaded
     window.onProfileDataLoaded = () => {
-      console.log("✅ Profile data loaded!");
       setDataLoaded(true);
     };
 
@@ -26,14 +23,11 @@ const LoadingSplash = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    // Hide splash ONLY when both conditions are met:
-    // 1. We're showing the spinner
-    // 2. Profile data is fully loaded
     if (stage === "spinner" && dataLoaded) {
       const hideTimer = setTimeout(() => {
         setIsVisible(false);
         setStage("done");
-      }, 500); // Small delay for smooth transition
+      }, 300);
 
       return () => clearTimeout(hideTimer);
     }
@@ -56,7 +50,6 @@ const LoadingSplash = ({ children }) => {
         opacity: isVisible ? 1 : 0,
       }}
     >
-      {/* LOGO */}
       {stage === "logo" && (
         <div
           style={{
@@ -108,14 +101,12 @@ const LoadingSplash = ({ children }) => {
         </div>
       )}
 
-      {/* SPINNER */}
       {stage === "spinner" && (
         <div
           style={{
             width: 180,
             height: 260,
             display: "flex",
-            flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
             animation: "fadeIn 0.6s ease-out forwards",
@@ -148,8 +139,6 @@ const LoadingSplash = ({ children }) => {
               <path id="9" d="M 137.057,139.853 C 133.683,139.029 131.134,135.638 131.466,132.418 C 131.839,128.812 134.646,126.219 138.202,126.197 C 140.235,126.184 141.794,126.839 143.290,128.334 C 146.082,131.123 145.904,135.587 142.896,138.233 C 141.179,139.743 139.038,140.337 137.057,139.853" stroke="#D1D2D4" fill="#D1D2D4" strokeWidth="1" />
             </g>
           </svg>
-          {/* Loading text */}
-          </p>
         </div>
       )}
 
@@ -172,3 +161,28 @@ const LoadingSplash = ({ children }) => {
 };
 
 export default LoadingSplash;
+```
+
+---
+
+## **2. ProfilePage.jsx - ONLY THE CHANGES**
+
+In your existing ProfilePage.jsx file, make these TWO changes:
+
+**Change 1 - Line ~311:**
+```javascript
+const [postsLoading, setPostsLoading] = useState(true); // Changed from false to true
+```
+
+**Change 2 - Inside `loadInitialData` function's finally block (around line ~510):**
+```javascript
+} finally {
+  if (mounted) {
+    setPostsLoading(false);
+    
+    // Signal to LoadingSplash that data is ready
+    if (window.onProfileDataLoaded) {
+      window.onProfileDataLoaded();
+    }
+  }
+}
