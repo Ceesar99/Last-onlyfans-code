@@ -297,6 +297,21 @@ export default function SafeProfileMock() {
     const handle = (urlHandle && urlHandle.replace(/^@/, "")) || (storedHandle && storedHandle.replace(/^@/, "")) || null;
 
     const loadInitialData = async () => {
+      } finally {
+  if (mounted) {
+    console.log("📍 ProfilePage: About to call onProfileDataLoaded");
+    setPostsLoading(false);
+    
+    if (window.onProfileDataLoaded) {
+      console.log("📍 ProfilePage: Calling onProfileDataLoaded NOW");
+      window.onProfileDataLoaded();
+    } else {
+      console.log("❌ ProfilePage: window.onProfileDataLoaded does NOT exist!");
+    }
+  } else {
+    console.log("❌ ProfilePage: Component not mounted, skipping signal");
+  }
+}
   console.log("🔄 Starting to load profile data...");
   
   try {
