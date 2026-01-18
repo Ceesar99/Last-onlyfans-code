@@ -296,8 +296,7 @@ export default function SafeProfileMock() {
     const storedHandle = typeof window !== "undefined" ? window.localStorage.getItem("creator_handle") : null;
     const handle = (urlHandle && urlHandle.replace(/^@/, "")) || (storedHandle && storedHandle.replace(/^@/, "")) || null;
 
-    const loadInitialData = async () => {
-      } finally {
+    } finally {
   if (mounted) {
     console.log("📍 ProfilePage: About to call onProfileDataLoaded");
     setPostsLoading(false);
@@ -312,6 +311,8 @@ export default function SafeProfileMock() {
     console.log("❌ ProfilePage: Component not mounted, skipping signal");
   }
 }
+  const loadInitialData = async () => {
+      
   console.log("🔄 Starting to load profile data...");
   
   try {
