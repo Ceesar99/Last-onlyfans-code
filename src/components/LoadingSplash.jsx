@@ -2,32 +2,42 @@
 import React, { useState, useEffect } from "react";
 
 const LoadingSplash = ({ children }) => {
+  const [stage, setStage] = useState("logo");
   const [isVisible, setIsVisible] = useState(true);
-  const [showSpinner, setShowSpinner] = useState(false);
 
   useEffect(() => {
     console.log("🎬 LoadingSplash mounted and ready");
     
-    // Show logo for 2-3 seconds, then show spinner
+    // Logo shows for 2-3 seconds
+    const logoTime = Math.random() * 1000 + 2000;
     const logoTimer = setTimeout(() => {
-      console.log("⏭️ Switching to spinner");
-      setShowSpinner(true);
-    }, 2500); // 2.5 seconds for logo
+      console.log("⏭️ Moving to spinner stage");
+      setStage("spinner");
+    }, logoTime);
 
-    // Listen for profile data loaded signal - this is the ONLY way to hide
+    // Listen for profile data loaded signal
     window.onProfileDataLoaded = () => {
-      console.log("✅ LoadingSplash received signal - hiding splash NOW");
+      console.log("✅ LoadingSplash received signal - hiding splash");
       setIsVisible(false);
+      setStage("done");
     };
+
+    // Fallback: Force hide after 5 seconds
+    const fallbackTimer = setTimeout(() => {
+      console.log("⏰ Fallback timeout - hiding splash anyway");
+      setIsVisible(false);
+      setStage("done");
+    }, 5000);
 
     return () => {
       clearTimeout(logoTimer);
+      clearTimeout(fallbackTimer);
       delete window.onProfileDataLoaded;
     };
   }, []);
 
   if (!isVisible) {
-    console.log("👋 Splash hidden - showing profile");
+    console.log("👋 LoadingSplash hidden, showing children");
     return children;
   }
 
@@ -42,10 +52,11 @@ const LoadingSplash = ({ children }) => {
         justifyContent: "center",
         alignItems: "center",
         zIndex: 9999,
+        transition: "opacity 0.45s ease",
+        opacity: isVisible ? 1 : 0,
       }}
     >
-      {!showSpinner ? (
-        // LOGO STAGE
+      {stage === "logo" && (
         <div
           style={{
             width: 480,
@@ -53,6 +64,7 @@ const LoadingSplash = ({ children }) => {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            animation: "fadeIn 0.9s ease-out forwards",
             marginTop: "-80px",
           }}
         >
@@ -69,6 +81,7 @@ const LoadingSplash = ({ children }) => {
               animation: "breathe 1.6s ease-in-out infinite",
               transformOrigin: "50% 50%",
               transformBox: "fill-box",
+              willChange: "transform, opacity",
             }}
           >
             <g id="onlyfans-logo-2">
@@ -92,8 +105,9 @@ const LoadingSplash = ({ children }) => {
             </g>
           </svg>
         </div>
-      ) : (
-        // SPINNER STAGE
+      )}
+
+      {stage === "spinner" && (
         <div
           style={{
             width: 180,
@@ -101,6 +115,7 @@ const LoadingSplash = ({ children }) => {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            animation: "fadeIn 0.6s ease-out forwards",
           }}
         >
           <svg
@@ -116,6 +131,7 @@ const LoadingSplash = ({ children }) => {
               animation: "spin 1.6s linear infinite",
               transformOrigin: "50% 50%",
               transformBox: "fill-box",
+              willChange: "transform",
             }}
           >
             <g id="images">
@@ -140,6 +156,10 @@ const LoadingSplash = ({ children }) => {
         @keyframes breathe {
           0%, 100% { transform: scale(1); opacity: 1; }
           50% { transform: scale(1.06); opacity: 0.94; }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
       `}</style>
     </div>
