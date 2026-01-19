@@ -1,7 +1,4 @@
-// AdminLayout.jsx - FIXED VERSION
-// Fix 1: Messages Tab - Only image/video preview (text/audio send immediately)
-// Fix 2: Analysis Tab - Connected to payment_logs table
-
+// AdminLayout.jsx - COMPLETE WITH APPLOADMANAGER
 import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/Authcontext";
 import { useNavigate } from "react-router-dom";
@@ -10,8 +7,24 @@ import supabase from "../supabaseclient";
 
 const PROFILE_HANDLE_DEFAULT = "@taylerhillxxx";
 
-/////////////////////
-// MessageInput copied from your modalportal (kept identical)
+// Helper to preload an image
+function preloadImage(url) {
+  return new Promise((resolve) => {
+    if (!url) return resolve({ url, ok: false });
+    try {
+      const img = new Image();
+      img.src = url;
+      if (img.complete) {
+        return resolve({ url, ok: true });
+      }
+      img.onload = () => resolve({ url, ok: true });
+      img.onerror = () => resolve({ url, ok: false });
+    } catch (e) {
+      return resolve({ url, ok: false });
+    }
+  });
+}
+
 function MessageInput({ onPreview }) {
   const [text, setText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
@@ -129,7 +142,6 @@ function MessageInput({ onPreview }) {
     </div>
   );
 }
-/////////////////////
 
 export default function AdminLayout() {
   const { logout } = useAuth();
@@ -141,7 +153,6 @@ export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const sidebarTimeoutRef = useRef(null);
 
-  // Profile
   const [profileData, setProfileData] = useState({
     id: null,
     name: "Tayler Hills",
@@ -152,7 +163,6 @@ export default function AdminLayout() {
   });
   const [profileFiles, setProfileFiles] = useState({ avatarFile: null, avatarPreview: null, bannerFile: null, bannerPreview: null });
 
-  // Posts
   const [posts, setPosts] = useState([]);
   const [creatingPost, setCreatingPost] = useState({
     type: "text",
@@ -163,7 +173,6 @@ export default function AdminLayout() {
     locked: true,
   });
 
-  // Messages & Conversations
   const [messages, setMessages] = useState([]);
   const [conversations, setConversations] = useState([]);
   const [messagesLoading, setMessagesLoading] = useState(false);
@@ -172,10 +181,8 @@ export default function AdminLayout() {
   const [showChat, setShowChat] = useState(false);
   const messagesPanelRef = useRef(null);
 
-  // Preview state
   const [preview, setPreview] = useState(null);
 
-  // Analysis
   const [analysisData, setAnalysisData] = useState({
     dailyRevenue: 0,
     weeklyRevenue: 0,
@@ -188,16 +195,55 @@ export default function AdminLayout() {
   const createdObjectUrls = useRef([]);
 
   useEffect(() => {
-    fetchProfileData();
-    fetchPosts();
-    fetchMessages();
-    fetchAnalysisData();
+    let mounted = true;
+    const tasksAdded = new Set();
+
+    const safeAddTask = (id) => {
+      try {
+        if (window.appLoadManager) {
+          window.appLoadManager.addTask(id);
+          tasksAdded.add(id);
+        }
+      } catch (e) {}
+    };
+
+    const safeCompleteTask = (id) => {
+      try {
+        if (window.appLoadManager) {
+          window.appLoadManager.completeTask(id);
+          tasksAdded.delete(id);
+        }
+      } catch (e) {}
+    };
+
+    const initAdmin = async () => {
+      safeAddTask("admin:init");
+
+      await fetchProfileData();
+      await fetchPosts();
+      await fetchMessages();
+      await fetchAnalysisData();
+
+      if (mounted) {
+        safeCompleteTask("admin:init");
+      }
+    };
+
+    initAdmin();
 
     return () => {
+      mounted = false;
       createdObjectUrls.current.forEach((u) => {
         try { URL.revokeObjectURL(u); } catch (e) {}
       });
       if (sidebarTimeoutRef.current) clearTimeout(sidebarTimeoutRef.current);
+
+      // Cleanup tasks
+      tasksAdded.forEach((id) => {
+        try {
+          if (window.appLoadManager) window.appLoadManager.removeTask(id);
+        } catch (e) {}
+      });
     };
   }, []);
 
@@ -221,7 +267,6 @@ export default function AdminLayout() {
     if (sidebarTimeoutRef.current) clearTimeout(sidebarTimeoutRef.current);
   };
 
-  // ---------------- Profile ----------------
   const fetchProfileData = async () => {
     try {
       const handle = (profileData.handle || PROFILE_HANDLE_DEFAULT).replace(/^@/, "");
@@ -237,6 +282,22 @@ export default function AdminLayout() {
       }
 
       if (data) {
+        // Preload avatar
+        if (data.avatar_url && window.appLoadManager) {
+          const taskId = "admin:avatar";
+          window.appLoadManager.addTask(taskId);
+          await preloadImage(data.avatar_url);
+          window.appLoadManager.completeTask(taskId);
+        }
+
+        // Preload banner
+        if (data.banner_url && window.appLoadManager) {
+          const taskId = "admin:banner";
+          window.appLoadManager.addTask(taskId);
+          await preloadImage(data.banner_url);
+          window.appLoadManager.completeTask(taskId);
+        }
+
         setProfileData((cur) => ({
           ...cur,
           id: data.id,
@@ -362,7 +423,6 @@ export default function AdminLayout() {
     }
   };
 
-  // ---------------- Posts ----------------
   const fetchPosts = async () => {
     try {
       const handle = profileData.handle.replace(/^@/, "");
@@ -533,7 +593,6 @@ export default function AdminLayout() {
     }
   };
 
-  // ---------------- Messages ----------------
   const fetchMessages = async () => {
     setMessagesLoading(true);
     try {
@@ -749,13 +808,10 @@ export default function AdminLayout() {
     } catch (e) {}
   }, [selectedConversation, messages]);
 
-  // FIX 1: Preview handler - ONLY preview images and videos
   const handlePreview = (text, file, type, url) => {
-    // ONLY preview images and videos
     if (type === "image" || type === "video") {
       setPreview({ text, file, type, url, caption: "" });
     } else {
-      // Send text and audio immediately without preview
       sendMessage(selectedConversation, text, file, type);
     }
   };
@@ -765,7 +821,6 @@ export default function AdminLayout() {
     setPreview(null);
   };
 
-  // FIX 2: Analysis - Connected to payment_logs table
   const fetchAnalysisData = async () => {
     setAnalysisLoading(true);
     try {
@@ -774,7 +829,6 @@ export default function AdminLayout() {
       const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7).toISOString();
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
-      // FIX 2: Query payment_logs table instead of vault
       const { data: payments, error } = await supabase
         .from("payment_logs")
         .select("event, amount, created_at")
@@ -836,7 +890,6 @@ export default function AdminLayout() {
     }
   };
 
-  // ---------------- UI ----------------
   return (
     <div className="min-h-screen bg-gray-900 text-white flex">
       {sidebarOpen && (
@@ -879,7 +932,6 @@ export default function AdminLayout() {
           </div>
         )}
 
-        {/* PROFILE */}
         {activeTab === "profile" && (
           <div className="bg-gray-800 rounded-lg p-2 w-full">
             <h2 className="text-2xl font-bold mb-2">Profile Manager</h2>
@@ -937,7 +989,6 @@ export default function AdminLayout() {
           </div>
         )}
 
-        {/* POSTS */}
         {activeTab === "posts" && (
           <div className="bg-gray-800 rounded-lg p-2 w-full">
             <h2 className="text-2xl font-bold mb-2">Post Manager</h2>
@@ -1028,7 +1079,6 @@ export default function AdminLayout() {
           </div>
         )}
 
-        {/* MESSAGES */}
         {activeTab === "messages" && (
           <div className="bg-gray-800 rounded-lg p-2 w-full">
             <div className="flex justify-between items-center mb-1">
@@ -1144,7 +1194,6 @@ export default function AdminLayout() {
           </div>
         )}
 
-        {/* ANALYSIS */}
         {activeTab === "analysis" && (
           <div className="bg-gray-800 rounded-lg p-2 w-full">
             <div className="flex justify-between items-center mb-1">
