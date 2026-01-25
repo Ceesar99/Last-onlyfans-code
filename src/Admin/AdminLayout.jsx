@@ -4,7 +4,7 @@ import { useAuth } from "../context/Authcontext";
 import { useNavigate } from "react-router-dom";
 import { LogOut, Upload, Plus, Save, Menu, ArrowLeft, Camera, Image as GalleryIcon, Mic } from "lucide-react";
 import supabase from "../supabaseclient";
-import LoadingSplash from "../component/LoadingSplash";
+import LoadingSplash from "../components/LoadingSplash";
 
 const PROFILE_HANDLE_DEFAULT = "@taylerhillxxx";
 
