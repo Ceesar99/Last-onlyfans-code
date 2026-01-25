@@ -1,12 +1,10 @@
-// AdminLayout.jsx - FIXED VERSION
-// Fix 1: Messages Tab - Only image/video preview (text/audio send immediately)
-// Fix 2: Analysis Tab - Connected to payment_logs table
-
+// AdminLayout.jsx
 import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/Authcontext";
 import { useNavigate } from "react-router-dom";
 import { LogOut, Upload, Plus, Save, Menu, ArrowLeft, Camera, Image as GalleryIcon, Mic } from "lucide-react";
 import supabase from "../supabaseclient";
+import LoadingSplash from "../component/LoadingSplash";
 
 const PROFILE_HANDLE_DEFAULT = "@taylerhillxxx";
 
@@ -136,6 +134,7 @@ export default function AdminLayout() {
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState("profile");
+  const [initialLoading, setInitialLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -188,10 +187,14 @@ export default function AdminLayout() {
   const createdObjectUrls = useRef([]);
 
   useEffect(() => {
-    fetchProfileData();
-    fetchPosts();
-    fetchMessages();
-    fetchAnalysisData();
+    (async () => {
+      setInitialLoading(true);
+      await fetchProfileData();
+      await fetchPosts();
+      await fetchMessages();
+      await fetchAnalysisData();
+      setInitialLoading(false);
+    })();
 
     return () => {
       createdObjectUrls.current.forEach((u) => {
@@ -199,6 +202,7 @@ export default function AdminLayout() {
       });
       if (sidebarTimeoutRef.current) clearTimeout(sidebarTimeoutRef.current);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const showMessage = (txt, type = "success", ms = 2500) => {
@@ -749,7 +753,7 @@ export default function AdminLayout() {
     } catch (e) {}
   }, [selectedConversation, messages]);
 
-  // FIX 1: Preview handler - ONLY preview images and videos
+  // Preview handler - ONLY preview images and videos
   const handlePreview = (text, file, type, url) => {
     // ONLY preview images and videos
     if (type === "image" || type === "video") {
@@ -765,7 +769,7 @@ export default function AdminLayout() {
     setPreview(null);
   };
 
-  // FIX 2: Analysis - Connected to payment_logs table
+  // Analysis - Connected to payment_logs table
   const fetchAnalysisData = async () => {
     setAnalysisLoading(true);
     try {
@@ -774,7 +778,6 @@ export default function AdminLayout() {
       const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7).toISOString();
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
-      // FIX 2: Query payment_logs table instead of vault
       const { data: payments, error } = await supabase
         .from("payment_logs")
         .select("event, amount, created_at")
@@ -838,361 +841,363 @@ export default function AdminLayout() {
 
   // ---------------- UI ----------------
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex">
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-20 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      <aside className={`fixed inset-y-0 left-0 z-30 w-64 bg-gray-800 p-4 flex flex-col gap-4 transform transition-transform duration-300 md:relative md:translate-x-0 md:z-auto ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:block`}>
-        <h1 className="text-xl font-bold">Admin Portal</h1>
-        <nav className="flex flex-col gap-2">
-          <button onClick={() => handleTabChange("profile")} className={`px-4 py-2 rounded text-left ${activeTab === "profile" ? "bg-blue-600" : "bg-gray-700 hover:bg-gray-600"}`}>
-            Profile Manager
-          </button>
-          <button onClick={() => handleTabChange("posts")} className={`px-4 py-2 rounded text-left ${activeTab === "posts" ? "bg-blue-600" : "bg-gray-700 hover:bg-gray-600"}`}>
-            Post Manager
-          </button>
-          <button onClick={() => handleTabChange("messages")} className={`px-4 py-2 rounded text-left ${activeTab === "messages" ? "bg-blue-600" : "bg-gray-700 hover:bg-gray-600"}`}>
-            Messages
-          </button>
-          <button onClick={() => handleTabChange("analysis")} className={`px-4 py-2 rounded text-left ${activeTab === "analysis" ? "bg-blue-600" : "bg-gray-700 hover:bg-gray-600"}`}>
-            Analysis
-          </button>
-        </nav>
-        <button onClick={() => { logout(); navigate("/admin/login"); }} className="mt-auto flex items-center gap-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded"><LogOut size={18} /> Logout</button>
-      </aside>
-
-      <div className="flex-1 p-2 overflow-y-auto w-full">
-        <button 
-          className="md:hidden mb-2 p-2 bg-gray-800 rounded w-full"
-          onClick={() => setSidebarOpen(true)}
-        >
-          <Menu size={24} />
-        </button>
-
-        {message.text && (
-          <div className={`mb-2 p-3 rounded-lg w-full ${message.type === "success" ? "bg-green-500/20 border border-green-500 text-green-300" : "bg-red-500/20 border border-red-500 text-red-300"}`}>
-            {message.text}
-          </div>
+    <LoadingSplash loading={initialLoading}>
+      <div className="min-h-screen bg-gray-900 text-white flex">
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-20 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
         )}
 
-        {/* PROFILE */}
-        {activeTab === "profile" && (
-          <div className="bg-gray-800 rounded-lg p-2 w-full">
-            <h2 className="text-2xl font-bold mb-2">Profile Manager</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 w-full">
-              <div className="md:col-span-2">
-                <div className="relative h-36 bg-gray-700 rounded mb-2 overflow-hidden w-full">
-                  <img src={profileData.banner_url || "https://via.placeholder.com/1200x300"} alt="banner" className="w-full h-full object-cover" />
-                  <div className="absolute left-4 bottom-[-36px]">
-                    <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-gray-900 shadow">
-                      <img src={profileData.avatar_url || "https://via.placeholder.com/160"} alt="avatar" className="w-full h-full object-cover" />
+        <aside className={`fixed inset-y-0 left-0 z-30 w-64 bg-gray-800 p-4 flex flex-col gap-4 transform transition-transform duration-300 md:relative md:translate-x-0 md:z-auto ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:block`}>
+          <h1 className="text-xl font-bold">Admin Portal</h1>
+          <nav className="flex flex-col gap-2">
+            <button onClick={() => handleTabChange("profile")} className={`px-4 py-2 rounded text-left ${activeTab === "profile" ? "bg-blue-600" : "bg-gray-700 hover:bg-gray-600"}`}>
+              Profile Manager
+            </button>
+            <button onClick={() => handleTabChange("posts")} className={`px-4 py-2 rounded text-left ${activeTab === "posts" ? "bg-blue-600" : "bg-gray-700 hover:bg-gray-600"}`}>
+              Post Manager
+            </button>
+            <button onClick={() => handleTabChange("messages")} className={`px-4 py-2 rounded text-left ${activeTab === "messages" ? "bg-blue-600" : "bg-gray-700 hover:bg-gray-600"}`}>
+              Messages
+            </button>
+            <button onClick={() => handleTabChange("analysis")} className={`px-4 py-2 rounded text-left ${activeTab === "analysis" ? "bg-blue-600" : "bg-gray-700 hover:bg-gray-600"}`}>
+              Analysis
+            </button>
+          </nav>
+          <button onClick={() => { logout(); navigate("/admin/login"); }} className="mt-auto flex items-center gap-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded"><LogOut size={18} /> Logout</button>
+        </aside>
+
+        <div className="flex-1 p-2 overflow-y-auto w-full">
+          <button 
+            className="md:hidden mb-2 p-2 bg-gray-800 rounded w-full"
+            onClick={() => setSidebarOpen(true)}
+          >
+            <Menu size={24} />
+          </button>
+
+          {message.text && (
+            <div className={`mb-2 p-3 rounded-lg w-full ${message.type === "success" ? "bg-green-500/20 border border-green-500 text-green-300" : "bg-red-500/20 border border-red-500 text-red-300"}`}>
+              {message.text}
+            </div>
+          )}
+
+          {/* PROFILE */}
+          {activeTab === "profile" && (
+            <div className="bg-gray-800 rounded-lg p-2 w-full">
+              <h2 className="text-2xl font-bold mb-2">Profile Manager</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 w-full">
+                <div className="md:col-span-2">
+                  <div className="relative h-36 bg-gray-700 rounded mb-2 overflow-hidden w-full">
+                    <img src={profileData.banner_url || "https://via.placeholder.com/1200x300"} alt="banner" className="w-full h-full object-cover" />
+                    <div className="absolute left-4 bottom-[-36px]">
+                      <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-gray-900 shadow">
+                        <img src={profileData.avatar_url || "https://via.placeholder.com/160"} alt="avatar" className="w-full h-full object-cover" />
+                      </div>
                     </div>
                   </div>
+
+                  <div className="mt-10">
+                    <label className="block text-gray-300 mb-1">Name</label>
+                    <input value={profileData.name} onChange={(e) => setProfileData((p) => ({ ...p, name: e.target.value }))} className="w-full px-4 py-2 rounded bg-gray-700 text-white border border-gray-600" />
+                    <label className="block text-gray-300 mt-2 mb-1">Handle</label>
+                    <input value={profileData.handle} onChange={(e) => setProfileData((p) => ({ ...p, handle: e.target.value }))} className="w-full px-4 py-2 rounded bg-gray-700 text-white border border-gray-600" />
+                    <label className="block text-gray-300 mt-2 mb-1">Bio</label>
+                    <textarea value={profileData.bio} onChange={(e) => setProfileData((p) => ({ ...p, bio: e.target.value }))} rows={5} className="w-full px-4 py-2 rounded bg-gray-700 text-white border border-gray-600" />
+                  </div>
                 </div>
 
-                <div className="mt-10">
-                  <label className="block text-gray-300 mb-1">Name</label>
-                  <input value={profileData.name} onChange={(e) => setProfileData((p) => ({ ...p, name: e.target.value }))} className="w-full px-4 py-2 rounded bg-gray-700 text-white border border-gray-600" />
-                  <label className="block text-gray-300 mt-2 mb-1">Handle</label>
-                  <input value={profileData.handle} onChange={(e) => setProfileData((p) => ({ ...p, handle: e.target.value }))} className="w-full px-4 py-2 rounded bg-gray-700 text-white border border-gray-600" />
-                  <label className="block text-gray-300 mt-2 mb-1">Bio</label>
-                  <textarea value={profileData.bio} onChange={(e) => setProfileData((p) => ({ ...p, bio: e.target.value }))} rows={5} className="w-full px-4 py-2 rounded bg-gray-700 text-white border border-gray-600" />
+                <div className="space-y-2">
+                  <div>
+                    <label className="block text-gray-300 mb-1">Avatar</label>
+                    <div className="mb-1">
+                      <img src={profileData.avatar_url || "https://via.placeholder.com/160"} alt="avatar" className="w-28 h-28 rounded-full object-cover mb-1" />
+                      <label className="inline-flex items-center gap-2 bg-blue-600 px-3 py-2 rounded cursor-pointer">
+                        <Upload size={16} /> Upload Avatar
+                        <input type="file" accept="image/*" onChange={handleAvatarPick} className="hidden" />
+                      </label>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-gray-300 mb-1">Banner</label>
+                    <div className="mb-1">
+                      <img src={profileData.banner_url || "https://via.placeholder.com/800x200"} alt="banner" className="w-full h-32 object-cover rounded mb-1" />
+                      <label className="inline-flex items-center gap-2 bg-blue-600 px-3 py-2 rounded cursor-pointer">
+                        <Upload size={16} /> Upload Banner
+                        <input type="file" accept="image/*" onChange={handleBannerPick} className="hidden" />
+                      </label>
+                    </div>
+                  </div>
+
+                  <div>
+                    <button onClick={handleProfileSave} disabled={loading} className="flex items-center gap-2 bg-green-600 hover:bg-green-700 px-6 py-2 rounded">
+                      <Save size={16} /> {loading ? "Saving..." : "Save Profile"}
+                    </button>
+                  </div>
                 </div>
               </div>
+            </div>
+          )}
 
-              <div className="space-y-2">
-                <div>
-                  <label className="block text-gray-300 mb-1">Avatar</label>
-                  <div className="mb-1">
-                    <img src={profileData.avatar_url || "https://via.placeholder.com/160"} alt="avatar" className="w-28 h-28 rounded-full object-cover mb-1" />
-                    <label className="inline-flex items-center gap-2 bg-blue-600 px-3 py-2 rounded cursor-pointer">
-                      <Upload size={16} /> Upload Avatar
-                      <input type="file" accept="image/*" onChange={handleAvatarPick} className="hidden" />
-                    </label>
+          {/* POSTS */}
+          {activeTab === "posts" && (
+            <div className="bg-gray-800 rounded-lg p-2 w-full">
+              <h2 className="text-2xl font-bold mb-2">Post Manager</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 w-full">
+                <div className="md:col-span-2">
+                  <div className="flex gap-2 mb-1">
+                    <button onClick={() => setCreatingPost((c) => ({ ...c, type: "text" }))} className={`px-3 py-1 rounded ${creatingPost.type === "text" ? "bg-blue-600" : "bg-gray-700"}`}>Text</button>
+                    <button onClick={() => setCreatingPost((c) => ({ ...c, type: "media" }))} className={`px-3 py-1 rounded ${creatingPost.type === "media" ? "bg-blue-600" : "bg-gray-700"}`}>Image/Video</button>
                   </div>
+
+                  {creatingPost.type === "text" ? (
+                    <textarea value={creatingPost.text} onChange={(e) => setCreatingPost((c) => ({ ...c, text: e.target.value }))} rows={4} className="w-full px-4 py-2 rounded bg-gray-700 text-white" placeholder="Text-only post content" />
+                  ) : (
+                    <>
+                      <input type="text" value={creatingPost.mediaUrlInput} onChange={(e) => setCreatingPost((c) => ({ ...c, mediaUrlInput: e.target.value }))} className="w-full px-4 py-2 rounded bg-gray-700 text-white mb-1" placeholder="Or paste media URL (optional)" />
+                      <div className="flex items-center gap-2">
+                        <label className="inline-flex items-center gap-2 bg-blue-600 px-3 py-2 rounded cursor-pointer">
+                          <Upload size={16} /> Upload Media
+                          <input type="file" accept="image/*,video/*" onChange={(e) => setCreatingPost((c) => ({ ...c, mediaFile: e.target.files?.[0] || null }))} className="hidden" />
+                        </label>
+                        {creatingPost.mediaFile && <div className="text-sm">{creatingPost.mediaFile.name}</div>}
+                      </div>
+                      <input type="text" value={creatingPost.caption} onChange={(e) => setCreatingPost((c) => ({ ...c, caption: e.target.value }))} className="w-full px-4 py-2 rounded bg-gray-700 text-white mt-1" placeholder="Caption for media" />
+                    </>
+                  )}
                 </div>
 
-                <div>
-                  <label className="block text-gray-300 mb-1">Banner</label>
-                  <div className="mb-1">
-                    <img src={profileData.banner_url || "https://via.placeholder.com/800x200"} alt="banner" className="w-full h-32 object-cover rounded mb-1" />
-                    <label className="inline-flex items-center gap-2 bg-blue-600 px-3 py-2 rounded cursor-pointer">
-                      <Upload size={16} /> Upload Banner
-                      <input type="file" accept="image/*" onChange={handleBannerPick} className="hidden" />
-                    </label>
-                  </div>
-                </div>
+                <div className="space-y-1">
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" checked={creatingPost.locked} onChange={(e) => setCreatingPost((c) => ({ ...c, locked: e.target.checked }))} />
+                    <span className="text-gray-300">Locked (requires subscription)</span>
+                  </label>
 
-                <div>
-                  <button onClick={handleProfileSave} disabled={loading} className="flex items-center gap-2 bg-green-600 hover:bg-green-700 px-6 py-2 rounded">
-                    <Save size={16} /> {loading ? "Saving..." : "Save Profile"}
+                  <button onClick={handleCreateNewPost} disabled={loading} className="flex items-center gap-2 bg-blue-600 px-4 py-2 rounded">
+                    <Plus size={16} /> {loading ? "Creating..." : "Create Post"}
                   </button>
                 </div>
               </div>
-            </div>
-          </div>
-        )}
 
-        {/* POSTS */}
-        {activeTab === "posts" && (
-          <div className="bg-gray-800 rounded-lg p-2 w-full">
-            <h2 className="text-2xl font-bold mb-2">Post Manager</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 w-full">
-              <div className="md:col-span-2">
-                <div className="flex gap-2 mb-1">
-                  <button onClick={() => setCreatingPost((c) => ({ ...c, type: "text" }))} className={`px-3 py-1 rounded ${creatingPost.type === "text" ? "bg-blue-600" : "bg-gray-700"}`}>Text</button>
-                  <button onClick={() => setCreatingPost((c) => ({ ...c, type: "media" }))} className={`px-3 py-1 rounded ${creatingPost.type === "media" ? "bg-blue-600" : "bg-gray-700"}`}>Image/Video</button>
-                </div>
-
-                {creatingPost.type === "text" ? (
-                  <textarea value={creatingPost.text} onChange={(e) => setCreatingPost((c) => ({ ...c, text: e.target.value }))} rows={4} className="w-full px-4 py-2 rounded bg-gray-700 text-white" placeholder="Text-only post content" />
-                ) : (
-                  <>
-                    <input type="text" value={creatingPost.mediaUrlInput} onChange={(e) => setCreatingPost((c) => ({ ...c, mediaUrlInput: e.target.value }))} className="w-full px-4 py-2 rounded bg-gray-700 text-white mb-1" placeholder="Or paste media URL (optional)" />
-                    <div className="flex items-center gap-2">
-                      <label className="inline-flex items-center gap-2 bg-blue-600 px-3 py-2 rounded cursor-pointer">
-                        <Upload size={16} /> Upload Media
-                        <input type="file" accept="image/*,video/*" onChange={(e) => setCreatingPost((c) => ({ ...c, mediaFile: e.target.files?.[0] || null }))} className="hidden" />
-                      </label>
-                      {creatingPost.mediaFile && <div className="text-sm">{creatingPost.mediaFile.name}</div>}
-                    </div>
-                    <input type="text" value={creatingPost.caption} onChange={(e) => setCreatingPost((c) => ({ ...c, caption: e.target.value }))} className="w-full px-4 py-2 rounded bg-gray-700 text-white mt-1" placeholder="Caption for media" />
-                  </>
-                )}
-              </div>
-
+              <h3 className="text-xl font-bold mt-2 mb-1">Existing Posts (latest 25)</h3>
               <div className="space-y-1">
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" checked={creatingPost.locked} onChange={(e) => setCreatingPost((c) => ({ ...c, locked: e.target.checked }))} />
-                  <span className="text-gray-300">Locked (requires subscription)</span>
-                </label>
+                {posts.length === 0 ? <p className="text-gray-400">No posts yet.</p> : posts.map((post, idx) => (
+                  <div key={post.id} className="bg-gray-700 rounded p-2 grid grid-cols-1 md:grid-cols-6 gap-2 items-start w-full">
+                    <div className="md:col-span-3">
+                      <input type="text" value={post.title || ""} onChange={(e) => setPosts((s) => { const c=[...s]; c[idx].title = e.target.value; return c; })} className="w-full px-3 py-2 rounded bg-gray-800 text-white mb-1" placeholder="Title" />
+                      <textarea value={post.text || ""} onChange={(e) => setPosts((s) => { const c=[...s]; c[idx].text = e.target.value; return c; })} rows={3} className="w-full px-3 py-2 rounded bg-gray-800 text-white mb-1" placeholder="Caption / text" />
+                      <div className="text-sm text-gray-400 mb-1">Date: {post.created_at ? new Date(post.created_at).toLocaleString() : "—"}</div>
+                    </div>
 
-                <button onClick={handleCreateNewPost} disabled={loading} className="flex items-center gap-2 bg-blue-600 px-4 py-2 rounded">
-                  <Plus size={16} /> {loading ? "Creating..." : "Create Post"}
+                    <div className="md:col-span-2">
+                      {post.media_url ? (
+                        <div className="mb-1">
+                          {String(post.media_url).includes(".mp4") || String(post.media_url).includes("video") ? (
+                            <video src={post.media_url} controls className="w-full h-40 object-cover rounded" />
+                          ) : (
+                            <img src={post.media_url} alt="post media" className="w-full h-40 object-cover rounded" />
+                          )}
+                        </div>
+                      ) : <div className="mb-1 w-full h-40 bg-gray-600 rounded flex items-center justify-center text-sm text-gray-300">No media</div> }
+
+                      <div className="flex items-center gap-2">
+                        <label className="inline-flex items-center gap-2 bg-blue-600 px-3 py-2 rounded cursor-pointer text-sm">
+                          <Upload size={14} /> Replace
+                          <input type="file" accept="image/*,video/*" onChange={(e) => handlePostMediaPick(idx, e)} className="hidden" />
+                        </label>
+                        <input type="text" value={post.media_url || ""} onChange={(e) => setPosts((s) => { const c=[...s]; c[idx].media_url = e.target.value; return c; })} className="px-3 py-1 rounded bg-gray-800 text-white flex-1 text-sm" placeholder="Or paste URL" />
+                      </div>
+
+                      <div className="mt-1 flex items-center gap-2">
+                        <label className="flex items-center gap-2 text-sm">
+                          <input type="checkbox" checked={post.locked === true || post.locked === "true"} onChange={(e) => setPosts((s) => { const c=[...s]; c[idx].locked = e.target.checked; return c; })} />
+                          <span>Locked</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="md:col-span-1 flex flex-col gap-1">
+                      <button onClick={() => handleSavePost(idx)} disabled={loading} className="bg-green-600 hover:bg-green-700 px-3 py-2 rounded text-sm">
+                        <Save size={14} /> {loading ? "Saving..." : "Save"}
+                      </button>
+                      <button onClick={() => handleDeletePost(post.id)} disabled={loading} className="bg-red-600 hover:bg-red-700 px-3 py-2 rounded text-sm">
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* MESSAGES */}
+          {activeTab === "messages" && (
+            <div className="bg-gray-800 rounded-lg p-2 w-full">
+              <div className="flex justify-between items-center mb-1">
+                <h2 className="text-2xl font-bold">Messages</h2>
+                <button onClick={fetchMessages} disabled={messagesLoading} className="bg-blue-600 px-4 py-2 rounded">
+                  {messagesLoading ? "Loading..." : "Refresh"}
                 </button>
               </div>
-            </div>
 
-            <h3 className="text-xl font-bold mt-2 mb-1">Existing Posts (latest 25)</h3>
-            <div className="space-y-1">
-              {posts.length === 0 ? <p className="text-gray-400">No posts yet.</p> : posts.map((post, idx) => (
-                <div key={post.id} className="bg-gray-700 rounded p-2 grid grid-cols-1 md:grid-cols-6 gap-2 items-start w-full">
-                  <div className="md:col-span-3">
-                    <input type="text" value={post.title || ""} onChange={(e) => setPosts((s) => { const c=[...s]; c[idx].title = e.target.value; return c; })} className="w-full px-3 py-2 rounded bg-gray-800 text-white mb-1" placeholder="Title" />
-                    <textarea value={post.text || ""} onChange={(e) => setPosts((s) => { const c=[...s]; c[idx].text = e.target.value; return c; })} rows={3} className="w-full px-3 py-2 rounded bg-gray-800 text-white mb-1" placeholder="Caption / text" />
-                    <div className="text-sm text-gray-400 mb-1">Date: {post.created_at ? new Date(post.created_at).toLocaleString() : "—"}</div>
-                  </div>
-
-                  <div className="md:col-span-2">
-                    {post.media_url ? (
-                      <div className="mb-1">
-                        {String(post.media_url).includes(".mp4") || String(post.media_url).includes("video") ? (
-                          <video src={post.media_url} controls className="w-full h-40 object-cover rounded" />
-                        ) : (
-                          <img src={post.media_url} alt="post media" className="w-full h-40 object-cover rounded" />
-                        )}
-                      </div>
-                    ) : <div className="mb-1 w-full h-40 bg-gray-600 rounded flex items-center justify-center text-sm text-gray-300">No media</div> }
-
-                    <div className="flex items-center gap-2">
-                      <label className="inline-flex items-center gap-2 bg-blue-600 px-3 py-2 rounded cursor-pointer text-sm">
-                        <Upload size={14} /> Replace
-                        <input type="file" accept="image/*,video/*" onChange={(e) => handlePostMediaPick(idx, e)} className="hidden" />
-                      </label>
-                      <input type="text" value={post.media_url || ""} onChange={(e) => setPosts((s) => { const c=[...s]; c[idx].media_url = e.target.value; return c; })} className="px-3 py-1 rounded bg-gray-800 text-white flex-1 text-sm" placeholder="Or paste URL" />
-                    </div>
-
-                    <div className="mt-1 flex items-center gap-2">
-                      <label className="flex items-center gap-2 text-sm">
-                        <input type="checkbox" checked={post.locked === true || post.locked === "true"} onChange={(e) => setPosts((s) => { const c=[...s]; c[idx].locked = e.target.checked; return c; })} />
-                        <span>Locked</span>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="md:col-span-1 flex flex-col gap-1">
-                    <button onClick={() => handleSavePost(idx)} disabled={loading} className="bg-green-600 hover:bg-green-700 px-3 py-2 rounded text-sm">
-                      <Save size={14} /> Save
-                    </button>
-                    <button onClick={() => handleDeletePost(post.id)} disabled={loading} className="bg-red-600 hover:bg-red-700 px-3 py-2 rounded text-sm">
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* MESSAGES */}
-        {activeTab === "messages" && (
-          <div className="bg-gray-800 rounded-lg p-2 w-full">
-            <div className="flex justify-between items-center mb-1">
-              <h2 className="text-2xl font-bold">Messages</h2>
-              <button onClick={fetchMessages} disabled={messagesLoading} className="bg-blue-600 px-4 py-2 rounded">
-                {messagesLoading ? "Loading..." : "Refresh"}
-              </button>
-            </div>
-
-            {messagesLoading ? (
-              <p className="text-gray-400">Loading...</p>
-            ) : conversations.length === 0 ? (
-              <p className="text-gray-400">No conversations yet.</p>
-            ) : (
-              <div className="flex flex-col md:flex-row gap-1 h-screen">
-                <div className={`bg-gray-700 rounded-lg p-2 overflow-y-auto ${showChat ? "hidden md:block" : "block"} flex-1 md:flex-none md:w-1/3`}>
-                  <h3 className="font-bold mb-1">Conversations</h3>
-                  {conversations.map((c) => (
-                    <button
-                      key={c.email}
-                      onClick={() => { setSelectedConversation(c.email); setShowChat(true); }}
-                      className={`w-full text-left p-2 rounded mb-1 ${selectedConversation === c.email ? 'bg-blue-600' : 'bg-gray-600 hover:bg-gray-500'}`}
-                    >
-                      <div className="text-sm font-semibold">{c.email}</div>
-                      <div className="text-xs text-gray-300 truncate">{c.last_message}</div>
-                      <div className="text-xs text-gray-400 mt-1">{c.count} messages • {c.last_time ? new Date(c.last_time).toLocaleString() : ""}</div>
-                    </button>
-                  ))}
-                </div>
-
-                <div className={`flex-1 flex flex-col bg-gray-700 rounded-lg overflow-hidden ${showChat ? "block" : "hidden md:flex"}`}>
-                  {selectedConversation ? (
-                    <>
-                      <div className="p-2 flex items-center gap-3">
-                        <button onClick={() => setShowChat(false)} className="md:hidden text-white mr-2">
-                          <ArrowLeft size={20} />
-                        </button>
-                        <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-sm text-white">{(selectedConversation || "U").slice(0,1)}</div>
-                        <div>
-                          <div className="text-sm font-semibold">{selectedConversation}</div>
-                        </div>
-                      </div>
-
-                      <div className="flex-1 p-2 overflow-y-auto" ref={messagesPanelRef}>
-                        {messages
-                          .filter((m) => m.from_email === selectedConversation)
-                          .sort((a,b) => new Date(a.created_at) - new Date(b.created_at))
-                          .map((msg) => (
-                            <div key={msg.id || `${msg.created_at}-${Math.random()}`} className={`mb-2 pb-2 last:border-0 ${msg.sender_type === "admin" ? 'flex justify-end' : 'flex justify-start'}`}>
-                              <div className={`max-w-[80%] p-2 rounded-lg ${msg.sender_type === "admin" ? 'bg-[#3498db] text-white' : 'bg-[#34495e] text-white'}`}>
-                                <div className="flex justify-between items-start mb-1">
-                                  <span className="text-xs text-gray-200">{msg.sender_type === "admin" ? profileData.name : selectedConversation}</span>
-                                  <span className="text-xs text-gray-300">{msg.created_at ? new Date(msg.created_at).toLocaleString() : ""}</span>
-                                </div>
-                                <p className="text-white">{msg.body || ""}</p>
-                                {msg.media_url && (
-                                  <div className="mt-1">
-                                    {msg.message_type === "audio" ? (
-                                      <audio src={msg.media_url} controls className="w-full" />
-                                    ) : msg.message_type === "video" ? (
-                                      <video src={msg.media_url} controls className="w-full rounded" />
-                                    ) : (
-                                      <img src={msg.media_url} alt="attachment" className="w-full rounded object-cover" />
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          ))
-                        }
-                      </div>
-
-                      <div className="p-2 bg-gray-800">
-                        <MessageInput
-                          onPreview={handlePreview}
-                        />
-                      </div>
-                    </>
-                  ) : (
-                    <p className="flex-1 flex items-center justify-center text-gray-400">Select a conversation to view</p>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {preview && (
-          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 overflow-y-auto">
-            <div className="bg-gray-800 p-4 rounded w-full max-w-md">
-              <h3 className="text-lg font-bold mb-2">Preview</h3>
-              {preview.type === "text" ? (
-                <p>{preview.text}</p>
-              ) : preview.type === "audio" ? (
-                <audio src={preview.url} controls className="w-full mb-2" />
-              ) : preview.type === "video" ? (
-                <video src={preview.url} controls className="w-full mb-2" />
+              {messagesLoading ? (
+                <p className="text-gray-400">Loading...</p>
+              ) : conversations.length === 0 ? (
+                <p className="text-gray-400">No conversations yet.</p>
               ) : (
-                <img src={preview.url} alt="preview" className="w-full mb-2" />
+                <div className="flex flex-col md:flex-row gap-1 h-screen">
+                  <div className={`bg-gray-700 rounded-lg p-2 overflow-y-auto ${showChat ? "hidden md:block" : "block"} flex-1 md:flex-none md:w-1/3`}>
+                    <h3 className="font-bold mb-1">Conversations</h3>
+                    {conversations.map((c) => (
+                      <button
+                        key={c.email}
+                        onClick={() => { setSelectedConversation(c.email); setShowChat(true); }}
+                        className={`w-full text-left p-2 rounded mb-1 ${selectedConversation === c.email ? 'bg-blue-600' : 'bg-gray-600 hover:bg-gray-500'}`}
+                      >
+                        <div className="text-sm font-semibold">{c.email}</div>
+                        <div className="text-xs text-gray-300 truncate">{c.last_message}</div>
+                        <div className="text-xs text-gray-400 mt-1">{c.count} messages • {c.last_time ? new Date(c.last_time).toLocaleString() : ""}</div>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className={`flex-1 flex flex-col bg-gray-700 rounded-lg overflow-hidden ${showChat ? "block" : "hidden md:flex"}`}>
+                    {selectedConversation ? (
+                      <>
+                        <div className="p-2 flex items-center gap-3">
+                          <button onClick={() => setShowChat(false)} className="md:hidden text-white mr-2">
+                            <ArrowLeft size={20} />
+                          </button>
+                          <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-sm text-white">{(selectedConversation || "U").slice(0,1)}</div>
+                          <div>
+                            <div className="text-sm font-semibold">{selectedConversation}</div>
+                          </div>
+                        </div>
+
+                        <div className="flex-1 p-2 overflow-y-auto" ref={messagesPanelRef}>
+                          {messages
+                            .filter((m) => m.from_email === selectedConversation)
+                            .sort((a,b) => new Date(a.created_at) - new Date(b.created_at))
+                            .map((msg) => (
+                              <div key={msg.id || `${msg.created_at}-${Math.random()}`} className={`mb-2 pb-2 last:border-0 ${msg.sender_type === "admin" ? 'flex justify-end' : 'flex justify-start'}`}>
+                                <div className={`max-w-[80%] p-2 rounded-lg ${msg.sender_type === "admin" ? 'bg-[#3498db] text-white' : 'bg-[#34495e] text-white'}`}>
+                                  <div className="flex justify-between items-start mb-1">
+                                    <span className="text-xs text-gray-200">{msg.sender_type === "admin" ? profileData.name : selectedConversation}</span>
+                                    <span className="text-xs text-gray-300">{msg.created_at ? new Date(msg.created_at).toLocaleString() : ""}</span>
+                                  </div>
+                                  <p className="text-white">{msg.body || ""}</p>
+                                  {msg.media_url && (
+                                    <div className="mt-1">
+                                      {msg.message_type === "audio" ? (
+                                        <audio src={msg.media_url} controls className="w-full" />
+                                      ) : msg.message_type === "video" ? (
+                                        <video src={msg.media_url} controls className="w-full rounded" />
+                                      ) : (
+                                        <img src={msg.media_url} alt="attachment" className="w-full rounded object-cover" />
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ))
+                          }
+                        </div>
+
+                        <div className="p-2 bg-gray-800">
+                          <MessageInput
+                            onPreview={handlePreview}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <p className="flex-1 flex items-center justify-center text-gray-400">Select a conversation to view</p>
+                    )}
+                  </div>
+                </div>
               )}
-              <input
-                type="text"
-                placeholder="Add caption..."
-                value={preview.caption}
-                onChange={(e) => setPreview({ ...preview, caption: e.target.value })}
-                className="w-full px-3 py-2 rounded bg-gray-700 text-white mb-2"
-              />
-              <div className="flex gap-2">
-                <button onClick={() => setPreview(null)} className="bg-red-600 px-4 py-2 rounded">Cancel</button>
-                <button onClick={handleSendFromPreview} className="bg-blue-600 px-4 py-2 rounded">Send</button>
+            </div>
+          )}
+
+          {preview && (
+            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 overflow-y-auto">
+              <div className="bg-gray-800 p-4 rounded w-full max-w-md">
+                <h3 className="text-lg font-bold mb-2">Preview</h3>
+                {preview.type === "text" ? (
+                  <p>{preview.text}</p>
+                ) : preview.type === "audio" ? (
+                  <audio src={preview.url} controls className="w-full mb-2" />
+                ) : preview.type === "video" ? (
+                  <video src={preview.url} controls className="w-full mb-2" />
+                ) : (
+                  <img src={preview.url} alt="preview" className="w-full mb-2" />
+                )}
+                <input
+                  type="text"
+                  placeholder="Add caption..."
+                  value={preview.caption}
+                  onChange={(e) => setPreview({ ...preview, caption: e.target.value })}
+                  className="w-full px-3 py-2 rounded bg-gray-700 text-white mb-2"
+                />
+                <div className="flex gap-2">
+                  <button onClick={() => setPreview(null)} className="bg-red-600 px-4 py-2 rounded">Cancel</button>
+                  <button onClick={handleSendFromPreview} className="bg-blue-600 px-4 py-2 rounded">Send</button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* ANALYSIS */}
-        {activeTab === "analysis" && (
-          <div className="bg-gray-800 rounded-lg p-2 w-full">
-            <div className="flex justify-between items-center mb-1">
-              <h2 className="text-2xl font-bold">Analysis</h2>
-              <button onClick={fetchAnalysisData} disabled={analysisLoading} className="bg-blue-600 px-4 py-2 rounded">
-                {analysisLoading ? "Loading..." : "Refresh"}
-              </button>
-            </div>
-
-            {analysisLoading ? (
-              <p className="text-gray-400">Loading analysis...</p>
-            ) : (
-              <div className="space-y-1">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-1">
-                  <div className="bg-gray-700 p-4 rounded">
-                    <h3 className="text-sm text-gray-300">Daily Revenue</h3>
-                    <p className="text-2xl font-bold">${analysisData.dailyRevenue.toFixed(2)}</p>
-                  </div>
-                  <div className="bg-gray-700 p-4 rounded">
-                    <h3 className="text-sm text-gray-300">Weekly Revenue</h3>
-                    <p className="text-2xl font-bold">${analysisData.weeklyRevenue.toFixed(2)}</p>
-                  </div>
-                  <div className="bg-gray-700 p-4 rounded">
-                    <h3 className="text-sm text-gray-300">Monthly Revenue</h3>
-                    <p className="text-2xl font-bold">${analysisData.monthlyRevenue.toFixed(2)}</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
-                  <div className="bg-gray-700 p-4 rounded">
-                    <h3 className="text-sm text-gray-300">Total Subscribers</h3>
-                    <p className="text-2xl font-bold">{analysisData.totalSubs}</p>
-                  </div>
-                  <div className="bg-gray-700 p-4 rounded">
-                    <h3 className="text-sm text-gray-300">Daily Jobs Completed</h3>
-                    <p className="text-2xl font-bold">{analysisData.dailyJobs}</p>
-                  </div>
-                </div>
-                <div className="bg-gray-700 p-4 rounded">
-                  <h3 className="text-sm text-gray-300 mb-1">Revenue Trend (Last 7 Days)</h3>
-                  <div className="h-40 bg-gray-600 rounded flex items-center justify-center text-gray-400">
-                    [Chart Placeholder - Integrate Chart.js or similar for bar graph]
-                  </div>
-                </div>
+          {/* ANALYSIS */}
+          {activeTab === "analysis" && (
+            <div className="bg-gray-800 rounded-lg p-2 w-full">
+              <div className="flex justify-between items-center mb-1">
+                <h2 className="text-2xl font-bold">Analysis</h2>
+                <button onClick={fetchAnalysisData} disabled={analysisLoading} className="bg-blue-600 px-4 py-2 rounded">
+                  {analysisLoading ? "Loading..." : "Refresh"}
+                </button>
               </div>
-            )}
-          </div>
-        )}
+
+              {analysisLoading ? (
+                <p className="text-gray-400">Loading analysis...</p>
+              ) : (
+                <div className="space-y-1">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-1">
+                    <div className="bg-gray-700 p-4 rounded">
+                      <h3 className="text-sm text-gray-300">Daily Revenue</h3>
+                      <p className="text-2xl font-bold">${analysisData.dailyRevenue.toFixed(2)}</p>
+                    </div>
+                    <div className="bg-gray-700 p-4 rounded">
+                      <h3 className="text-sm text-gray-300">Weekly Revenue</h3>
+                      <p className="text-2xl font-bold">${analysisData.weeklyRevenue.toFixed(2)}</p>
+                    </div>
+                    <div className="bg-gray-700 p-4 rounded">
+                      <h3 className="text-sm text-gray-300">Monthly Revenue</h3>
+                      <p className="text-2xl font-bold">${analysisData.monthlyRevenue.toFixed(2)}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+                    <div className="bg-gray-700 p-4 rounded">
+                      <h3 className="text-sm text-gray-300">Total Subscribers</h3>
+                      <p className="text-2xl font-bold">{analysisData.totalSubs}</p>
+                    </div>
+                    <div className="bg-gray-700 p-4 rounded">
+                      <h3 className="text-sm text-gray-300">Daily Jobs Completed</h3>
+                      <p className="text-2xl font-bold">{analysisData.dailyJobs}</p>
+                    </div>
+                  </div>
+                  <div className="bg-gray-700 p-4 rounded">
+                    <h3 className="text-sm text-gray-300 mb-1">Revenue Trend (Last 7 Days)</h3>
+                    <div className="h-40 bg-gray-600 rounded flex items-center justify-center text-gray-400">
+                      [Chart Placeholder - Integrate Chart.js or similar for bar graph]
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </LoadingSplash>
   );
 }
