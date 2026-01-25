@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Camera, Image as Gallery, Mic, Send, ArrowLeft } from "lucide-react";
 import supabase from "../supabaseclient";
-import LoadingSplash from "../component/LoadingSplash";
+import LoadingSplash from "../components/LoadingSplash";
 
 /**
  * Notes:
