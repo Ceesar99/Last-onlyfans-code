@@ -36,17 +36,14 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-/* fallback data kept similar to your original */
 const defaultCreator = {
   name: "Tayler Hills",
   avatar: "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760699188347-6c2tnk-images%20(9).jpeg",
   banner: "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760699444010-y1kcnl-Screenshot_20251017-121026.jpg",
   handle: "@taylerhillxxx",
-  bio:
-    "Hi 😊 I'm your favorite 19 year old & I love showing all of ME for your pleasure; ) you'll love it here! 🍆💦 Message me 👆 for daily nudes and videos in the feed ✨ S tapes, bjs , hjs , stripteases Dildo, vibrator, creampie, baby oil, roleplay 💦 Private messages with me ✨ NO SPAM OR ADS Turn on your your auto-renew on and get freebies xo",
+  bio: "Hi 😊 I'm your favorite 19 year old & I love showing all of ME for your pleasure; ) you'll love it here! 🍆💦 Message me 👆 for daily nudes and videos in the feed ✨ S tapes, bjs , hjs , stripteases Dildo, vibrator, creampie, baby oil, roleplay 💦 Private messages with me ✨ NO SPAM OR ADS Turn on your your auto-renew on and get freebies xo",
 };
 
-// Post captions and images arrays (keeping them as before)
 const UNLOCKED_POST_IMAGES = [
   "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760742247894-wuga4b-tayler-hills-onlyfans-7su4i-72.jpeg",
   "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760701141796-9roite-Screenshot_20251017-123357.jpg",
@@ -482,9 +479,6 @@ export default function SafeProfileMock() {
     };
   }, [navigate]);
 
-  // [REST OF THE CODE REMAINS EXACTLY THE SAME - ALL YOUR EXISTING FUNCTIONS AND JSX]
-  // ... (I'm preserving all your existing code below this point)
-
   const mediaItems = useMemo(() => {
     return posts
       .filter((p) => p.mediaSrc)
@@ -788,8 +782,451 @@ export default function SafeProfileMock() {
     <ErrorBoundary>
       <LoadingSplash loading={initialLoading}>
         <div className="min-h-screen bg-gray-100">
-          {/* ALL YOUR EXISTING JSX EXACTLY AS IS */}
-          {/* [I'm preserving your entire JSX structure from the original] */}
+          <div
+            className="w-full min-h-screen bg-white text-[15px] relative overflow-y-auto"
+            style={{ zoom: "100%" }}
+          >
+            {/* COVER */}
+            <div className="relative h-36 bg-gray-200 overflow-hidden">
+              <img src={creator.banner || "https://share.google/UeoTXYJKD7Fx6ZTLQ"} alt="banner" className="w-full h-full object-cover" />
+              <div className="absolute left-3 top-3 flex gap-4 text-white text-xs font-semibold">
+                <div className="flex flex-col items-center">
+                  <div className="font-bold leading-tight">3.1K</div>
+                  <div className="text-[10px] opacity-80 leading-tight">Posts</div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="font-bold leading-tight">2.9k</div>
+                  <div className="text-[10px] opacity-80 leading-tight">Media</div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="font-bold leading-tight">5.57M</div>
+                  <div className="text-[10px] opacity-80 leading-tight">Likes</div>
+                </div>
+              </div>
+            </div>
+
+            {/* PROFILE ROW */}
+            <div className="px-4 -mt-10 flex items-start">
+              <div className="relative">
+                <div className="w-20 h-20 rounded-full overflow-hidden shadow-md">
+                  <img src={creator.avatar || "https://share.google/pKUGamvuSpMSo70j1"} alt="avatar" className="w-full h-full object-cover" />
+                </div>
+                <div className="absolute right-0 bottom-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white" />
+              </div>
+            </div>
+
+            {/* ACTIONS ABOVE NAME ROW */}
+            <div className="px-4 -mt-2 flex justify-end">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setStarred(!starred);
+                  }}
+                  className="w-9 h-9 bg-white rounded-full border flex items-center justify-center shadow text-[#06b6d4]"
+                  aria-label="star profile"
+                >
+                  <svg className="w-4 h-4 text-[#06b6d4]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 17.3l6.18 3.9-1.64-7.03L21 9.24l-7.19-.62L12 2 10.19 8.62 3 9.24l4.46 4.93L5.82 21.2z" stroke="#06b6d4" strokeWidth="0.8" fill={starred ? "#06b6d4" : "none"} />
+                  </svg>
+                </button>
+
+                <button
+                  onClick={async () => {
+                    const href = typeof window !== "undefined" && window.location ? window.location.href : "https://example.com/profile";
+                    if (navigator.share) {
+                      try {
+                        await navigator.share({ title: document.title || "Profile", url: href });
+                        return;
+                      } catch (err) {
+                        /* ignore */
+                      }
+                    }
+                    try {
+                      await navigator.clipboard.writeText(href);
+                    } catch {
+                      console.error("Could not copy link");
+                    }
+                  }}
+                  className="w-9 h-9 bg-white rounded-full border flex items-center justify-center shadow text-[#06b6d4]"
+                  aria-label="share profile"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 12v7a1 1 0 001 1h14a1 1 0 001-1v-7" stroke="#06b6d4" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M16 6l-4-4-4 4" stroke="#06b6d4" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M12 2v14" stroke="#06b6d4" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* NAME + MESSAGE ROW */}
+            <div className="px-4 mt-1 flex items-center justify-between gap-3">
+              <div className="flex flex-col flex-1 min-w-0">
+                <div className="flex items-center gap-1">
+                  <h2 className="text-[18px] font-bold text-gray-900 truncate">{creator.name}</h2>
+                  <VerifiedBadge />
+                </div>
+                <div className="text-[13px] text-gray-500 truncate">{creator.handle} · Available now</div>
+              </div>
+
+              <button 
+                onClick={openMessageModal} 
+                className="bg-[#00AFF0] text-white text-sm font-semibold rounded-full px-6 py-2 shadow flex-shrink-0" 
+                aria-label="message creator"
+              >
+                Message
+              </button>
+            </div>
+
+            {/* BIO */}
+            <div className="px-4 border-t mt-3 pt-3">
+              <div className={`text-[14px] leading-snug text-gray-800 space-y-1 ${bioExpanded ? "" : "line-clamp-2"}`}>
+                <p>{creator.bio}</p>
+              </div>
+              <button onClick={() => setBioExpanded(!bioExpanded)} className="text-[13px] text-blue-500 underline mt-2 inline-block" aria-expanded={bioExpanded}>
+                {bioExpanded ? "Collapse" : "More info"}
+              </button>
+            </div>
+
+            {/* SUBSCRIPTION SECTION */}
+            <div className="px-4 mt-4">
+              <div className="bg-white p-4 rounded border">
+                <div className="text-[11px] font-semibold text-gray-500">SUBSCRIPTION</div>
+                <div className="mt-1 text-[14px] font-medium text-gray-800">Limited offer - Free trial for 30 days!</div>
+
+                <div className="mt-3 bg-gray-100 rounded p-3 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                    <img src={creator.avatar} alt="avatar bubble" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="text-[14px] text-gray-700 flex-1">I'm Always Hornyyyyyy 🤤💦</div>
+                </div>
+
+                <div className="mt-4">
+                  <button onClick={() => openSubModal("monthly")} className="w-full rounded-full py-3 font-semibold text-white bg-[#00AFF0] flex items-center justify-between px-4" aria-haspopup="dialog">
+                    <span>SUBSCRIBE</span>
+                    <span className="font-semibold text-white text-sm whitespace-nowrap">{freeSample.active ? "$5 / month" : "FREE for 30 days"}</span>
+                  </button>
+                </div>
+
+                <div className="text-[11px] text-gray-500 mt-2">Regular price $5 / month</div>
+
+                <div className="mt-4">
+                  <div className="text-[13px] font-semibold text-gray-500">SUBSCRIPTION BUNDLES</div>
+                  <div className="mt-2 space-y-2">
+                    <button onClick={() => openSubModal("3months")} className="w-full flex items-center justify-between rounded-full px-4 py-2 bg-[#00AFF0] text-white" aria-label="3 months plan">
+                      <div className="font-medium">3 MONTHS</div>
+                      <div className="font-semibold">$15 total</div>
+                    </button>
+                    <button onClick={() => openSubModal("6months")} className="w-full flex items-center justify-between rounded-full px-4 py-2 bg-[#00AFF0] text-white" aria-label="6 months plan">
+                      <div className="font-medium">6 MONTHS</div>
+                      <div className="font-semibold">$30 total</div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* TABS */}
+            <div className="mt-4 border-t">
+              <div className="grid grid-cols-2 bg-white text-[14px] font-medium">
+                <button onClick={() => setActiveTab("posts")} className={`py-3 ${activeTab === "posts" ? "border-b-2 border-black" : "text-gray-500"}`} aria-pressed={activeTab === "posts"}>
+                  {(2918 + posts.length).toLocaleString()} POSTS
+                </button>
+                <button onClick={() => setActiveTab("media")} className={`py-3 ${activeTab === "media" ? "border-b-2 border-black" : "text-gray-500"}`} aria-pressed={activeTab === "media"}>
+                  {(1939 + mediaItems.length).toLocaleString()} MEDIA
+                </button>
+              </div>
+            </div>
+
+            {/* TAB CONTENT */}
+            <div className="bg-white">
+              {activeTab === "posts" && (
+                <div className="space-y-4">
+                  {posts.map((p) => (
+                    <div key={p.id} className="border-b pb-0 last:border-none px-4">
+                      {/* Header: Avatar + Name + Date */}
+                      <div className="flex items-start gap-3 mb-2">
+                        <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                          <img src={creator.avatar} alt="avatar" className="w-full h-full object-cover" />
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <div className="flex flex-col">
+                              <div className="flex items-center gap-1">
+                                <div className="font-semibold text-[15px] text-gray-900">{creator.name}</div>
+                                <VerifiedBadge />
+                              </div>
+                              <div className="text-[13px] text-gray-500">{creator.handle}</div>
+                            </div>
+                            <div className="text-[13px] text-gray-500 flex items-center gap-1">
+                              {p.date}
+                              <span>···</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Caption */}
+                      <p className="text-[15px] text-gray-900 mb-2 px-0">{p.text}</p>
+
+                      {/* Image/Video - FULL WIDTH NO INDENT */}
+                      <div className="relative w-full mb-2">
+                        {isPostUnlocked(p.id) ? (
+                          <div
+                            className="rounded-lg overflow-hidden bg-gray-100"
+                            style={{ width: "100%", aspectRatio: "1614 / 843" }}
+                          >
+                            {p.mediaType === "video" ? (
+                              <div
+                                role="button"
+                                tabIndex={0}
+                                onClick={() =>
+                                  openViewer({
+                                    list: buildViewerListFromPosts,
+                                    index: buildViewerListFromPosts.findIndex((x) => x.id === p.id),
+                                  })
+                                }
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" || e.key === " ") {
+                                    openViewer({
+                                      list: buildViewerListFromPosts,
+                                      index: buildViewerListFromPosts.findIndex((x) => x.id === p.id),
+                                    });
+                                  }
+                                }}
+                                className="w-full h-full cursor-pointer flex items-center justify-center relative"
+                                aria-label={`Open video post ${p.id}`}
+                              >
+                                <video
+                                  src={p.mediaSrc}
+                                  className="w-full h-full object-cover"
+                                  preload="metadata"
+                                />
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <div className="bg-black bg-opacity-40 rounded-full p-3">
+                                    <svg
+                                      viewBox="0 0 24 24"
+                                      className="w-8 h-8 text-white"
+                                      fill="white"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path d="M8 5v14l11-7z" />
+                                    </svg>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <img
+                                src={p.mediaSrc}
+                                alt={`post media ${p.id}`}
+                                className="w-full h-full object-cover cursor-pointer"
+                                loading="lazy"
+                                onClick={() =>
+                                  openViewer({
+                                    list: buildViewerListFromPosts,
+                                    index: buildViewerListFromPosts.findIndex((x) => x.id === p.id),
+                                  })
+                                }
+                              />
+                            )}
+                          </div>
+                        ) : (
+                          <div
+                            className="relative bg-[#F8FAFB] rounded-lg overflow-hidden"
+                            style={{ width: "100%", aspectRatio: "1614 / 843" }}
+                          >
+                            <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
+                              <LockSVGStatic />
+                            </div>
+
+                            <button
+                              onClick={() => openSubModal("monthly")}
+                              className="absolute bg-[#00AFF0] text-white text-[14px] font-semibold rounded-full shadow-lg hover:bg-[#00AFF0]/90 transition-colors"
+                              style={{
+                                width: "calc(100% - 40px)",
+                                height: "40px",
+                                bottom: "16px",
+                                left: "20px",
+                                padding: "0 16px",
+                                zIndex: 50,
+                              }}
+                            >
+                              SUBSCRIBE TO SEE USER'S POSTS
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Icons Row - NO INDENT */}
+                      <div className="flex items-center gap-6 text-gray-500 mb-2">
+                        <button
+                          onClick={isPostUnlocked(p.id) ? () => toggleLike(p.id) : () => {}}
+                          className={isPostUnlocked(p.id) ? "" : "pointer-events-none opacity-50"}
+                          aria-label={`like post ${p.id}`}
+                        >
+                          <IconLike active={!!likedPosts[p.id]} />
+                        </button>
+
+                        <button
+                          onClick={isPostUnlocked(p.id) ? () => {} : () => {}}
+                          className={isPostUnlocked(p.id) ? "" : "pointer-events-none opacity-50"}
+                          aria-label={`comment on post ${p.id}`}
+                        >
+                          <IconComment />
+                        </button>
+
+                        <button
+                          onClick={isPostUnlocked(p.id) ? () => toggleTip(p.id) : () => {}}
+                          className={isPostUnlocked(p.id) ? "flex items-center gap-1" : "flex items-center gap-1 pointer-events-none opacity-50"}
+                          aria-label={`tip post ${p.id}`}
+                        >
+                          <IconTip active={!!tipAnimatingPosts[p.id]} />
+                          <span className="text-[13px]">{!!tipAnimatingPosts[p.id] ? <span className="animate-breathe text-[#0085C2]">SEND TIP</span> : "SEND TIP"}</span>
+                        </button>
+
+                        <button
+                          onClick={isPostUnlocked(p.id) ? () => toggleBookmark(p.id) : () => {}}
+                          className={isPostUnlocked(p.id) ? "ml-auto" : "ml-auto pointer-events-none opacity-50"}
+                          aria-label={`bookmark post ${p.id}`}
+                        >
+                          <IconBookmark active={!!bookmarkedPosts[p.id]} />
+                        </button>
+                      </div>
+
+                      {/* Likes Count */}
+                      <div className="text-[13px] text-gray-600 mb-2">{formatLikes(likeCounts[p.id] ?? p.likes)} likes</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {activeTab === "media" && (
+                <div>
+                  <div className="grid grid-cols-3 gap-1">
+                    {mediaItems.map((m) => {
+                      const locked = !isMediaUnlocked(m.id);
+                      return (
+                        <div key={m.id} className="relative bg-white aspect-square border border-transparent">
+                          {locked ? (
+                            <>
+                              <div className="absolute inset-0 bg-[#FBFCFD] flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                  <rect x="3" y="10" width="18" height="11" rx="2" stroke="#D1D7DB" strokeWidth="1.6" />
+                                  <path d="M7 10V7a5 5 0 0110 0v3" stroke="#D1D7DB" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              </div>
+                              <div className="absolute left-1 bottom-1 bg-white bg-opacity-90 text-[11px] px-1 rounded flex items-center gap-1 text-gray-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none">
+                                  <path d="M21 19V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14l4-3 3 3 5-4 6 4z" stroke="#B5BEC4" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                                <span>{m.count}</span>
+                              </div>
+
+                              {m.type === "video" && (
+                                <div className="absolute right-1 bottom-1 bg-white bg-opacity-90 text-[11px] px-1 rounded text-gray-600">▶ {m.duration}</div>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              {m.type === "image" ? (
+                                <img
+                                  src={m.src}
+                                  alt={`media ${m.id}`}
+                                  className="w-full h-full object-cover cursor-pointer"
+                                  loading="lazy"
+                                  onClick={() => openViewer({ list: buildViewerListFromMedia, index: buildViewerListFromMedia.findIndex((x) => x.id === m.id) })}
+                                />
+                              ) : (
+                                <div
+                                  className="w-full h-full flex items-center justify-center cursor-pointer relative"
+                                  onClick={() => openViewer({ list: buildViewerListFromMedia, index: buildViewerListFromMedia.findIndex((x) => x.id === m.id) })}
+                                  role="button"
+                                  tabIndex={0}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter" || e.key === " ") {
+                                      openViewer({ list: buildViewerListFromMedia, index: buildViewerListFromMedia.findIndex((x) => x.id === m.id) });
+                                    }
+                                  }}
+                                >
+                                  {videoThumbnails[m.id] ? (
+                                    <img
+                                      src={videoThumbnails[m.id]}
+                                      alt={`thumbnail for media ${m.id}`}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="bg-black w-full h-full flex items-center justify-center text-white text-xs">
+                                      VIDEO
+                                    </div>
+                                  )}
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="bg-black bg-opacity-40 rounded-full p-3">
+                                      <svg
+                                        viewBox="0 0 24 24"
+                                        className="w-8 h-8 text-white"
+                                        fill="white"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                      >
+                                        <path d="M8 5v14l11-7z" />
+                                      </svg>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                              {m.type === "video" && (
+                                <div className="absolute right-1 bottom-1 bg-black bg-opacity-60 text-white text-[11px] px-1 rounded">▶ {m.duration}</div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {!subscribed && (
+                    <div className="mt-4 px-2">
+                      <div className="border rounded p-3 bg-white">
+                        <button onClick={() => openSubModal("monthly")} className="w-full rounded-full py-3 font-semibold text-white bg-[#00AFF0]">
+                          SUBSCRIBE TO SEE USER'S MEDIA
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Viewer */}
+            {viewerOpen && viewerList && viewerList.length > 0 && (
+              <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-white p-4" role="dialog" aria-modal="true" aria-label={viewerList[viewerIndex]?.title || "Viewer"}>
+                <button onClick={closeViewer} aria-label="Close viewer" className="absolute top-6 right-6 z-30 bg-white bg-opacity-40 hover:bg-opacity-60 text-black rounded-full p-2">✕</button>
+
+                <div className="max-w-[95%] max-h-[95%] w-full h-full flex items-center justify-center overflow-auto">
+                  {viewerList[viewerIndex].mediaType === "image" ? (
+                    <img src={viewerList[viewerIndex].src} alt={viewerList[viewerIndex].title} className="max-w-full max-h-full object-contain" loading="eager" />
+                  ) : (
+                    <video src={viewerList[viewerIndex].src} className="max-w-full max-h-full" controls autoPlay playsInline preload="auto" />
+                  )}
+                </div>
+              </div>
+            )}
+
+            <ModalPortal isOpen={showSubModal} onClose={closeSubModal} zIndex={1000}>
+              <SubscriptionModal
+                creator={creator}
+                selectedPlan={selectedPlan}
+                onSelectPlan={(planId) => setSelectedPlan(planId)}
+                onClose={closeSubModal}
+                freeSampleActive={freeSample.active}
+              />
+            </ModalPortal>
+
+            <ModalPortal isOpen={showMessageModal} onClose={closeMessageModal} zIndex={1000}>
+              <MessageModal creator={creator} onClose={closeMessageModal} />
+            </ModalPortal>
+
+          </div>
         </div>
       </LoadingSplash>
       <style>{`
