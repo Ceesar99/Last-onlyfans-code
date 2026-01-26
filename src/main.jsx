@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import LoadingSplash from "./components/LoadingSplash";  // ✅ Clean import
-import ProtectedRoute from "./components/ProtectedRoute";
+import LoadingSplash from "./components/LoadingSplash";
+import ProtectedRoute from "./component/ProtectedRoute";
 import ProfilePage from "./Pages/ProfilePage";
 import MessagesPage from "./Pages/MessagesPage";
 import { AuthProvider } from "./context/Authcontext";
@@ -15,11 +15,29 @@ window.addEventListener("error", (event) => {
   console.log("🔥 Hook Error Source:", event.filename, event.lineno);
 });
 
-const root = createRoot(document.getElementById("root"));
+function App() {
+  const [appLoading, setAppLoading] = useState(true);
 
-root.render(
-  <React.StrictMode>
-    <LoadingSplash>  {/* ✅ Splash wraps EVERYTHING */}
+  useEffect(() => {
+    // Wait for window load event (all assets loaded)
+    const handleLoad = () => {
+      // Small delay to ensure everything is ready
+      setTimeout(() => {
+        setAppLoading(false);
+      }, 500);
+    };
+
+    if (document.readyState === 'complete') {
+      handleLoad();
+    } else {
+      window.addEventListener('load', handleLoad);
+    }
+
+    return () => window.removeEventListener('load', handleLoad);
+  }, []);
+
+  return (
+    <LoadingSplash loading={appLoading}>
       <AuthProvider>
         <BrowserRouter>
           <Routes>
@@ -33,5 +51,13 @@ root.render(
         </BrowserRouter>
       </AuthProvider>
     </LoadingSplash>
+  );
+}
+
+const root = createRoot(document.getElementById("root"));
+
+root.render(
+  <React.StrictMode>
+    <App />
   </React.StrictMode>
 );
