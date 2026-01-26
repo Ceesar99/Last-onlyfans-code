@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LoadingSplash from "./components/LoadingSplash";
-import ProtectedRoute from "./component/ProtectedRoute";
+import ProtectedRoute from "./components/ProtectedRoute";
 import ProfilePage from "./Pages/ProfilePage";
 import MessagesPage from "./Pages/MessagesPage";
 import { AuthProvider } from "./context/Authcontext";
