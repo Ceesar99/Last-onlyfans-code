@@ -1,4 +1,4 @@
-// MessagesPage.jsx - FIXED
+// MessagesPage.jsx - FIXED DISPLAY ISSUES
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Camera, Image as Gallery, Mic, Send, ArrowLeft } from "lucide-react";
@@ -71,7 +71,6 @@ export default function MessagesPage() {
   const realtimeChannelRef = useRef(null);
   const audioRef = useRef(null);
 
-  // FIX: Viewer state for full-screen media
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerMedia, setViewerMedia] = useState({ type: null, url: null });
 
@@ -327,10 +326,8 @@ export default function MessagesPage() {
     input.click();
   };
 
-  // FIX: Audio recording - ACTUALLY RECORDS ALL AUDIO
   const handleMic = async () => {
     if (isRecording) {
-      // Stop recording
       if (recorderRef.current) {
         recorderRef.current.recorder.stop();
         recorderRef.current.stream.getTracks().forEach((t) => t.stop());
@@ -339,7 +336,6 @@ export default function MessagesPage() {
       setIsRecording(false);
       setRecordingTime(0);
     } else {
-      // Start recording
       setIsRecording(true);
       setRecordingTime(0);
       chunksRef.current = [];
@@ -375,9 +371,8 @@ export default function MessagesPage() {
           setIsRecording(false);
         };
         
-        recorder.start(100); // Collect data every 100ms to capture ALL audio
+        recorder.start(100);
         
-        // Timer
         timerRef.current = setInterval(() => {
           setRecordingTime((t) => t + 1);
         }, 1000);
@@ -389,7 +384,6 @@ export default function MessagesPage() {
     }
   };
 
-  // FIX: Delete message
   const handleDeleteMessage = async (messageId) => {
     if (!confirm("Delete this message?")) return;
     
@@ -409,7 +403,6 @@ export default function MessagesPage() {
     }
   };
 
-  // FIX: Open media in full screen viewer
   const openViewer = (type, url) => {
     setViewerMedia({ type, url });
     setViewerOpen(true);
@@ -476,24 +469,51 @@ export default function MessagesPage() {
                   <div className={`text-sm px-4 py-2 max-w-[75%] rounded-2xl break-words ${isMe ? "bg-[#00AFF0] text-white" : "bg-white text-gray-800 border"}`}>
                     {m.body || m.subject || ""}
                     
-                    {/* FIX: Media display with click handlers */}
                     {m.media_url && (
                       <div className="mt-1">
+                        {/* FIX: Audio - Proper player UI */}
                         {m.message_type === "audio" ? (
-                          <audio src={m.media_url} controls className="w-full" />
-                        ) : m.message_type === "video" ? (
-                          <video 
-                            src={m.media_url} 
-                            className="max-w-full rounded cursor-pointer" 
+                          <div className="bg-white rounded-lg p-2 mt-1">
+                            <audio 
+                              src={m.media_url} 
+                              controls 
+                              className="w-full"
+                              style={{ maxWidth: '250px' }}
+                            />
+                          </div>
+                        ) : 
+                        
+                        /* FIX: Video - Show play button overlay, NO border */
+                        m.message_type === "video" ? (
+                          <div 
+                            className="relative cursor-pointer mt-1"
                             onClick={() => openViewer("video", m.media_url)}
-                            preload="metadata"
-                          />
-                        ) : m.message_type === "image" ? (
+                          >
+                            <video 
+                              src={m.media_url} 
+                              className="max-w-full rounded object-cover"
+                              preload="metadata"
+                              style={{ maxHeight: '400px' }}
+                            />
+                            {/* Play button overlay */}
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="bg-black bg-opacity-60 rounded-full p-4">
+                                <svg className="w-12 h-12 text-white" fill="white" viewBox="0 0 24 24">
+                                  <path d="M8 5v14l11-7z" />
+                                </svg>
+                              </div>
+                            </div>
+                          </div>
+                        ) : 
+                        
+                        /* FIX: Image - NO border */
+                        m.message_type === "image" ? (
                           <img 
                             src={m.media_url} 
                             alt="attachment" 
-                            className="max-w-full rounded object-cover cursor-pointer" 
+                            className="max-w-full rounded object-cover cursor-pointer mt-1" 
                             onClick={() => openViewer("image", m.media_url)}
+                            style={{ maxHeight: '400px' }}
                           />
                         ) : null}
                       </div>
@@ -504,7 +524,6 @@ export default function MessagesPage() {
                     <span>{m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}</span>
                     {isMe && <span>{m.message_type === 'text' ? (m.id ? '✓' : '...') : ''}</span>}
                     
-                    {/* FIX: Delete button */}
                     {isMe && m.id && (
                       <button 
                         onClick={() => handleDeleteMessage(m.id)} 
@@ -530,7 +549,6 @@ export default function MessagesPage() {
           recordingTime={recordingTime}
         />
 
-        {/* FIX: Full-screen media viewer */}
         {viewerOpen && (
           <div 
             className="fixed inset-0 bg-black z-50 flex items-center justify-center"
