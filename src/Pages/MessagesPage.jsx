@@ -1,4 +1,4 @@
-// MessagesPage.jsx - FIXED DISPLAY ISSUES
+// MessagesPage.jsx - FINAL FIX
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Camera, Image as Gallery, Mic, Send, ArrowLeft } from "lucide-react";
@@ -74,6 +74,10 @@ export default function MessagesPage() {
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerMedia, setViewerMedia] = useState({ type: null, url: null });
 
+  // FIX 2: Long-press menu
+  const [contextMenu, setContextMenu] = useState({ show: false, x: 0, y: 0, messageId: null, messageBody: null });
+  const longPressTimerRef = useRef(null);
+
   const getCreatorHandle = () => {
     if (typeof window === "undefined") return null;
     const h = window.localStorage.getItem("creator_handle") || null;
@@ -106,6 +110,15 @@ export default function MessagesPage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Close context menu when clicking outside
+  useEffect(() => {
+    const handleClick = () => setContextMenu({ show: false, x: 0, y: 0, messageId: null, messageBody: null });
+    if (contextMenu.show) {
+      document.addEventListener('click', handleClick);
+      return () => document.removeEventListener('click', handleClick);
+    }
+  }, [contextMenu.show]);
 
   const loadCreatorAndMessages = async () => {
     setLoading(true);
@@ -385,8 +398,6 @@ export default function MessagesPage() {
   };
 
   const handleDeleteMessage = async (messageId) => {
-    if (!confirm("Delete this message?")) return;
-    
     try {
       const { error } = await supabase
         .from("messages")
@@ -397,9 +408,36 @@ export default function MessagesPage() {
 
       setMessages((prev) => prev.filter((m) => m.id !== messageId));
       messageIdsRef.current.delete(String(messageId));
+      setContextMenu({ show: false, x: 0, y: 0, messageId: null, messageBody: null });
     } catch (err) {
       console.error("Delete error:", err);
       alert("Failed to delete message");
+    }
+  };
+
+  const handleCopyMessage = (text) => {
+    navigator.clipboard.writeText(text || "");
+    setContextMenu({ show: false, x: 0, y: 0, messageId: null, messageBody: null });
+  };
+
+  // FIX 2: Long-press handlers
+  const handleLongPressStart = (e, messageId, messageBody) => {
+    e.preventDefault();
+    longPressTimerRef.current = setTimeout(() => {
+      const rect = e.target.getBoundingClientRect();
+      setContextMenu({
+        show: true,
+        x: rect.left,
+        y: rect.top - 10,
+        messageId,
+        messageBody
+      });
+    }, 500); // 500ms long press
+  };
+
+  const handleLongPressEnd = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
     }
   };
 
@@ -426,7 +464,7 @@ export default function MessagesPage() {
       style={{ display: "inline-block" }}
     >
       <image
-        href="data:image/png;base64,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"
+        href="data:image/png;base64,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"
         x="0"
         y="0"
         width="33"
@@ -466,36 +504,52 @@ export default function MessagesPage() {
               const isMe = (m.sender_type === "subscriber" && (m.from_email === userEmail));
               return (
                 <div key={m.id || `${i}-${m.created_at}`} className={`mb-3 flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                  <div className={`text-sm px-4 py-2 max-w-[75%] rounded-2xl break-words ${isMe ? "bg-[#00AFF0] text-white" : "bg-white text-gray-800 border"}`}>
-                    {m.body || m.subject || ""}
+                  <div 
+                    className={`text-sm max-w-[75%] ${
+                      m.media_url ? '' : `px-4 py-2 rounded-2xl break-words ${isMe ? "bg-[#00AFF0] text-white" : "bg-white text-gray-800 border"}`
+                    }`}
+                    onTouchStart={(e) => handleLongPressStart(e, m.id, m.body)}
+                    onTouchEnd={handleLongPressEnd}
+                    onMouseDown={(e) => handleLongPressStart(e, m.id, m.body)}
+                    onMouseUp={handleLongPressEnd}
+                    onMouseLeave={handleLongPressEnd}
+                  >
+                    {/* Text content */}
+                    {(m.body || m.subject) && !m.media_url && (
+                      <div>{m.body || m.subject || ""}</div>
+                    )}
                     
+                    {/* Media content */}
                     {m.media_url && (
-                      <div className="mt-1">
-                        {/* FIX: Audio - Proper player UI */}
+                      <div>
+                        {/* FIX 3: Audio - proper player */}
                         {m.message_type === "audio" ? (
-                          <div className="bg-white rounded-lg p-2 mt-1">
+                          <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-2">
+                            <svg className="w-5 h-5 text-[#00AFF0]" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z"/>
+                            </svg>
                             <audio 
                               src={m.media_url} 
                               controls 
-                              className="w-full"
-                              style={{ maxWidth: '250px' }}
+                              preload="metadata"
+                              className="flex-1"
+                              style={{ height: '32px', maxWidth: '250px' }}
                             />
                           </div>
                         ) : 
                         
-                        /* FIX: Video - Show play button overlay, NO border */
+                        /* FIX 1: Video - NO border/background */
                         m.message_type === "video" ? (
                           <div 
-                            className="relative cursor-pointer mt-1"
+                            className="relative cursor-pointer"
                             onClick={() => openViewer("video", m.media_url)}
                           >
                             <video 
                               src={m.media_url} 
-                              className="max-w-full rounded object-cover"
+                              className="rounded object-cover"
                               preload="metadata"
-                              style={{ maxHeight: '400px' }}
+                              style={{ maxHeight: '400px', display: 'block' }}
                             />
-                            {/* Play button overlay */}
                             <div className="absolute inset-0 flex items-center justify-center">
                               <div className="bg-black bg-opacity-60 rounded-full p-4">
                                 <svg className="w-12 h-12 text-white" fill="white" viewBox="0 0 24 24">
@@ -506,32 +560,22 @@ export default function MessagesPage() {
                           </div>
                         ) : 
                         
-                        /* FIX: Image - NO border */
+                        /* FIX 1: Image - NO border/background */
                         m.message_type === "image" ? (
                           <img 
                             src={m.media_url} 
                             alt="attachment" 
-                            className="max-w-full rounded object-cover cursor-pointer mt-1" 
+                            className="rounded object-cover cursor-pointer" 
                             onClick={() => openViewer("image", m.media_url)}
-                            style={{ maxHeight: '400px' }}
+                            style={{ maxHeight: '400px', display: 'block' }}
                           />
                         ) : null}
                       </div>
                     )}
                   </div>
                   
-                  <div className="text-[10px] text-gray-500 mt-1 flex items-center gap-2">
-                    <span>{m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}</span>
-                    {isMe && <span>{m.message_type === 'text' ? (m.id ? '✓' : '...') : ''}</span>}
-                    
-                    {isMe && m.id && (
-                      <button 
-                        onClick={() => handleDeleteMessage(m.id)} 
-                        className="text-red-500 hover:text-red-700 text-xs"
-                      >
-                        Delete
-                      </button>
-                    )}
+                  <div className="text-[10px] text-gray-500 mt-1">
+                    {m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}
                   </div>
                 </div>
               );
@@ -539,6 +583,34 @@ export default function MessagesPage() {
           )}
           <div ref={messagesEndRef} />
         </div>
+
+        {/* FIX 2: Context menu */}
+        {contextMenu.show && (
+          <div 
+            className="fixed bg-white border shadow-lg rounded-lg py-2 z-50"
+            style={{ 
+              top: `${contextMenu.y}px`, 
+              left: `${contextMenu.x}px`,
+              minWidth: '150px'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {contextMenu.messageBody && (
+              <button 
+                onClick={() => handleCopyMessage(contextMenu.messageBody)}
+                className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+              >
+                Copy
+              </button>
+            )}
+            <button 
+              onClick={() => handleDeleteMessage(contextMenu.messageId)}
+              className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-red-600"
+            >
+              Delete
+              </button>
+          </div>
+        )}
 
         <MessageInput
           onSend={(text) => handleSend(text)}
@@ -584,4 +656,4 @@ export default function MessagesPage() {
       </div>
     </LoadingSplash>
   );
-}
+  }
