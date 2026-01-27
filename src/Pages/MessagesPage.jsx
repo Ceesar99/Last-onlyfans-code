@@ -1,331 +1,439 @@
-// MessagesPage.jsx - FIXED VIDEO & AUDIO
-import React, { useEffect, useRef, useState } from "react";
+// MessagesPage.jsx - FIXED
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Camera, Image as Gallery, Mic, Send, ArrowLeft } from "lucide-react";
 import supabase from "../supabaseclient";
 import LoadingSplash from "../components/LoadingSplash";
 
-export default function MessagesPage() {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState("");
-  const [creator, setCreator] = useState({ handle: "", name: "", avatar_url: "" });
-  const [userEmail, setUserEmail] = useState("");
+const NOTIFY_SOUND_BASE64 =
+  "data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCA...";
 
-  // Media states
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0);
-  const recorderRef = useRef(null);
-  const chunksRef = useRef([]);
-  const timerRef = useRef(null);
-  const messagesPanelRef = useRef(null);
-  const messageIdsRef = useRef(new Set());
+function MessageInput({ onSend, onCamera, onGallery, onMic, isRecording, recordingTime }) {
+  const [text, setText] = useState("");
 
-  useEffect(() => {
-    loadCreatorAndMessages();
-  }, []);
-
-  const loadCreatorAndMessages = async () => {
-    try {
-      const storedHandle = localStorage.getItem("creator_handle");
-      const storedEmail = localStorage.getItem("user_email");
-
-      if (!storedHandle || !storedEmail) {
-        navigate("/");
-        return;
-      }
-
-      setUserEmail(storedEmail);
-      const handle = storedHandle.replace(/^@/, "");
-
-      // Load creator profile
-      const { data: creatorData } = await supabase
-        .from("creator_profiles")
-        .select("handle, name, avatar_url")
-        .eq("handle", handle)
-        .maybeSingle();
-
-      if (creatorData) {
-        setCreator({
-          handle: creatorData.handle?.startsWith("@") ? creatorData.handle : `@${creatorData.handle}`,
-          name: creatorData.name || "Creator",
-          avatar_url: creatorData.avatar_url || "",
-        });
-      }
-
-      // Load messages
-      const { data: messagesData } = await supabase
-        .from("messages")
-        .select("*")
-        .eq("creator_handle", handle)
-        .eq("from_email", storedEmail)
-        .order("created_at", { ascending: true });
-
-      if (messagesData) {
-        setMessages(messagesData);
-        messagesData.forEach((msg) => messageIdsRef.current.add(msg.id));
-      }
-
-      // Setup realtime
-      const channel = supabase
-        .channel(`messages-realtime-subscriber-${handle}-${storedEmail}`)
-        .on(
-          "postgres_changes",
-          { event: "INSERT", schema: "public", table: "messages" },
-          (payload) => {
-            const newMsg = payload.new;
-            if (
-              newMsg.creator_handle === handle &&
-              newMsg.from_email === storedEmail &&
-              !messageIdsRef.current.has(newMsg.id)
-            ) {
-              messageIdsRef.current.add(newMsg.id);
-              setMessages((prev) => [...prev, newMsg]);
-
-              // Browser notification for admin messages
-              if (newMsg.sender_type === "admin" && document.hidden) {
-                if (Notification.permission === "granted") {
-                  new Notification("New message from " + (creatorData?.name || "Creator"), {
-                    body: newMsg.body || "New media",
-                    icon: creatorData?.avatar_url || "",
-                  });
-                }
-              }
-
-              // Scroll to bottom
-              setTimeout(() => {
-                if (messagesPanelRef.current) {
-                  messagesPanelRef.current.scrollTop = messagesPanelRef.current.scrollHeight;
-                }
-              }, 100);
-            }
-          }
-        )
-        .subscribe();
-
-      // Request notification permission
-      if (Notification.permission === "default") {
-        Notification.requestPermission();
-      }
-
-      setLoading(false);
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    } catch (err) {
-      console.error("Load error:", err);
-      setLoading(false);
-    }
-  };
-
-  // FIXED: Text message send
-  const handleSendText = async () => {
-    if (!newMessage.trim()) return;
-
-    try {
-      const handle = creator.handle.replace(/^@/, "");
-      const { data, error } = await supabase
-        .from("messages")
-        .insert([
-          {
-            creator_handle: handle,
-            from_email: userEmail,
-            body: newMessage,
-            sender_type: "subscriber",
-            message_type: "text",
-            created_at: new Date().toISOString(),
-          },
-        ])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      if (data && !messageIdsRef.current.has(data.id)) {
-        messageIdsRef.current.add(data.id);
-        setMessages((prev) => [...prev, data]);
-      }
-
-      setNewMessage("");
-      setTimeout(() => {
-        if (messagesPanelRef.current) {
-          messagesPanelRef.current.scrollTop = messagesPanelRef.current.scrollHeight;
-        }
-      }, 100);
-    } catch (err) {
-      console.error("Send error:", err);
-      alert("Failed to send message");
-    }
-  };
-
-  // FIXED: Camera (image capture)
-  const handleCamera = () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.capture = "user";
-    input.onchange = async (e) => {
-      const file = e.target.files?.[0];
-      if (file) {
-        await uploadAndSendMedia(file, "image");
-      }
-    };
-    input.click();
-  };
-
-  // FIXED: Gallery (image/video upload)
-  const handleGallery = () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*,video/*";
-    input.onchange = async (e) => {
-      const file = e.target.files?.[0];
-      if (file) {
-        const type = file.type.startsWith("image") ? "image" : "video";
-        await uploadAndSendMedia(file, type);
-      }
-    };
-    input.click();
-  };
-
-  // FIXED: Audio recording
-  const handleStartMic = async () => {
-    setIsRecording(true);
-    setRecordingTime(0);
-    chunksRef.current = [];
-
-    if (timerRef.current) clearInterval(timerRef.current);
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream, {
-        mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4'
-      });
-      
-      recorderRef.current = { recorder, stream };
-
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          chunksRef.current.push(e.data);
-        }
-      };
-
-      recorder.onstop = async () => {
-        const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
-        stream.getTracks().forEach((track) => track.stop());
-        recorderRef.current = null;
-        chunksRef.current = [];
-        
-        // Upload audio
-        await uploadAndSendMedia(blob, "audio");
-      };
-
-      recorder.start(100); // Collect data every 100ms
-
-      // Start timer
-      timerRef.current = setInterval(() => {
-        setRecordingTime((t) => t + 1);
-      }, 1000);
-    } catch (err) {
-      console.error("Mic error:", err);
-      alert("Microphone access denied or unavailable");
-      setIsRecording(false);
-    }
-  };
-
-  const handleStopMic = () => {
-    if (recorderRef.current && isRecording) {
-      recorderRef.current.recorder.stop();
-      clearInterval(timerRef.current);
-      setIsRecording(false);
-      setRecordingTime(0);
-    }
-  };
-
-  // FIXED: Upload media to Supabase Storage
-  const uploadAndSendMedia = async (file, type) => {
-    try {
-      const handle = creator.handle.replace(/^@/, "");
-      const timestamp = Date.now();
-      const randomStr = Math.random().toString(36).substring(7);
-      
-      let ext = "";
-      if (type === "audio") ext = "webm";
-      else if (type === "image") ext = "jpg";
-      else if (type === "video") ext = "mp4";
-
-      const fileName = `${timestamp}-${randomStr}.${ext}`;
-      const filePath = `messages/${fileName}`;
-
-      // Create File object if Blob
-      const fileToUpload = file instanceof Blob && !file.name 
-        ? new File([file], fileName, { type: file.type })
-        : file;
-
-      // Upload to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("uploads")
-        .upload(filePath, fileToUpload, {
-          cacheControl: "3600",
-          upsert: false,
-        });
-
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from("uploads")
-        .getPublicUrl(filePath);
-
-      const mediaUrl = urlData.publicUrl;
-
-      // Insert message
-      const { data, error } = await supabase
-        .from("messages")
-        .insert([
-          {
-            creator_handle: handle,
-            from_email: userEmail,
-            body: "",
-            sender_type: "subscriber",
-            message_type: type,
-            media_url: mediaUrl,
-            created_at: new Date().toISOString(),
-          },
-        ])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      if (data && !messageIdsRef.current.has(data.id)) {
-        messageIdsRef.current.add(data.id);
-        setMessages((prev) => [...prev, data]);
-      }
-
-      setTimeout(() => {
-        if (messagesPanelRef.current) {
-          messagesPanelRef.current.scrollTop = messagesPanelRef.current.scrollHeight;
-        }
-      }, 100);
-    } catch (err) {
-      console.error("Upload error:", err);
-      alert(`Failed to send ${type}`);
-    }
+  const handleSend = () => {
+    if (!text.trim()) return;
+    onSend(text.trim());
+    setText("");
   };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSendText();
+      handleSend();
     }
   };
 
+  return (
+    <div className="flex items-center gap-2 p-3 border-t bg-white sticky bottom-0">
+      <button onClick={onCamera} className="text-[#00AFF0] hover:text-[#0099CC]">
+        <Camera size={22} />
+      </button>
+      <button onClick={onGallery} className="text-[#00AFF0] hover:text-[#0099CC]">
+        <Gallery size={22} />
+      </button>
+      <button onClick={onMic} className={isRecording ? "text-red-500" : "text-[#00AFF0] hover:text-[#0099CC]"}>
+        <Mic size={22} />
+      </button>
+      {isRecording && <span className="text-red-500 text-xs">{recordingTime}s</span>}
+      <input
+        className="flex-1 border rounded-full px-3 py-2 text-sm focus:outline-none focus:border-[#00AFF0]"
+        placeholder="Write a message..."
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onKeyDown={handleKeyDown}
+      />
+      <button
+        onClick={handleSend}
+        className="p-2 rounded-full text-white bg-[#00AFF0] hover:bg-[#0099CC] disabled:bg-gray-300 disabled:cursor-not-allowed"
+        disabled={!text.trim()}
+      >
+        <Send size={18} />
+      </button>
+    </div>
+  );
+}
+
+export default function MessagesPage() {
+  const navigate = useNavigate();
+  const [messages, setMessages] = useState([]);
+  const [creator, setCreator] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const recorderRef = useRef(null);
+  const chunksRef = useRef([]);
+  const timerRef = useRef(null);
+
+  const messagesEndRef = useRef(null);
+  const messageIdsRef = useRef(new Set());
+  const realtimeChannelRef = useRef(null);
+  const audioRef = useRef(null);
+
+  // FIX: Viewer state for full-screen media
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerMedia, setViewerMedia] = useState({ type: null, url: null });
+
+  const getCreatorHandle = () => {
+    if (typeof window === "undefined") return null;
+    const h = window.localStorage.getItem("creator_handle") || null;
+    return h ? h.replace(/^@/, "") : null;
+  };
+  const getUserEmail = () => {
+    if (typeof window === "undefined") return null;
+    return window.localStorage.getItem("user_email") || null;
+  };
+
+  useEffect(() => {
+    audioRef.current = new Audio(NOTIFY_SOUND_BASE64);
+    (async () => {
+      await loadCreatorAndMessages();
+      setupRealtime();
+      if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
+        try { Notification.requestPermission(); } catch (e) {}
+      }
+    })();
+
+    return () => {
+      if (realtimeChannelRef.current) {
+        try { supabase.removeChannel(realtimeChannelRef.current); } catch (e) {}
+        realtimeChannelRef.current = null;
+      }
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const loadCreatorAndMessages = async () => {
+    setLoading(true);
+    try {
+      const handle = getCreatorHandle();
+      const userEmail = getUserEmail();
+
+      if (!handle) {
+        console.warn("No creator_handle in localStorage.");
+        setLoading(false);
+        return;
+      }
+
+      const { data: profileData, error: profileError } = await supabase
+        .from("creator_profiles")
+        .select("id, handle, name, avatar_url")
+        .eq("handle", handle)
+        .maybeSingle();
+
+      if (!profileError && profileData) {
+        setCreator({
+          name: profileData.name || "Tayler Hills",
+          handle: profileData.handle || handle,
+          avatar: profileData.avatar_url || "https://hyaulauextrzdaykkqre.supabase.co/storage/v1/object/public/uploads/posts/1760699188347-6c2tnk-images%20(9).jpeg",
+          id: profileData.id,
+        });
+      } else {
+        setCreator({ name: "Tayler Hills", handle });
+      }
+
+      const { data: messagesData, error: messagesError } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("creator_handle", handle)
+        .in("from_email", userEmail ? [userEmail] : [])
+        .order("created_at", { ascending: true })
+        .limit(500);
+
+      if (messagesError) {
+        console.error("Failed to fetch messages:", messagesError);
+      } else if (messagesData) {
+        messageIdsRef.current = new Set();
+        const unique = [];
+        for (const m of messagesData) {
+          if (m.id && messageIdsRef.current.has(String(m.id))) continue;
+          if (m.id) messageIdsRef.current.add(String(m.id));
+          unique.push(m);
+        }
+        setMessages(unique);
+      }
+    } catch (err) {
+      console.error("loadCreatorAndMessages error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const setupRealtime = () => {
+    try {
+      const handle = getCreatorHandle();
+      const userEmail = getUserEmail();
+      if (!handle || !userEmail) return;
+
+      if (realtimeChannelRef.current) {
+        try { supabase.removeChannel(realtimeChannelRef.current); } catch (e) {}
+        realtimeChannelRef.current = null;
+      }
+
+      const channel = supabase
+        .channel(`messages-realtime-subscriber-${handle}-${userEmail}`)
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "messages" },
+          (payload) => {
+            const newMsg = payload.new;
+            if (!newMsg) return;
+            if (newMsg.creator_handle !== handle) return;
+            if ((newMsg.from_email || "") !== userEmail) return;
+
+            if (newMsg.id && messageIdsRef.current.has(String(newMsg.id))) return;
+            if (newMsg.id) messageIdsRef.current.add(String(newMsg.id));
+
+            setMessages((prev) => {
+              const next = [...(prev || []), newMsg];
+              return next.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+            });
+
+            try {
+              const isFromAdmin = newMsg.sender_type === "admin";
+              if (isFromAdmin) {
+                const shouldNotify = !(typeof document !== "undefined" && document.hasFocus && document.hasFocus());
+                if (shouldNotify && "Notification" in window && Notification.permission === "granted") {
+                  new Notification(`${creator?.name || "Creator"} sent you a message`, {
+                    body: (newMsg.body || "").slice(0, 120),
+                    tag: `msg-${newMsg.id || Date.now()}`,
+                    renotify: false,
+                  });
+                }
+                if (audioRef.current) {
+                  try { audioRef.current.play().catch(()=>{}); } catch (e) {}
+                }
+              }
+            } catch (e) {}
+          }
+        )
+        .subscribe();
+
+      realtimeChannelRef.current = channel;
+    } catch (err) {
+      console.warn("setupRealtime error:", err);
+    }
+  };
+
+  const uploadFileToStorage = async (file, folder = "messages") => {
+    try {
+      const timestamp = Date.now();
+      const randomStr = Math.random().toString(36).substring(7);
+      const ext = file.type.split('/')[1] || 'bin';
+      const filename = `${timestamp}-${randomStr}.${ext}`;
+      const filePath = `${folder}/${filename}`;
+
+      const { data, error } = await supabase.storage
+        .from("uploads")
+        .upload(filePath, file, {
+          contentType: file.type,
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      if (error) {
+        console.error("Upload error:", error);
+        throw error;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("uploads")
+        .getPublicUrl(filePath);
+
+      return urlData.publicUrl;
+    } catch (err) {
+      console.error("uploadFileToStorage error:", err);
+      throw err;
+    }
+  };
+
+  const handleSend = async (msgText, file = null, type = "text") => {
+    if (!msgText.trim() && !file) return;
+    setSending(true);
+    try {
+      const handle = getCreatorHandle();
+      const userEmail = getUserEmail() || `subscriber_${Date.now()}@example.com`;
+
+      let mediaUrl = null;
+      let messageType = type;
+      if (file) {
+        mediaUrl = await uploadFileToStorage(file);
+      }
+
+      const payload = {
+        creator_handle: handle,
+        from_email: userEmail,
+        subject: null,
+        body: msgText,
+        sender_type: "subscriber",
+        message_type: messageType,
+        media_url: mediaUrl,
+        created_at: new Date().toISOString(),
+      };
+
+      const { data, error } = await supabase
+        .from("messages")
+        .insert([payload])
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Failed to send message:", error);
+        setMessages((prev) => [...(prev || []), { ...payload }]);
+      } else {
+        if (data.id) messageIdsRef.current.add(String(data.id));
+        setMessages((prev) => {
+          const next = [...(prev || []), data];
+          return next.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        });
+      }
+    } catch (err) {
+      console.error("handleSend error:", err);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleCamera = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.capture = "user";
+    input.onchange = (e) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        handleSend("", file, "image");
+      }
+    };
+    input.click();
+  };
+
+  const handleGallery = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*,video/*";
+    input.onchange = (e) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        const type = file.type.startsWith("image") ? "image" : "video";
+        handleSend("", file, type);
+      }
+    };
+    input.click();
+  };
+
+  // FIX: Audio recording - ACTUALLY RECORDS ALL AUDIO
+  const handleMic = async () => {
+    if (isRecording) {
+      // Stop recording
+      if (recorderRef.current) {
+        recorderRef.current.recorder.stop();
+        recorderRef.current.stream.getTracks().forEach((t) => t.stop());
+      }
+      if (timerRef.current) clearInterval(timerRef.current);
+      setIsRecording(false);
+      setRecordingTime(0);
+    } else {
+      // Start recording
+      setIsRecording(true);
+      setRecordingTime(0);
+      chunksRef.current = [];
+      
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') 
+          ? 'audio/webm;codecs=opus' 
+          : 'audio/webm';
+        
+        const recorder = new MediaRecorder(stream, { mimeType });
+        recorderRef.current = { recorder, stream };
+        
+        recorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) {
+            chunksRef.current.push(e.data);
+          }
+        };
+        
+        recorder.onstop = async () => {
+          if (chunksRef.current.length > 0) {
+            const blob = new Blob(chunksRef.current, { type: mimeType });
+            if (blob.size > 0) {
+              await handleSend("", blob, "audio");
+            }
+          }
+          recorderRef.current = null;
+          chunksRef.current = [];
+        };
+        
+        recorder.onerror = (e) => {
+          console.error('Recorder error:', e);
+          setIsRecording(false);
+        };
+        
+        recorder.start(100); // Collect data every 100ms to capture ALL audio
+        
+        // Timer
+        timerRef.current = setInterval(() => {
+          setRecordingTime((t) => t + 1);
+        }, 1000);
+      } catch (e) {
+        console.error('Mic access error:', e);
+        alert("Mic access denied or error");
+        setIsRecording(false);
+      }
+    }
+  };
+
+  // FIX: Delete message
+  const handleDeleteMessage = async (messageId) => {
+    if (!confirm("Delete this message?")) return;
+    
+    try {
+      const { error } = await supabase
+        .from("messages")
+        .delete()
+        .eq("id", messageId);
+
+      if (error) throw error;
+
+      setMessages((prev) => prev.filter((m) => m.id !== messageId));
+      messageIdsRef.current.delete(String(messageId));
+    } catch (err) {
+      console.error("Delete error:", err);
+      alert("Failed to delete message");
+    }
+  };
+
+  // FIX: Open media in full screen viewer
+  const openViewer = (type, url) => {
+    setViewerMedia({ type, url });
+    setViewerOpen(true);
+    document.body.style.overflow = "hidden";
+  };
+
+  const closeViewer = () => {
+    setViewerOpen(false);
+    setViewerMedia({ type: null, url: null });
+    document.body.style.overflow = "auto";
+  };
+
+  const userEmail = getUserEmail();
+
   const VerifiedBadge = () => (
-    <svg className="w-4 h-4 ml-1 inline-block" viewBox="0 0 33 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      className="w-4 h-4 ml-1 inline-block align-middle flex-shrink-0"
+      viewBox="0 0 33 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{ display: "inline-block" }}
+    >
       <image
-        href="data:image/png;base64,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"
+        href="data:image/png;base64,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"
         x="0"
         y="0"
         width="33"
@@ -336,180 +444,125 @@ export default function MessagesPage() {
 
   return (
     <LoadingSplash loading={loading}>
-      <div className="min-h-screen bg-gray-900 text-white flex flex-col">
-        {/* Header */}
-        <div className="bg-gray-800 border-b border-gray-700 p-4 flex items-center gap-3">
-          <button
-            onClick={() => navigate("/")}
-            className="text-white hover:text-gray-300"
-            aria-label="Back to profile"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <header className="bg-white flex items-center gap-3 p-4 border-b shadow-sm sticky top-0 z-10">
+          <button onClick={() => navigate(-1)} className="text-[#00AFF0] hover:text-[#0099CC]">
+            <ArrowLeft size={24} />
           </button>
-
-          <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-600">
-            {creator.avatar_url ? (
-              <img src={creator.avatar_url} alt="avatar" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-sm">
-                {creator.name?.[0] || "C"}
-              </div>
-            )}
-          </div>
-
+          <img
+            src={creator?.avatar || "https://via.placeholder.com/40"}
+            alt="avatar"
+            className="w-10 h-10 rounded-full object-cover"
+          />
           <div className="flex-1">
-            <div className="flex items-center gap-1">
-              <h1 className="text-lg font-semibold">{creator.name || "Creator"}</h1>
+            <h2 className="text-gray-900 font-semibold flex items-center">
+              {creator?.name || "Creator"}
               <VerifiedBadge />
-            </div>
-            <div className="text-sm text-gray-400">{creator.handle}</div>
+            </h2>
+            <p className="text-xs text-gray-500">Active now</p>
           </div>
-        </div>
+        </header>
 
-        {/* Messages Panel */}
-        <div ref={messagesPanelRef} className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.length === 0 ? (
-            <div className="text-center text-gray-400 mt-8">No messages yet. Start the conversation!</div>
+        <div className="flex-1 overflow-y-auto p-4 pb-24">
+          {(!messages || messages.length === 0) ? (
+            <div className="text-center text-gray-500 mt-8">
+              <p>No messages yet. Say hi!</p>
+            </div>
           ) : (
-            messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex ${msg.sender_type === "subscriber" ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-[75%] rounded-lg p-3 ${
-                    msg.sender_type === "subscriber"
-                      ? "bg-[#00AFF0] text-white"
-                      : "bg-gray-700 text-white"
-                  }`}
-                >
-                  {/* Text message */}
-                  {msg.message_type === "text" && <p className="break-words">{msg.body}</p>}
-
-                  {/* Image */}
-                  {msg.message_type === "image" && msg.media_url && (
-                    <img
-                      src={msg.media_url}
-                      alt="attachment"
-                      className="max-w-full rounded"
-                      loading="lazy"
-                    />
-                  )}
-
-                  {/* FIXED: Video */}
-                  {msg.message_type === "video" && msg.media_url && (
-                    <video
-                      src={msg.media_url}
-                      controls
-                      className="max-w-full rounded"
-                      preload="metadata"
-                    >
-                      Your browser does not support video playback.
-                    </video>
-                  )}
-
-                  {/* FIXED: Audio */}
-                  {msg.message_type === "audio" && msg.media_url && (
-                    <audio src={msg.media_url} controls className="w-full mt-2">
-                      Your browser does not support audio playback.
-                    </audio>
-                  )}
-
-                  <div className="text-xs opacity-70 mt-1">
-                    {new Date(msg.created_at).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+            messages.map((m, i) => {
+              const isMe = (m.sender_type === "subscriber" && (m.from_email === userEmail));
+              return (
+                <div key={m.id || `${i}-${m.created_at}`} className={`mb-3 flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                  <div className={`text-sm px-4 py-2 max-w-[75%] rounded-2xl break-words ${isMe ? "bg-[#00AFF0] text-white" : "bg-white text-gray-800 border"}`}>
+                    {m.body || m.subject || ""}
+                    
+                    {/* FIX: Media display with click handlers */}
+                    {m.media_url && (
+                      <div className="mt-1">
+                        {m.message_type === "audio" ? (
+                          <audio src={m.media_url} controls className="w-full" />
+                        ) : m.message_type === "video" ? (
+                          <video 
+                            src={m.media_url} 
+                            className="max-w-full rounded cursor-pointer" 
+                            onClick={() => openViewer("video", m.media_url)}
+                            preload="metadata"
+                          />
+                        ) : m.message_type === "image" ? (
+                          <img 
+                            src={m.media_url} 
+                            alt="attachment" 
+                            className="max-w-full rounded object-cover cursor-pointer" 
+                            onClick={() => openViewer("image", m.media_url)}
+                          />
+                        ) : null}
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="text-[10px] text-gray-500 mt-1 flex items-center gap-2">
+                    <span>{m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}</span>
+                    {isMe && <span>{m.message_type === 'text' ? (m.id ? '✓' : '...') : ''}</span>}
+                    
+                    {/* FIX: Delete button */}
+                    {isMe && m.id && (
+                      <button 
+                        onClick={() => handleDeleteMessage(m.id)} 
+                        className="text-red-500 hover:text-red-700 text-xs"
+                      >
+                        Delete
+                      </button>
+                    )}
                   </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
+          <div ref={messagesEndRef} />
         </div>
 
-        {/* Input Panel */}
-        <div className="bg-gray-800 border-t border-gray-700 p-3">
-          <div className="flex items-center gap-2">
-            {/* Camera */}
-            <button
-              onClick={handleCamera}
-              className="text-[#00AFF0] hover:text-[#0088CC]"
-              aria-label="Take photo"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </button>
+        <MessageInput
+          onSend={(text) => handleSend(text)}
+          onCamera={handleCamera}
+          onGallery={handleGallery}
+          onMic={handleMic}
+          isRecording={isRecording}
+          recordingTime={recordingTime}
+        />
 
-            {/* Gallery */}
-            <button
-              onClick={handleGallery}
-              className="text-[#00AFF0] hover:text-[#0088CC]"
-              aria-label="Upload media"
+        {/* FIX: Full-screen media viewer */}
+        {viewerOpen && (
+          <div 
+            className="fixed inset-0 bg-black z-50 flex items-center justify-center"
+            onClick={closeViewer}
+          >
+            <button 
+              onClick={closeViewer} 
+              className="absolute top-4 right-4 text-white text-3xl z-10"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
+              ×
             </button>
-
-            {/* Mic */}
-            <button
-              onPointerDown={handleStartMic}
-              onPointerUp={handleStopMic}
-              onPointerLeave={handleStopMic}
-              className={`${isRecording ? "text-red-500" : "text-[#00AFF0] hover:text-[#0088CC]"}`}
-              aria-label="Record audio"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
-                />
-              </svg>
-            </button>
-
-            {isRecording && (
-              <span className="text-red-500 text-sm font-medium">Recording... {recordingTime}s</span>
+            
+            {viewerMedia.type === "image" && (
+              <img 
+                src={viewerMedia.url} 
+                alt="full screen" 
+                className="max-w-full max-h-full object-contain"
+                onClick={(e) => e.stopPropagation()}
+              />
             )}
-
-            {/* Text Input */}
-            <input
-              type="text"
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Write a message..."
-              className="flex-1 bg-gray-700 text-white rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00AFF0]"
-            />
-
-            {/* Send Button */}
-            <button
-              onClick={handleSendText}
-              disabled={!newMessage.trim()}
-              className="bg-[#00AFF0] text-white rounded-full p-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#0088CC]"
-              aria-label="Send message"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
-            </button>
+            
+            {viewerMedia.type === "video" && (
+              <video 
+                src={viewerMedia.url} 
+                controls 
+                autoPlay
+                className="max-w-full max-h-full"
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
           </div>
-        </div>
+        )}
       </div>
     </LoadingSplash>
   );
